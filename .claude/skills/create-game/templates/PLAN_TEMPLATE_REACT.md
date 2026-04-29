@@ -69,22 +69,6 @@ _(Include only if the game has a computer player)_
 
 ---
 
-## Game Logic
-- [ ] ...
-
----
-
-## Components
-- [ ] `App` — top-level layout, phase state, `useTheme`, `createStorage`
-- [ ] `HomeScreen` — see Home Screen spec below
-- [ ] `PlayScreen` — see Play Screen spec below
-- [ ] `GameOver` — overlay with result, best score, play again / return to menu; uses boilerplate `Modal`
-- [ ] `HelpModal` — uses boilerplate `HelpModal`; fill in game-specific rules content
-- [ ] `ConfirmModal` — uses boilerplate `ConfirmModal`; for destructive actions (new game, quit to menu)
-- [ ] ...
-
----
-
 ## Home Screen
 
 - Full viewport (100vw × 100vh), game-themed background
@@ -146,6 +130,22 @@ _(Include only if the game has a computer player)_
 
 - Light/dark toggle via `useTheme` hook — applies `.light-palette` / `.dark-palette` to body
 - Never hardcode colors — use semantic CSS variables from `global.css`
+
+---
+
+## Game Logic
+- [ ] ...
+
+---
+
+## Components
+- [ ] `App` — top-level layout, phase state, `useTheme`, `createStorage`
+- [ ] `HomeScreen` — see Home Screen spec below
+- [ ] `PlayScreen` — see Play Screen spec below
+- [ ] `GameOver` — overlay with result, best score, play again / return to menu; uses boilerplate `Modal`
+- [ ] `HelpModal` — uses boilerplate `HelpModal`; fill in game-specific rules content
+- [ ] `ConfirmModal` — uses boilerplate `ConfirmModal`; for destructive actions (new game, quit to menu)
+- [ ] ...
 
 ---
 
