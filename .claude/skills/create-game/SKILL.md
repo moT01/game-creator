@@ -64,28 +64,7 @@ Wait for the user's response before doing anything else.
 
 ## Step 3 — Bootstrap the project
 
-Choose the boilerplate:
-
-Use **simple** (HTML/CSS/JS) when:
-- Canvas-based games (shooters, platformers, arcade)
-- Simple single-screen games (minesweeper, 2048)
-- Anything where the DOM structure is minimal
-
-Use **React/Vite** when:
-- Complex state across many components
-- Games with lots of UI screens and interactions
-- Anything where TypeScript and component structure genuinely helps
-
-Always choose the simplest option that fits the game. Prefer simple if possible.
-
-### Step 3a — Copy simple boilerplate
-
-1. Run `cp -R ./claude/skills/create-game/boilerplate-simple <game-name>` from the repo root
-2. In `<game-name>/index.html`, replace the placeholder title with a capitalized human-friendly version of the game name (e.g. "Five Dice" not "five-dice")
-
-### Step 3b — Copy react boilerplate
-
-1. Run `cp -R .claude/skills/create-game/boilerplate-react <game-name>` from the repo root
+1. Run `cp -R .claude/skills/create-game/boilerplate-react <game-name>` from the repo root to copy the boilerplate
 2. In `<game-name>/index.html`, replace the placeholder title with a capitalized human-friendly version of the game name
 3. Run `npm install` inside `<game-name>/`.
 
@@ -96,7 +75,7 @@ Always choose the simplest option that fits the game. Prefer simple if possible.
 ## Step 4a — Create the plan file
 
 1. Create a `context` directory in <game-name> - so you have `<game-name>/context/`.
-2. If using the simple boilerplate, copy `.claude/skills/create-game/templates/PLAN_TEMPLATE_SIMPLE.md` to `<game-name>/context/PLAN.md`. If using the react boilerplate, copy `.claude/skills/create-game/templates/PLAN_TEMPLATE_REACT.md` to `<game-name>/context/PLAN.md`. In the new file...
+2. Copy `.claude/skills/create-game/templates/PLAN_TEMPLATE_REACT.md` to `<game-name>/context/PLAN.md`. In the new file...
 3. Replace all `<game-name>` placeholders with the actual game name
 4. Replace all `<known-game>` placeholders with the known game name
 
