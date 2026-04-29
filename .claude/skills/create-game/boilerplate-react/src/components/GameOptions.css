@@ -50,7 +50,7 @@
 
 .segmented-control__option--active {
   background: var(--color-accent);
-  color: var(--color-bg);
+  color: var(--gray-90);
 }
 
 .segmented-control__option:focus-visible {
@@ -93,7 +93,7 @@
   left: 8px;
   width: 6px;
   height: 14px;
-  border: 2px solid var(--color-bg);
+  border: 2px solid var(--gray-90);
   border-top: none;
   border-left: none;
   transform: rotate(45deg);
