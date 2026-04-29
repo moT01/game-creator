@@ -11,8 +11,7 @@ Implement the game based on the approved plan, one section at a time.
 
 ## Invocation
 
-Called by `create-game` as part of the pipeline, or invoked directly
-as `/coder <game-name>` or `/coder <game-name> (<known-game>)` when a plan already exists.
+Called by `create-game` as part of the pipeline.
 
 ---
 
@@ -40,7 +39,7 @@ Read `<game-name>/context/PLAN.md` fully before writing any code.
 
 ## Step 2 — Implement the next incomplete section
 
-Identify the first section with unchecked items and implement all of them. Before writing any CSS or UI, read `.claude/UI.md` first.
+Identify the first section with unchecked items and implement all of them. Before writing any CSS or UI, read `.claude/skills/create-game/UI.md` first.
 
 Only implement the next section - do not implement more than one section at a time. Only implement what is in the plan. Do not add abstractions, files, or dependencies not listed. Follow all conventions in `CLAUDE.md`.
 

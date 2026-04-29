@@ -80,12 +80,12 @@ Always choose the simplest option that fits the game. Prefer simple if possible.
 
 ### Step 3a — Copy simple boilerplate
 
-1. Run `cp -R boilerplate-simple <game-name>` from the repo root
+1. Run `cp -R ./claude/skills/create-game/boilerplate-simple <game-name>` from the repo root
 2. In `<game-name>/index.html`, replace the placeholder title with a capitalized human-friendly version of the game name (e.g. "Five Dice" not "five-dice")
 
 ### Step 3b — Copy react boilerplate
 
-1. Run `cp -R boilerplate-react <game-name>` from the repo root
+1. Run `cp -R .claude/skills/create-game/boilerplate-react <game-name>` from the repo root
 2. In `<game-name>/index.html`, replace the placeholder title with a capitalized human-friendly version of the game name
 3. Run `npm install` inside `<game-name>/`.
 
@@ -96,7 +96,7 @@ Always choose the simplest option that fits the game. Prefer simple if possible.
 ## Step 4a — Create the plan file
 
 1. Create a `context` directory in <game-name> - so you have `<game-name>/context/`.
-2. If using the simple boilerplate, copy `.claude/templates/PLAN_TEMPLATE_SIMPLE.md` to `<game-name>/context/PLAN.md`. If using the react boilerplate, copy `.claude/templates/PLAN_TEMPLATE_REACT.md` to `<game-name>/context/PLAN.md`. In the new file...
+2. If using the simple boilerplate, copy `.claude/skills/create-game/templates/PLAN_TEMPLATE_SIMPLE.md` to `<game-name>/context/PLAN.md`. If using the react boilerplate, copy `.claude/skills/create-game/templates/PLAN_TEMPLATE_REACT.md` to `<game-name>/context/PLAN.md`. In the new file...
 3. Replace all `<game-name>` placeholders with the actual game name
 4. Replace all `<known-game>` placeholders with the known game name
 
@@ -110,7 +110,7 @@ Every plan must include all of the following:
 - Full viewport (100vw × 100vh)
 - Game-themed background — elegant and minimal, not overwhelming
 - Centered content container: visible border, rounded corners, subtle shadow, min-width 420px
-- Top of container: 3 icon buttons (help, theme, donate) — use SVGs from `.claude/icons/`
+- Top of container: 3 icon buttons (help, theme, donate) — use SVGs from `.claude/skills/create-game/icons/`
 - Content: game title, then the following where applicable:
   - Mode selector
   - Difficulty selector (Normal / Hard) — if computer opponent with meaningful difficulty
@@ -121,7 +121,7 @@ Every plan must include all of the following:
 
 ### Play Screen
 - Centered game container on a game-themed background — same visual language as the home screen; min-width 420px; max-width sized appropriately for the game; responsive
-- Container header: 4 icon buttons (close, help, theme, donate) — use SVGs from `.claude/icons/`
+- Container header: 4 icon buttons (close, help, theme, donate) — use SVGs from `.claude/skills/create-game/icons/`
 - Horizontal rule below the header
 - Game area below the rule, centered
 - Score/status/timer visible during play (where applicable)
@@ -232,7 +232,7 @@ Only proceed if the user replies with "plan approved". Any other response is tre
 
 Skip this step unless the user requested mockups in step 2.
 
-Read `.claude/examples/` for visual reference — the mockup should match the established layout and style. Generate `<game-name>/context/mockup.html` — a single static HTML file showing each screen (home, play, game over, etc) as a rough visual layout. Use inline CSS. Show the right panels, elements, and proportions. No interactivity or game logic needed — layout only.
+Read `.claude/skills/create-game/examples/` for visual reference — the mockup should match the established layout and style. Generate `<game-name>/context/mockup.html` — a single static HTML file showing each screen (home, play, game over, etc) as a rough visual layout. Use inline CSS. Show the right panels, elements, and proportions. No interactivity or game logic needed — layout only.
 
 Tell the user:
 > "Mockup saved to `<game-name>/context/mockup.html`. Open it in a browser and let me know if the layout looks right, or provide feedback. Respond with 'mockup approved' to start coding."
@@ -244,7 +244,7 @@ Wait for explicit approval. If the user requests changes, update the mockup and 
 ## Step 7 — Launch coder
 
 ```
-Task: "Read and follow `.claude/skills/coder/SKILL.md`.
+Task: "Read and follow `.claude/skills/create-game/GAME_CODER.md`.
 Game name: <game-name>
 Known game: <known-game>"
 ```

@@ -2,7 +2,7 @@
 
 All games share the same visual language. Read this file before writing any CSS.
 
-See `.claude/examples/` for screenshots of existing games — use these as a visual reference for layout, style, and overall feel.
+See `.claude/skills/create-game/examples/` for screenshots of existing games — use these as a visual reference for layout, style, and overall feel.
 
 CSS variables (colors, spacing, typography, shadows, transitions, radius) are defined in `global.css` — use them, never hardcode values.
 
@@ -30,7 +30,7 @@ Every game should look polished and intentional — not like a default browser U
 
 ## Buttons
 
-- Use the icons in `./claude/icons` when applicable.
+- Use the icons in `./claude/skills/create-game/icons` when applicable.
 - Secondary buttons use surface colors with a border
 - Every button must have hover (lift `-1px`, stronger shadow), active (scale down, push shadow inward), and disabled (`opacity: 0.4`) states
 - All state changes use transitions — nothing snaps

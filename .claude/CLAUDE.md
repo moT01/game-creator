@@ -13,3 +13,4 @@
 - When following instructions, follow the instructions exactly. Only do what is asked in a step or section. Do not stray from those instructions.
 - NEVER install anything without asking
 - Keep wording in files concise
+- Always read `.claude/skills/create-game/UI.md` when doing UI work.
