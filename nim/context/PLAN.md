@@ -3,181 +3,272 @@
 
 ## Game Design
 
-**Rules:** Standard multi-pile Nim. Three piles start with 3, 5, and 7 objects. On each turn a player picks one pile and removes at least 1 object (up to the entire pile). The player who takes the last object wins.
+**Rules:** Players alternate turns removing objects from heaps. On each turn, a player must choose exactly one heap and remove at least 1 object (up to the entire heap). The player who takes the last object wins (standard Nim rules).
 
-**Players:** 1 (vs computer) or 2 (local vs friend)
+**Players:** 2 — human vs computer, or human vs human (local).
 
 **Modes / variants:**
-- vs Computer — player goes first, computer responds; Normal or Hard difficulty
-- vs Friend — two human players alternate on the same device; no difficulty selector
+- `vs-computer` — human is Player 1, AI is Player 2
+- `2-player` — two humans alternate on the same device
 
-**Win / draw conditions:** The player who takes the last remaining object across all piles wins. There are no draws.
+**Win / draw conditions:**
+- Win: you take the last remaining object across all heaps (all heaps become 0 after your move)
+- No draw condition exists in standard Nim
 
 **Special rules / one-off mechanics:**
-- A player must take at least 1 object per turn.
-- A player must take from exactly one pile per turn.
-- A pile at 0 is exhausted; players cannot select it.
-- The game ends immediately once all piles reach 0 after a take action.
+- A player must remove at least 1 object — passing is not allowed
+- A player must remove from exactly one heap per turn — splitting across heaps is invalid
+- If only a single object remains in the last non-empty heap, the current player is forced to take it and wins
 
 **UI flow:**
-1. Home screen — select mode (vs Computer / vs Friend), difficulty (Normal / Hard, visible only in vs Computer mode), New Game / Resume buttons, records display.
-2. Play screen — three piles rendered as rows of token circles, current player label, selected count indicator, Take button, header with close/help/theme/donate buttons.
-3. Player clicks a token in a pile — all tokens from that token to the end of the pile are highlighted as "selected"; clicking a different pile clears the selection and starts a new one in the new pile. Clicking the same token again or a token further right reduces/adjusts the selection within that pile.
-4. Take button is enabled when at least 1 token is selected; clicking it removes selected tokens with an animation, then passes turn.
-5. After the take that empties the last pile, the game over overlay appears.
-6. Game over overlay — shows winner, win record (vs Computer only), Play Again and Return to Menu buttons.
+1. Home screen — select mode, difficulty (if vs-computer); view records; New Game / Resume
+2. Play screen — show 4 heap rows; player selects a heap, then selects count via +/- or direct object clicks; confirms with "Take" button; AI moves auto-play after 600ms delay
+3. Game over overlay — show winner, update records, Play Again / Return to Menu
 
 **Edge cases:**
-- All piles reach 0 in one take (player takes the last objects from the last non-empty pile) — trigger game over immediately.
-- Computer turn with only one pile remaining — computer takes all objects and wins; show "Computer wins" overlay after a brief delay.
-- Computer turn on Hard when nim-sum is already 0 (losing position for computer) — computer falls back to taking 1 from the largest pile.
-- Player tries to take 0 objects — Take button remains disabled, no action.
-- Resume with a saved game where current player is Computer — auto-trigger computer move after a short delay on load.
-- Pile shows 0 tokens — render it greyed out with "Empty" label; clicking it does nothing.
+- Starting position (1,3,5,7) has nim-sum = 0, so the first player loses with perfect play — AI on Hard will always win if it goes second (Player 2)
+- Player selects a heap, then clicks a different heap — selection switches to new heap, removeCount resets to 1
+- Player sets removeCount to 0 — Take button is disabled
+- All heaps are 0 before the game starts (impossible by design, but guard anyway)
+- Computer's "thinking" delay should be skipped if game is already over when delay fires
+- Resume shown only if saved state has at least one non-zero heap and phase is `playing`
 
 ---
 
 ## Data Model
 
-**Board / grid:** Three independent piles. No spatial grid needed.
+**Board / grid:** `heaps: number[]` — array of 4 integers representing current count in each heap. Initial: `[1, 3, 5, 7]`.
 
-**Piece / token types:** Identical circular tokens. No face-up/face-down states.
+**Piece / token types:** No pieces — heaps contain undifferentiated objects (rendered as circles/stones).
 
 **Game state shape:**
-```js
-{
-  piles: [number, number, number],   // current object counts, e.g. [3, 5, 7]
-  currentPlayer: 'human' | 'computer' | 'p1' | 'p2',
-  mode: 'vs-computer' | 'vs-friend',
-  difficulty: 'normal' | 'hard',     // only relevant in vs-computer mode
-  selectedPile: number | null,       // index 0-2, or null
-  selectedCount: number,             // how many tokens selected in selectedPile
-  status: 'playing' | 'game-over',
-  winner: 'human' | 'computer' | 'p1' | 'p2' | null,
-  records: {
-    normal: { wins: number },        // human wins vs computer on Normal
-    hard: { wins: number }           // human wins vs computer on Hard
-  }
+```ts
+type GamePhase = 'playing' | 'game-over'
+type Mode = 'vs-computer' | '2-player'
+type Difficulty = 'normal' | 'hard'
+
+interface GameState {
+  heaps: number[]           // current heap sizes, e.g. [1, 3, 5, 7]
+  currentPlayer: 0 | 1     // 0 = Player 1 (human), 1 = Player 2 (human or AI)
+  selectedHeap: number | null  // index of heap selected this turn, or null
+  removeCount: number       // how many objects marked for removal (1 to heaps[selectedHeap])
+  phase: GamePhase
+  winner: 0 | 1 | null
+  mode: Mode
+  difficulty: Difficulty
+  humanPlayer: 0 | 1    // which player index the human controls in vs-computer (0 = goes first, 1 = goes second)
 }
 ```
 
 **State flags:**
-- `status` — controls whether game over overlay is visible
-- `selectedPile` / `selectedCount` — drives token highlight rendering and Take button enable state
-- `currentPlayer` — determines whose turn label shows and whether computer move fires
+- `selectedHeap: number | null` — which heap the current player has clicked
+- `removeCount: number` — count of objects to remove (clamped 1–heapSize)
+- `phase` — `'playing'` | `'game-over'`
+- `winner` — set on game over
 
-**Turn structure:** Human acts via UI interaction → Take button → `applyTake(pileIndex, count)` → check win → if vs-computer and not game-over → `triggerComputerMove()` after 600ms delay.
+**Turn structure:**
+1. Current player selects a heap (sets `selectedHeap`, `removeCount` resets to 1)
+2. Player adjusts `removeCount` (1 to `heaps[selectedHeap]`) via + / - buttons or by clicking objects in the row
+3. Player clicks "Take" — `applyMove(state, selectedHeap, removeCount)` runs
+4. `heaps[selectedHeap] -= removeCount`, check win: `heaps.every(h => h === 0)` → winner = currentPlayer
+5. If not game over, `currentPlayer ^= 1`
+6. If now AI's turn, schedule `runAI()` after 600ms
 
-**Move validation approach:** `isValidTake(pileIndex, count)` — returns true if `pileIndex` is 0-2, `piles[pileIndex] > 0`, and `count >= 1 && count <= piles[pileIndex]`.
+**Move validation approach:** In `applyMove`, assert: `selectedHeap` is 0–3, `removeCount >= 1`, `removeCount <= heaps[selectedHeap]`. UI prevents invalid state — Take button is disabled when `selectedHeap === null` or `removeCount < 1`.
 
-**Invalid move handling:** Take button is disabled unless `selectedCount >= 1`. Clicking an empty pile does nothing. No error messages needed — UI prevents invalid input by construction.
+**Invalid move handling:** UI-only prevention — Take button disabled, +/- clamped. No error message needed.
 
 ---
 
 ## AI / Computer Player
 
 **Strategy approach:**
-
-Hard — Nim-sum (XOR) strategy:
-1. Compute `nimSum = piles[0] ^ piles[1] ^ piles[2]`.
-2. If `nimSum !== 0`, find a pile where `pile ^ nimSum < pile`; reduce that pile to `pile ^ nimSum` (this leaves the opponent in a losing position).
-3. If `nimSum === 0` (already losing position for computer), fall back: take 1 from the largest non-empty pile.
-
-Normal — Weighted random:
-1. Build list of all valid (pileIndex, count) moves.
-2. 70% of the time pick randomly from that list.
-3. 30% of the time apply the Hard strategy (gives Normal a chance to play well without being reliable).
+- `computeNimSum(heaps: number[]): number` — XOR of all heap sizes
+- `findOptimalMove(heaps: number[]): { heap: number; count: number }` — find a heap `i` and count `n` such that `heaps[i] - n` gives nim-sum of 0 after the move. If no such move exists (already losing position), take 1 from the largest heap.
+- Hard: always calls `findOptimalMove`
+- Normal: 60% chance of `findOptimalMove`, 40% chance of a random valid move (random heap with objects, random count 1–size)
 
 **Difficulty levels:**
-- Normal — beatable; makes random moves most of the time
-- Hard — plays optimally; only loses if given a position with nim-sum 0
+- Normal — plays optimally 60% of the time, randomly 40%
+- Hard — always optimal
 
-**Performance constraints:** Nim has at most ~3 piles × max 7 tokens = trivial computation; no memoization needed.
+**Performance constraints:** Nim AI is O(n) per move — no performance concerns.
 
 ---
 
 ## Help & Strategy Guide
 
-**Objective:** Take the last object to win.
+**Objective:** Take the last object from the table to win.
 
-**Rules summary:** Three piles (3, 5, 7). On your turn pick any one pile and remove 1 or more objects from it. The player who takes the very last object wins.
+**Rules summary:**
+- 4 heaps start with 1, 3, 5, and 7 objects
+- On your turn, pick one heap and remove any number of objects from it (at least 1)
+- The player who takes the last object wins
 
 **Key strategies:**
-- The winning strategy is to always leave a position where the XOR (nim-sum) of all pile sizes equals zero. Your opponent then has no winning reply.
-- Starting position (3, 5, 7) has nim-sum 3 XOR 5 XOR 7 = 1, so the first player wins with optimal play.
-- With one pile left, always take the whole pile to win.
-- With two piles left, make them equal — your opponent must unbalance them and you rebalance each turn.
-- Hard mode plays perfectly. To beat it, you need it to face a zero nim-sum position on its turn — which means starting from a bad first move by the computer, or playing Normal difficulty.
+- The winning strategy is to leave your opponent in a "zero nim-sum" position: XOR all heap sizes together; if the result is 0 after your move, you are in control
+- If you're in a losing position (nim-sum is already 0 on your turn), any move you make gives the opponent a winning position — minimize losses by keeping as many objects as possible
+- With one heap remaining, take all of it to win instantly
 
 **Common mistakes:**
-- Taking too many from a large pile early and handing the opponent a simple two-pile equal position.
-- Forgetting that you must take from exactly one pile — you can't split across piles.
-- Leaving a single-pile position for the opponent (they take it all and win).
+- Removing too many objects from a large heap, leaving a single-object heap that hands the win to the opponent
+- Ignoring smaller heaps — every heap contributes to the nim-sum
 
 **Tips for beginners:**
-- Start by learning the two-pile rule: equal piles = loser for the player whose turn it is.
-- Practice spotting nim-sum 0 positions — (1,2,3), (1,4,5), (2,4,6) are all losing for the player to move.
-- Against Normal mode, focus on reducing piles to small balanced sizes early.
+- Start by watching Hard AI play to see optimal strategy in action
+- If only one heap has more than 1 object, reduce it to leave an odd number of single-object heaps
 
 ---
 
 ## Game Logic
-- [x] `initState(mode, difficulty)` — returns fresh game state with piles [3,5,7], currentPlayer set to 'human'/'p1', status 'playing', selectedPile null, selectedCount 0
-- [x] `applyTake(state, pileIndex, count)` — returns new state with piles updated, selectedPile/selectedCount cleared, currentPlayer toggled, and status/winner set if all piles are 0
-- [x] `isGameOver(piles)` — returns true when every pile is 0
-- [x] `togglePlayer(state)` — returns next player string based on mode ('human'/'computer' or 'p1'/'p2')
-- [x] `computeNimSum(piles)` — returns `piles[0] ^ piles[1] ^ piles[2]`
-- [x] `hardMove(piles)` — returns `{pileIndex, count}` using XOR strategy; falls back to take-1-from-largest if nimSum === 0
-- [x] `normalMove(piles)` — 70% random valid move, 30% `hardMove(piles)`
-- [x] `getComputerMove(piles, difficulty)` — dispatches to `hardMove` or `normalMove`
-- [x] `triggerComputerMove(state)` — called after 600ms delay post human turn; calls `getComputerMove`, then `applyTake`, then re-renders
-- [x] `handleTokenClick(pileIndex, tokenIndex)` — if pile is empty, do nothing; if a different pile was selected, clear and start new selection in this pile with selectedCount = pile.length - tokenIndex; if same pile, update selectedCount = pile.length - tokenIndex
-- [x] `handleTakeClick()` — validates selectedCount >= 1, calls `applyTake`, then checks if vs-computer and triggers computer move
-- [x] `saveGame(state)` — serializes state (excluding selectedPile/selectedCount) to localStorage key `nim_state`
-- [x] `loadGame()` — returns parsed state from localStorage or null
-- [x] `saveRecords(records)` — writes records object to localStorage key `nim_records`
-- [x] `loadRecords()` — returns records from localStorage or `{normal:{wins:0}, hard:{wins:0}}`
-- [x] `savePrefs(mode, difficulty)` — writes mode and difficulty to localStorage key `nim_prefs`
-- [x] `loadPrefs()` — returns `{mode, difficulty}` from localStorage or defaults
-- [x] `loadTheme()` — reads `nim_theme` from localStorage ('light' | 'dark'), defaults to 'light'; applies `.light-palette` or `.dark-palette` to `<body>`
-- [x] `handleThemeToggle()` — toggles theme, saves to localStorage, swaps palette class on `<body>`, updates sun/moon icon visibility
+- [ ] `computeNimSum(heaps: number[]): number` — XOR reduce all heap sizes
+- [ ] `isGameOver(heaps: number[]): boolean` — `heaps.every(h => h === 0)`
+- [ ] `applyMove(heaps: number[], heapIndex: number, count: number): number[]` — immutably return new heaps array with `heaps[heapIndex] - count`
+- [ ] `findOptimalMove(heaps: number[]): { heap: number; count: number }` — iterate heaps, for each non-empty heap try all removal counts, return first that gives nim-sum 0 after; fall back to take 1 from largest heap
+- [ ] `findRandomMove(heaps: number[]): { heap: number; count: number }` — pick a random non-empty heap, pick a random count 1–size
+- [ ] `getAIMove(heaps: number[], difficulty: Difficulty): { heap: number; count: number }` — routes to optimal or random based on difficulty and 60/40 chance
+- [ ] `validateMove(heaps: number[], heapIndex: number, count: number): boolean` — heapIndex 0–3, count >= 1, count <= heaps[heapIndex]
+- [ ] Win check after every `applyMove` call — if `isGameOver(newHeaps)`, set `winner = currentPlayer`
+- [ ] Turn switch — only after win check confirms game is still in progress
+- [ ] AI trigger — after turn switch, if `mode === 'vs-computer'` and `currentPlayer === 1` and `phase === 'playing'`, call `getAIMove` after 600ms; guard the timeout with a `phase` check before applying
 
 ---
 
-## UI & Rendering
-- [x] Home screen — title "Nim", mode selector (vs Computer / vs Friend tabs or toggle), difficulty selector (Normal / Hard, visible only when vs Computer selected), records display (Wins vs Normal, Wins vs Hard), New Game button, Resume button (shown only if saved game exists in localStorage); header: help, theme, donate icon buttons
-- [x] Play screen — centered container, header row with close icon, help icon, theme icon, donate icon; horizontal rule; turn label ("Your turn" / "Computer thinking..." / "Player 1's turn" etc.); three pile columns each showing token circles stacked horizontally; selected-count badge above the active pile; Take button (disabled when selectedCount === 0); no separate score display needed
-- [x] `renderPiles(piles, selectedPile, selectedCount)` — renders 3 pile containers; each pile shows `piles[i]` token circles; tokens from index `(pile.length - selectedCount)` onward in the selected pile get class `token--selected`; empty piles get class `pile--empty` with greyed tokens hidden and "Empty" label
-- [x] `renderTurnLabel(state)` — shows "Your turn", "Computer is thinking...", "Player 1's turn", "Player 2's turn" based on state
-- [x] Game over overlay — animates in with fade + scale; shows "You win!" / "Computer wins!" / "Player 1 wins!" / "Player 2 wins!"; shows win record if vs-computer mode; Play Again button (resets to fresh game, same mode/difficulty) and Return to Menu button (triggers confirm modal if mid-game, but game is over so no confirm needed — go directly)
-- [x] HelpModal — accessible via help button on all screens; covers rules, valid moves, and strategy tips from Help & Strategy Guide above
-- [x] ConfirmModal — appears when player clicks close (X) or Return to Menu mid-game; message: "Quit this game? Your progress will be lost."; Confirm and Cancel buttons
-- [x] Accessibility — all token buttons have `aria-label="Take [n] from pile [i]"` updated on selection; Take button has `aria-label="Take [n] objects from pile [i]"` and `aria-disabled` when count is 0; icon buttons have aria-labels (Close, Help, Toggle theme, Donate); HelpModal and ConfirmModal use `role="dialog"` and `aria-modal="true"`; focus trapped inside open modals; Escape key closes modals
-- [x] Keyboard navigation — Tab moves through pile tokens and buttons; Enter/Space activates focused token or button; when a pile token is focused, arrow keys (Left/Right) adjust selection within the same pile
+## Components
+- [ ] `App` — top-level layout, phase state (`'home' | 'playing'`), `useTheme`, `createStorage('nim-state')`; passes game state down and callbacks up
+- [ ] `HomeScreen` — mode selector (vs-computer / 2-player toggle), difficulty selector (Normal / Hard, shown only in vs-computer mode), records display, New Game / Resume buttons
+- [ ] `PlayScreen` — renders 4 `HeapRow` components, turn indicator in header, Take button, handles heap selection and removeCount adjustments; schedules AI moves
+- [ ] `HeapRow` — renders a single heap row as clickable object circles; selected heap shows highlighted objects up to `removeCount`; disabled when it's AI's turn or heap is empty
+- [ ] `GameOver` — modal overlay using boilerplate `Modal`; shows winner text, win record; Play Again and Return to Menu buttons
+- [ ] `HelpModal` — uses boilerplate `HelpModal`; nim-specific rules and strategy content
+- [ ] `ConfirmModal` — uses boilerplate `ConfirmModal`; for quit-to-menu and new-game-during-play actions
+
+---
+
+## Home Screen
+
+- Full viewport (100vw x 100vh), game-themed background using `--color-bg`
+- Centered card: min-width 420px, overflow hidden, no top/horizontal padding
+- Uses boilerplate `Header` with `variant="home"` — help, theme, donate buttons; border-bottom spans full card width
+- Game title "Nim" and subtitle "The strategy removal game"
+- Mode selector: toggle between "vs Computer" and "2 Player"
+- When mode is vs-computer, show below the mode toggle (hidden in 2-player mode):
+  - One row: "Go First" | "Go Second" segmented toggle on the left + "Hard mode" checkbox on the right (same row, matching vs-computer.png layout)
+  - WINS section below that row: label "WINS", then two rows — "Normal  X" and "Hard  X" — counts from local storage
+- Buttons: "New Game" always shown; "Resume" shown only if saved state exists with `phase === 'playing'` and at least one heap > 0
+
+---
+
+## Play Screen
+
+- Centered card container on same background; min-width 420px; max-width 480px; responsive
+- Uses boilerplate `Header` with `variant="game"` — close (quit to menu) left, status center, help/theme/donate right
+- Status text center: "Your turn" (human, `--color-accent`), "Computer thinking..." (AI turn, `--color-text-secondary`), "Player 1 / Player 2's turn" (2-player mode)
+- Game area: 4 `HeapRow` components stacked vertically with `--space-4` gap, each labeled "Heap 1–4"
+- Each `HeapRow`: row of filled circles (objects), clickable when it's the human's turn; clicking selects the heap and sets `removeCount = 1`; clicking objects within a selected heap adjusts `removeCount` (click nth object = remove n objects from that heap)
+- Remove count controls: once a heap is selected, show +/- buttons to adjust `removeCount` from 1 to heap size
+- Take button: primary action at bottom of game area; disabled when `selectedHeap === null` or `removeCount < 1` or it's AI's turn
+- Heap row visual states: default, selected (accent border + glow), objects-to-remove highlighted in `--color-danger` tint, empty heap grayed out
+
+---
+
+## Game Over
+
+- Overlay on the play screen using boilerplate `Modal`
+- Result: "You Win!" (`--color-success`) or "You Lose" (`--color-danger`) in vs-computer mode; "Player 1 Wins!" / "Player 2 Wins!" in 2-player mode
+- Records shown: updated win count for the current mode/difficulty
+- Buttons: "Play Again" (same settings), "Return to Menu"
+
+---
+
+## Modals
+
+- **Help** — objective, rules summary, key strategies, tips; accessible from all screens
+- **Confirm** — for quit-to-menu during a game and new-game-during-play; message: "Start a new game? Your current game will be lost."
+
+---
+
+## Local Storage
+
+- Key: `nim-state` via `createStorage('nim-state')`
+- Theme preference (via `useTheme`)
+- Last selected mode, difficulty, and go-first/second preference — restore on home screen revisit
+- Game state — saved after every move; cleared on game over or quit; Resume shown only if `phase === 'playing'` and `heaps.some(h => h > 0)`
+- Records: `wins_normal` and `wins_hard` (vs-computer wins per difficulty); not tracked in 2-player mode
+
+---
+
+## Accessibility
+
+- Keyboard navigation: Tab through heap rows, Enter/Space to select; +/- buttons keyboard accessible; Take button reachable via Tab
+- ARIA labels on all heap rows: `aria-label="Heap 2, 3 objects remaining"`
+- ARIA label on Take button: `aria-label="Take 2 objects from Heap 3"`
+- `aria-disabled` on Take button when inactive
+- Object circles in HeapRow: `role="button"` with descriptive label when interactive
+
+---
+
+## Theming
+
+- Light/dark toggle via `useTheme` hook — applies `.light-palette` / `.dark-palette` to body
+- Never hardcode colors — use semantic CSS variables from `global.css`
 
 ---
 
 ## Styling
-- [x] All colors use semantic variables — no hardcoded values
-- [x] All spacing uses `--space-*` variables
-- [x] Numbers, scores, and timers use `--font-mono`
-- [x] Main container: `--shadow-lg`, inset box-shadow border, min-width 420px, centered
-- [x] All interactive elements have hover, active, and disabled states with transitions — nothing snaps
-- [x] Status text: win=`--color-success`, loss=`--color-danger`, neutral=`--color-accent`
-- [x] Game over overlay animates in with fade + scale
-- [x] Responsive at 375px
-- [x] Light theme verified — surfaces have visible depth and contrast
-- [x] Token circles: `--color-accent` fill, `--border-radius-full`, fixed size (32px × 32px), gap between them; selected tokens: `--color-danger` fill to show "about to be removed"
-- [x] Pile container: vertical label at bottom showing count, highlighted border when that pile is selected
-- [x] Take button: prominent, full-width or wide, disabled state visually distinct (opacity + cursor: not-allowed)
-- [x] Computer "thinking" state: turn label pulses with a subtle opacity animation
-- [x] Empty pile: tokens area shows faint placeholder circles (not clickable), "Empty" label in muted color
+- [ ] All colors use semantic variables — no hardcoded values
+- [ ] Light mode: game container and its contents use the lightest surface color (`--color-surface`); page background uses the second lightest color (`--color-bg`) — container must be visually lighter than the background
+- [ ] Object circles use `--piece-blue` for neutral objects, `--color-danger` tint for objects marked for removal
+- [ ] Selected heap row has `--shadow-accent` glow and accent border
+- [ ] All spacing uses `--space-*` variables
+- [ ] Numbers use `--font-mono`
+- [ ] Card container: min-width 420px, max-width 480px, `overflow: hidden`, no top/horizontal padding
+- [ ] All interactive elements have hover, active, and disabled states with transitions — nothing snaps
+- [ ] Status text: win=`--color-success`, loss=`--color-danger`, neutral=`--color-accent`, AI thinking=`--color-text-secondary`
+- [ ] Game over overlay animates in with fade + scale
+- [ ] Responsive at 375px — object circles scale down if needed
+- [ ] Take button lifts on hover, scales down on active, opacity 0.4 when disabled
+- [ ] Heap rows animate removal: objects fade out on take action before state updates
+- [ ] Empty heap rows show muted dashed style, not blank
 
 ---
 
 ## Polish
-- [x] Token removal animation: selected tokens scale down and fade out before state updates (CSS transition, ~300ms), then pile re-renders
-- [x] Computer move animation: selected tokens briefly highlight (blue → red) before disappearing, so player can see what the computer took
-- [x] Take button shake animation when clicked while disabled (in case user tries)
-- [x] Smooth pile re-render — tokens slide/fade in on game reset
-- [x] "Computer is thinking..." label shows during the 600ms delay before computer acts
+- [ ] Object circles animate out (fade + scale down) when taken, before state updates
+- [ ] AI "thinking" period: status shows "Computer thinking..." with animated ellipsis
+- [ ] Selected heap row pulses with `--shadow-accent` glow
+- [ ] Take button shake animation if pressed when disabled (no heap selected)
+- [ ] Game over modal animates in with fade + scale
+- [ ] Heap label updates live as count changes: "Heap 2 - 3 objects"
+
+---
+
+## Testing
+
+**Unit tests — game logic (`src/gameLogic.test.ts`):**
+- [ ] `computeNimSum([1,3,5,7])` returns 0
+- [ ] `computeNimSum([1,2,3])` returns 0 (1^2^3 = 0)
+- [ ] `computeNimSum([0,0,0,1])` returns 1
+- [ ] `computeNimSum([3,5,7])` returns 1 (3^5^7 = 1)
+- [ ] `isGameOver([0,0,0,0])` returns true
+- [ ] `isGameOver([0,0,0,1])` returns false
+- [ ] `applyMove([1,3,5,7], 1, 2)` returns `[1,1,5,7]`
+- [ ] `applyMove([0,0,0,1], 3, 1)` returns `[0,0,0,0]`
+- [ ] `validateMove([1,3,5,7], 1, 3)` returns true
+- [ ] `validateMove([1,3,5,7], 1, 4)` returns false (count > heap size)
+- [ ] `validateMove([1,3,5,7], 1, 0)` returns false (count < 1)
+- [ ] `findOptimalMove([1,3,5,7])` — nim-sum is 0, falls back to take 1 from heap 3 (size 7)
+- [ ] `findOptimalMove([0,3,5,7])` — nim-sum is 1, returns a move that makes nim-sum 0 (e.g. heap 1 take 2: [0,1,5,7] → 1^5^7=3, not 0; heap 2 take 4: [0,3,1,7] → 3^1^7=5, not 0; heap 3 take 6: [0,3,5,1] → 3^5^1=7, not 0; heap 1 take 1: [0,2,5,7] → 2^5^7=0 ✓)
+- [ ] `findOptimalMove` result always passes `validateMove`
+- [ ] Win detected after `applyMove([0,0,0,1], 3, 1)` → `isGameOver` true
+
+**Component tests — (`src/App.test.tsx`):**
+- [ ] Home screen renders mode selector and New Game button
+- [ ] Difficulty selector hidden when mode is 2-player
+- [ ] Resume button hidden when no saved state
+- [ ] Play screen renders 4 heap rows with correct object counts
+- [ ] Clicking a heap selects it and enables the Take button
+- [ ] Take button disabled when no heap selected
+- [ ] After taking objects, heap count decreases correctly
+- [ ] Game over modal appears when last object taken
+- [ ] AI move fires after human move in vs-computer mode
