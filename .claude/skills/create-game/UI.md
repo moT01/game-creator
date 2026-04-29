@@ -64,6 +64,7 @@ Every interactive element needs all four states:
 
 ## Game-Specific Patterns
 
+- Pieces use `--piece-blue` and `--piece-gold` for the two players — do not use arbitrary colors
 - Status messages: win uses `--color-success`, loss uses `--color-danger`, neutral uses `--color-accent`
 - Overlays and result screens: dark translucent background over the board, content panel with `--radius-lg` and `--shadow-lg`, animate in with fade + scale
 - Headings use tight letter-spacing (`-0.02em`), uppercase labels use wide letter-spacing (`0.06em`)

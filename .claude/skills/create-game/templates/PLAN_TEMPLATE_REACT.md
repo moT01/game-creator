@@ -101,7 +101,7 @@ _(Include only if the game has a computer player)_
 
 ## Play Screen
 
-- Centered card container on same background; min-width 420px; max-width ... _(560px for simple/turn-based, up to 900px for complex boards)_; responsive
+- Centered card container on same background; min-width 420px; max-width ... _(choose based on what the game needs — the board or play area should feel spacious, not cramped)_; responsive
 - Uses boilerplate `Header` with `variant="game"` — close left, status text center, help/theme/donate right
 - Status text during play: ...
 - Game area below header: ...
@@ -151,9 +151,10 @@ _(Include only if the game has a computer player)_
 
 ## Styling
 - [ ] All colors use semantic variables — no hardcoded values
+- [ ] Pieces use `--piece-blue` and `--piece-gold` for the two players
 - [ ] All spacing uses `--space-*` variables
 - [ ] Numbers, scores, and timers use `--font-mono`
-- [ ] Card container: min-width 420px, correct max-width, `overflow: hidden`, no top/horizontal padding
+- [ ] Card container: min-width 420px, max-width sized to the game's needs, `overflow: hidden`, no top/horizontal padding
 - [ ] All interactive elements have hover, active, and disabled states with transitions — nothing snaps
 - [ ] Status text: win=`--color-success`, loss=`--color-danger`, neutral=`--color-accent`
 - [ ] Game over overlay animates in with fade + scale
