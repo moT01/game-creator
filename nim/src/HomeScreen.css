@@ -85,6 +85,11 @@
   box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--color-border);
 }
 
+.light-palette .segment-btn--active {
+  background: var(--color-surface-raised);
+  color: var(--color-text-primary);
+}
+
 .segment-btn:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px var(--blue-mid);
@@ -206,6 +211,10 @@
   font-size: var(--text-md);
   font-weight: var(--weight-bold);
   color: var(--color-accent);
+}
+
+.light-palette .records-count {
+  color: var(--color-text-primary);
 }
 
 /* ── Actions ──────────────────────────────────────────────────────────────── */

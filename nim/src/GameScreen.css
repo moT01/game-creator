@@ -18,6 +18,10 @@
   color: var(--color-accent);
 }
 
+.light-palette .status--accent {
+  color: var(--color-text-primary);
+}
+
 .status--muted {
   color: var(--color-text-secondary);
 }
@@ -39,8 +43,9 @@
 
 .heaps-area {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: var(--space-3);
+  justify-content: center;
 }
 
 /* ── Take button ──────────────────────────────────────────────────────────── */

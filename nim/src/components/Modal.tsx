@@ -2,7 +2,7 @@ import { useEffect, useRef, type ReactNode } from 'react'
 import './Modal.css'
 
 interface Props {
-  title: string
+  title?: string
   onClose: () => void
   children: ReactNode
 }
@@ -44,9 +44,11 @@ export default function Modal({ title, onClose, children }: Props) {
         aria-modal="true"
         aria-label={title}
       >
-        <div className="modal-header">
-          <h2 className="modal-title">{title}</h2>
-        </div>
+        {title && (
+          <div className="modal-header">
+            <h2 className="modal-title">{title}</h2>
+          </div>
+        )}
         <div className="modal-body">
           {children}
         </div>

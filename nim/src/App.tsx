@@ -42,7 +42,6 @@ function App() {
   }, [])
 
   const handleQuit = useCallback(() => {
-    storage.clear()
     setGameState(null)
     setPhase('home')
   }, [])

@@ -68,7 +68,7 @@ export default function GameScreen({
           currentPlayer: over ? prev.currentPlayer : ((prev.currentPlayer ^ 1) as 0 | 1),
         }
       })
-    }, 600)
+    }, 500)
     return () => clearTimeout(timer)
   }, [isAITurn, gs.currentPlayer, gs.phase])
 
@@ -139,7 +139,7 @@ export default function GameScreen({
   function getResultText() {
     if (gs.winner === null) return ''
     if (gs.mode === 'vs-computer') {
-      return gs.winner === gs.humanPlayer ? 'You Win!' : 'You Lose'
+      return gs.winner === gs.humanPlayer ? 'You Win!' : 'Computer Wins'
     }
     return `Player ${gs.winner + 1} Wins!`
   }
@@ -211,12 +211,12 @@ export default function GameScreen({
           aria-label={takeAriaLabel}
           aria-disabled={!canTake}
         >
-          Take
+          {gs.selectedHeap !== null ? `Take ${gs.removeCount}` : 'Take'}
         </button>
       </div>
 
       {gs.phase === 'game-over' && (
-        <Modal title="Game Over" onClose={() => {}}>
+        <Modal onClose={() => {}}>
           <div className="game-over-result">
             <p className={`result-text ${resultClass()}`}>{getResultText()}</p>
           </div>
