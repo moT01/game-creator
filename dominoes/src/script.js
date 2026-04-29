@@ -237,6 +237,15 @@ function loadTheme() {
   return localStorage.getItem('dominoes-theme') || 'dark';
 }
 
+function saveGoFirst(val) {
+  localStorage.setItem('dominoes-go-first', String(val));
+}
+
+function loadGoFirst() {
+  const raw = localStorage.getItem('dominoes-go-first');
+  return raw === null ? true : raw === 'true';
+}
+
 // ─── State ────────────────────────────────────────────────────────────────────
 
 let state = {
@@ -254,6 +263,9 @@ let state = {
   zoom: 1.0,
   result: null,
   wins: loadWins(),
+  goFirst: loadGoFirst(),
+  panX: 0,
+  panY: 0,
 };
 
 // ─── Turn Logic ───────────────────────────────────────────────────────────────
@@ -431,7 +443,7 @@ function clearSavedGame() {
 
 function newGame() {
   const dealt = dealTiles();
-  const { firstPlayer, openingTile } = determineFirstPlayer(dealt.playerHand, dealt.computerHand);
+  const firstPlayer = state.goFirst ? 'player' : 'computer';
 
   state = {
     phase: 'playing',
@@ -448,7 +460,9 @@ function newGame() {
     zoom: 1.0,
     result: null,
     wins: state.wins,
-    openingTile,
+    goFirst: state.goFirst,
+    panX: 0,
+    panY: 0,
   };
 
   render();
@@ -486,9 +500,9 @@ function zoomOut() {
 }
 
 function scrollChainToCenter() {
-  const boardArea = document.querySelector('.board-area');
-  if (!boardArea) return;
-  boardArea.scrollLeft = (boardArea.scrollWidth - boardArea.clientWidth) / 2;
+  state.panX = 0;
+  state.panY = 0;
+  renderBoard();
 }
 
 // ─── Pip Rendering ────────────────────────────────────────────────────────────
@@ -563,17 +577,19 @@ function renderChain() {
     ? validMoves.find(m => m.tileIndex === selectedTileIndex)
     : null;
 
-  // Left end target
-  const leftTarget = document.createElement('button');
-  leftTarget.className = 'chain-end chain-end-left';
-  leftTarget.setAttribute('aria-label', 'Play left');
-  const showLeft = selectedMove && (selectedMove.end === 'left' || selectedMove.end === 'both');
-  leftTarget.setAttribute('aria-disabled', String(!showLeft));
-  if (showLeft) {
-    leftTarget.classList.add('end--highlight');
-    leftTarget.addEventListener('click', () => handlePlayerPlace(selectedTileIndex, 'left'));
+  // Left end target — hidden on empty chain
+  if (chain.length > 0) {
+    const leftTarget = document.createElement('button');
+    leftTarget.className = 'chain-end chain-end-left';
+    leftTarget.setAttribute('aria-label', 'Play left');
+    const showLeft = selectedMove && (selectedMove.end === 'left' || selectedMove.end === 'both');
+    leftTarget.setAttribute('aria-disabled', String(!showLeft));
+    if (showLeft) {
+      leftTarget.classList.add('end--highlight');
+      leftTarget.addEventListener('click', () => handlePlayerPlace(selectedTileIndex, 'left'));
+    }
+    wrapper.appendChild(leftTarget);
   }
-  wrapper.appendChild(leftTarget);
 
   if (chain.length === 0) {
     const empty = document.createElement('div');
@@ -594,19 +610,21 @@ function renderChain() {
     });
   }
 
-  // Right end target
-  const rightTarget = document.createElement('button');
-  rightTarget.className = 'chain-end chain-end-right';
-  rightTarget.setAttribute('aria-label', 'Play right');
-  const showRight = selectedMove && (selectedMove.end === 'right' || selectedMove.end === 'both');
-  rightTarget.setAttribute('aria-disabled', String(!showRight));
-  if (showRight) {
-    rightTarget.classList.add('end--highlight');
-    rightTarget.addEventListener('click', () => handlePlayerPlace(selectedTileIndex, 'right'));
+  // Right end target — hidden on empty chain
+  if (chain.length > 0) {
+    const rightTarget = document.createElement('button');
+    rightTarget.className = 'chain-end chain-end-right';
+    rightTarget.setAttribute('aria-label', 'Play right');
+    const showRight = selectedMove && (selectedMove.end === 'right' || selectedMove.end === 'both');
+    rightTarget.setAttribute('aria-disabled', String(!showRight));
+    if (showRight) {
+      rightTarget.classList.add('end--highlight');
+      rightTarget.addEventListener('click', () => handlePlayerPlace(selectedTileIndex, 'right'));
+    }
+    wrapper.appendChild(rightTarget);
   }
-  wrapper.appendChild(rightTarget);
 
-  wrapper.style.transform = `scale(${state.zoom})`;
+  wrapper.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
 }
 
 // ─── Board Rendering ──────────────────────────────────────────────────────────
@@ -627,6 +645,11 @@ function renderPlayerHand() {
   const container = document.querySelector('.player-hand');
   if (!container) return;
   container.innerHTML = '';
+
+  const label = document.createElement('div');
+  label.className = 'player-hand-label';
+  label.textContent = `You: ${playerHand.length} tiles`;
+  container.appendChild(label);
 
   playerHand.forEach((tile, i) => {
     const isDouble = tile.a === tile.b;
@@ -660,17 +683,15 @@ function renderPlayerHand() {
       btn.addEventListener('click', () => {
         if (state.selectedTileIndex === i) {
           state.selectedTileIndex = null;
+          renderPlayerHand();
+          renderChain();
+        } else if (state.leftEnd === null) {
+          handlePlayerPlace(i, 'left');
         } else {
           state.selectedTileIndex = i;
-          // If tile only fits one end, auto-place
-          const move = validMoves.find(m => m.tileIndex === i);
-          if (move && move.end !== 'both') {
-            // still let player see selection before placing? Plan says pick end via chain click
-            // If only one end is valid, we still need to let them click the chain end
-          }
+          renderPlayerHand();
+          renderChain();
         }
-        renderPlayerHand();
-        renderChain();
       });
     }
 
@@ -802,10 +823,45 @@ function renderHomeScreen() {
   container.appendChild(subtitle);
 
   // Wins
-  const wins = document.createElement('div');
-  wins.className = 'wins-display';
-  wins.innerHTML = `Wins: <span class="wins-count">${state.wins}</span>`;
-  container.appendChild(wins);
+  const winsSection = document.createElement('div');
+  winsSection.className = 'wins-section';
+  const winsLabel = document.createElement('div');
+  winsLabel.className = 'wins-section__label';
+  winsLabel.textContent = 'WINS';
+  winsSection.appendChild(winsLabel);
+  const winsRow = document.createElement('div');
+  winsRow.className = 'wins-section__row';
+  const winsCount = document.createElement('span');
+  winsCount.className = 'wins-count';
+  winsCount.textContent = state.wins;
+  winsRow.appendChild(winsCount);
+  winsSection.appendChild(winsRow);
+  container.appendChild(winsSection);
+
+  // Go First / Go Second
+  const optionTabs = document.createElement('div');
+  optionTabs.className = 'option-tabs';
+
+  const goFirstTab = document.createElement('button');
+  goFirstTab.className = 'option-tab' + (state.goFirst ? ' option-tab--active' : '');
+  goFirstTab.textContent = 'Go First';
+  goFirstTab.addEventListener('click', () => {
+    state.goFirst = true;
+    saveGoFirst(true);
+    renderHomeScreen();
+  });
+  optionTabs.appendChild(goFirstTab);
+
+  const goSecondTab = document.createElement('button');
+  goSecondTab.className = 'option-tab' + (!state.goFirst ? ' option-tab--active' : '');
+  goSecondTab.textContent = 'Go Second';
+  goSecondTab.addEventListener('click', () => {
+    state.goFirst = false;
+    saveGoFirst(false);
+    renderHomeScreen();
+  });
+  optionTabs.appendChild(goSecondTab);
+  container.appendChild(optionTabs);
 
   // Buttons
   const btnGroup = document.createElement('div');
@@ -909,6 +965,29 @@ function renderPlayScreen() {
     else zoomOut();
   }, { passive: false });
 
+  // Drag to pan
+  let drag = null;
+  const onDragMove = e => {
+    state.panX = drag.startPanX + (e.clientX - drag.startX);
+    state.panY = drag.startPanY + (e.clientY - drag.startY);
+    const wrapper = boardArea.querySelector('.chain-wrapper');
+    if (wrapper) wrapper.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
+  };
+  const onDragEnd = () => {
+    drag = null;
+    boardArea.classList.remove('board-area--dragging');
+    document.removeEventListener('mousemove', onDragMove);
+    document.removeEventListener('mouseup', onDragEnd);
+  };
+  boardArea.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    drag = { startX: e.clientX, startY: e.clientY, startPanX: state.panX, startPanY: state.panY };
+    boardArea.classList.add('board-area--dragging');
+    document.addEventListener('mousemove', onDragMove);
+    document.addEventListener('mouseup', onDragEnd);
+  });
+
   const chainWrapper = document.createElement('div');
   chainWrapper.className = 'chain-wrapper';
   boardArea.appendChild(chainWrapper);
@@ -1002,8 +1081,13 @@ function updateActionButtons() {
     : [];
   const noMoves = moves.length === 0 && turn === 'player' && !isAnimating;
 
-  drawBtn.style.display = (noMoves && boneyard.length > 0) ? 'inline-flex' : 'none';
-  passBtn.style.display = (noMoves && boneyard.length === 0) ? 'inline-flex' : 'none';
+  const showDraw = noMoves && boneyard.length > 0;
+  const showPass = noMoves && boneyard.length === 0;
+  drawBtn.style.display = showDraw ? 'inline-flex' : 'none';
+  passBtn.style.display = showPass ? 'inline-flex' : 'none';
+
+  const actionRow = document.querySelector('.action-row');
+  if (actionRow) actionRow.style.display = (showDraw || showPass) ? 'flex' : 'none';
 }
 
 function renderGameOver() {
