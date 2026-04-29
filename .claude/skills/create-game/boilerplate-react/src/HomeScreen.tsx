@@ -21,8 +21,10 @@ export default function HomeScreen({ theme, onThemeToggle, onStart }: Props) {
         onHelp={() => setShowHelp(true)}
       />
       <div className="home-content">
-        <h1 className="game-title">Game Name</h1>
-        <p className="game-subtitle">A short description</p>
+        <div className="game-heading">
+          <h1 className="game-title">Game Name</h1>
+          <p className="game-subtitle">A short description</p>
+        </div>
         <div className="home-actions">
           <button className="btn btn--primary" onClick={onStart}>New Game</button>
         </div>

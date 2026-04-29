@@ -64,7 +64,7 @@
 }
 
 .btn--secondary {
-  background: var(--color-surface-raised);
+  background: var(--color-surface);
   color: var(--color-text-primary);
   border: var(--border-default);
 }
@@ -102,6 +102,11 @@
 
 .confirm-actions {
   display: flex;
-  flex-direction: column;
+  justify-content: flex-end;
   gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.confirm-actions .btn {
+  width: auto;
 }

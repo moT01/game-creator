@@ -34,8 +34,9 @@ export default function GameScreen({ theme, onThemeToggle, onClose }: Props) {
       )}
       {showConfirm && (
         <ConfirmModal
-          message="Quit this game? Your progress will be lost."
+          message="Return to the main menu? You can resume your game from there."
           confirmLabel="Quit"
+          cancelLabel="Cancel"
           onConfirm={onClose}
           onCancel={() => setShowConfirm(false)}
         />
