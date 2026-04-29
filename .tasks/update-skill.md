@@ -22,30 +22,30 @@ Standardize game output by baking the header, modals, theme, and storage pattern
 
 ## SKILL.md
 
-- [ ] Remove boilerplate choice logic (simple vs React) — React only
-- [ ] Update Step 3 to only describe React boilerplate copy + npm install
-- [ ] Add note: pre-built components and hooks are already in the boilerplate — use them, do not reimplement
+- [x] Remove boilerplate choice logic (simple vs React) — React only
+- [x] Update Step 3 to only describe React boilerplate copy + npm install
+- [x] Add note: pre-built components and hooks are already in the boilerplate — use them, do not reimplement
 
 ---
 
 ## PLAN_TEMPLATE_REACT.md
 
-- [ ] Remove "horizontal rule below the header" from play screen spec
-- [ ] Add max-width guidance: simple/turn-based games 560px, complex board games up to 900px
-- [ ] Update Components section to reference pre-built Header, Modal, ConfirmModal, HelpModal
-- [ ] Update Styling checklist to remove items now handled by pre-built components
+- [x] Remove "horizontal rule below the header" from play screen spec
+- [x] Add max-width guidance: simple/turn-based games 560px, complex board games up to 900px
+- [x] Update Components section to reference pre-built Header, Modal, ConfirmModal, HelpModal
+- [x] Update Styling checklist to remove items now handled by pre-built components
 
 ---
 
 ## SKILL.md — plan spec (Step 4b)
 
-- [ ] Remove "horizontal rule below the header" from home and play screen specs
-- [ ] Reference Header component in home and play screen specs
-- [ ] Add max-width guidance per game type
+- [x] Remove "horizontal rule below the header" from home and play screen specs
+- [x] Reference Header component in home and play screen specs
+- [x] Add max-width guidance per game type
 
 ---
 
 ## GAME_CODER.md
 
-- [ ] Add instruction to use pre-built Header, Modal, ConfirmModal, HelpModal, useTheme, useStorage — do not reimplement
-- [ ] Add instruction to use Header component on every screen with correct variant and props
+- [x] Add instruction to use pre-built Header, Modal, ConfirmModal, HelpModal, useTheme, useStorage — do not reimplement
+- [x] Add instruction to use Header component on every screen with correct variant and props

@@ -68,6 +68,14 @@ Wait for the user's response before doing anything else.
 2. In `<game-name>/index.html`, replace the placeholder title with a capitalized human-friendly version of the game name
 3. Run `npm install` inside `<game-name>/`.
 
+The boilerplate includes pre-built components and hooks — use them, do not reimplement:
+- `src/components/Header.tsx` — home and game screen header with all icon buttons
+- `src/components/Modal.tsx` — overlay, focus trap, animate in
+- `src/components/ConfirmModal.tsx` — confirmation dialog
+- `src/components/HelpModal.tsx` — help/rules dialog
+- `src/hooks/useTheme.ts` — theme state, body class, localStorage
+- `src/hooks/useStorage.ts` — save/load/clear game state by key
+
 ---
 
 ## Step 4 — Plan the game
@@ -81,63 +89,9 @@ Wait for the user's response before doing anything else.
 
 ## Step 4b — Fill out the plan
 
-Read the `<game-name>/context/PLAN.md` to understand the template. The template is a minimum structure, not a ceiling. Add sections, fields, or checklist items whenever the game warrants it.
+The template covers all required sections. Fill out every section completely — no placeholders, no `...`, no generic content. The template is a minimum structure, not a ceiling — add sections or checklist items whenever the game warrants it.
 
-Every plan must include all of the following:
-
-### Home Screen
-- Full viewport (100vw × 100vh)
-- Game-themed background — elegant and minimal, not overwhelming
-- Centered content container: visible border, rounded corners, subtle shadow, min-width 420px
-- Top of container: 3 icon buttons (help, theme, donate) — use SVGs from `.claude/skills/create-game/icons/`
-- Content: game title, then the following where applicable:
-  - Mode selector
-  - Difficulty selector (Normal / Hard) — if computer opponent with meaningful difficulty
-  - Color / side selector — if the player chooses a color or side (e.g. chess, checkers)
-- Records display — show saved records relevant to the game (see Local Storage below)
-- Buttons: "New Game" always shown; "Resume" shown only if a saved game exists
-- Last selected mode, difficulty, and color/side persisted to local storage
-
-### Play Screen
-- Centered game container on a game-themed background — same visual language as the home screen; min-width 420px; max-width sized appropriately for the game; responsive
-- Container header: 4 icon buttons (close, help, theme, donate) — use SVGs from `.claude/skills/create-game/icons/`
-- Horizontal rule below the header
-- Game area below the rule, centered
-- Score/status/timer visible during play (where applicable)
-- Exception: canvas or arcade games may use full viewport where maximizing play area matters
-
-### Game Over
-- Overlay on the play screen — not a separate screen
-- Shows result, best score, and play again / return to menu buttons
-
-### Modals
-- Help/Rules modal — accessible from all screens via the help button, content specific to the game; min-width 420px
-- Confirmation modal for destructive actions (new game, quit to menu); min-width 420px
-
-### Computer Opponent
-_(Include only if the game has a computer player)_
-- Offer Normal and Hard difficulty when it makes sense for the game
-- Normal = reasonable but beatable; Hard = strongest available strategy
-- Selected difficulty persisted to local storage
-
-### Local Storage
-- Theme preference
-- Last selected mode, difficulty, and color/side
-- Game state — enables Resume on reload
-- Records — track what makes sense for the game type:
-  - Competitive (vs computer): win count per difficulty level
-  - Timed / puzzle: best time and best move count
-  - Both if applicable
-
-### Accessibility
-- Keyboard navigation
-- ARIA labels on all interactive elements
-
-### Theming
-- Light/dark toggle — use `.light-palette` / `.dark-palette` classes from `global.css`
-- Never hardcode colors — use semantic CSS variables from `global.css`
-
-Be sure to include all of the user's decisions from step 2 in the plan as well.
+Be sure to include all of the user's decisions from step 2.
 
 Before writing, think through the non-obvious mechanics of this specific game:
 - What surprises first-time implementers?
@@ -146,17 +100,9 @@ Before writing, think through the non-obvious mechanics of this specific game:
 - Does any piece or card have dual state (e.g. face-up/face-down)?
 - Are there cascading effects or resets that don't preserve order?
 
-While writing, be explicit about each thing, while being as concise as you can. Avoid vague statements like "handle moves" or "implement game logic". Instead, break those down into specific function names, state flags, or checklist items that are unique to this game.
+Be explicit and concise — no vague items like `- [ ] handle moves`. Break them down into specific function names, state flags, or checklist items unique to this game. For well-known games, use canonical rules and name them explicitly. Every non-obvious mechanic must appear in the plan with a corresponding test case.
 
-Every screen should be accounted for with specific components and responsibilities. For example, instead of "create a header component", specify "create a Header component that renders the theme toggle, donate button, and help button, and accepts props for status text and close button visibility".
-
-For well-known games, use canonical rules and systems — don't invent your own. Name them explicitly. For React games, include tests that verify correct behavior against known examples.
-
-Every non-obvious mechanic must appear somewhere in the plan — Special Rules, Edge Cases, Data Model, or Game Logic. For React games, if a mechanic has no test case, add one.
-
-Fill out every section completely — no placeholders, no `...`, no generic content. Only include the AI / Computer Player section if the game has a computer opponent.
-
-Fill in the Help & Strategy Guide with real strategies, actual common mistakes, and beginner tips specific to this game.
+Only include the AI / Computer Player section if the game has a computer opponent.
 
 Write the completed plan to `<game-name>/context/PLAN.md`.
 
@@ -167,9 +113,8 @@ Write the completed plan to `<game-name>/context/PLAN.md`.
 Read the completed plan and check:
 - Is it specific enough to code from without any questions?
 - Are all user decisions from step 2 included?
-- Are all standard features included (home screen, play screen, game over, modals, local storage, accessibility, theming)?
 - All checklist items specific enough to code from — no vague items like `- [ ] handle moves`?
-- Non-obvious mechanics covered with corresponding test cases (if applicable)?
+- Non-obvious mechanics covered with corresponding test cases?
 - Any canonical systems named explicitly?
 
 **Critical Fixes:**

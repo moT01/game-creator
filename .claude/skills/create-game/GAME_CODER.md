@@ -41,6 +41,14 @@ Read `<game-name>/context/PLAN.md` fully before writing any code.
 
 Identify the first section with unchecked items and implement all of them. Before writing any CSS or UI, read `.claude/skills/create-game/UI.md` first.
 
+The boilerplate includes pre-built components and hooks — use them, do not reimplement:
+- `src/components/Header.tsx` — use on every screen with the correct `variant` prop (`"home"` or `"game"`) and required props
+- `src/components/Modal.tsx` — base modal used by ConfirmModal and HelpModal
+- `src/components/ConfirmModal.tsx` — use for all destructive action confirmations
+- `src/components/HelpModal.tsx` — use for the help/rules modal; pass game-specific content as children
+- `src/hooks/useTheme.ts` — use in `App` for theme state; pass `theme` and `onThemeToggle` down to screens
+- `src/hooks/useStorage.ts` — use `createStorage('<game-name>_state')` for save/load/clear
+
 Only implement the next section - do not implement more than one section at a time. Only implement what is in the plan. Do not add abstractions, files, or dependencies not listed. Follow all conventions in `CLAUDE.md`.
 
 ---

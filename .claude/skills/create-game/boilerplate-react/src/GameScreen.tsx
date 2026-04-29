@@ -26,7 +26,6 @@ export default function GameScreen({ theme, onThemeToggle, onClose }: Props) {
       />
       <div className="game-content">
         <div className="game-placeholder">Game board goes here</div>
-        <button className="btn btn--primary" onClick={() => setShowConfirm(true)}>Quit</button>
       </div>
       {showHelp && (
         <HelpModal onClose={() => setShowHelp(false)}>

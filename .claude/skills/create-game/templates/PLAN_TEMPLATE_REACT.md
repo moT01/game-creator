@@ -75,13 +75,77 @@ _(Include only if the game has a computer player)_
 ---
 
 ## Components
-- [ ] `App` — top-level layout and state
-- [ ] `HomeScreen` — [title, options, records display, New Game / Resume buttons]; header: help icon, theme icon, donate icon
-- [ ] `PlayScreen` — [board/game area, score/status]; header: close icon, help icon, theme icon, donate icon
-- [ ] `GameOver` — overlay with result, best score, play again / return to menu
-- [ ] `HelpModal` — help icon accessible from all screens; content specific to this game
-- [ ] `ConfirmModal` — for destructive actions (new game, quit to menu)
+- [ ] `App` — top-level layout, phase state, `useTheme`, `createStorage`
+- [ ] `HomeScreen` — see Home Screen spec below
+- [ ] `PlayScreen` — see Play Screen spec below
+- [ ] `GameOver` — overlay with result, best score, play again / return to menu; uses boilerplate `Modal`
+- [ ] `HelpModal` — uses boilerplate `HelpModal`; fill in game-specific rules content
+- [ ] `ConfirmModal` — uses boilerplate `ConfirmModal`; for destructive actions (new game, quit to menu)
 - [ ] ...
+
+---
+
+## Home Screen
+
+- Full viewport (100vw × 100vh), game-themed background
+- Centered card container: min-width 420px, overflow hidden, no top/horizontal padding
+- Uses boilerplate `Header` with `variant="home"` — help, theme, donate buttons; border-bottom spans full card width
+- Game title and subtitle
+- Mode selector (if applicable): ...
+- Difficulty selector Normal/Hard (if computer opponent): ...
+- Color/side selector (if applicable): ...
+- Records: display records from local storage
+- Buttons: "New Game" always shown; "Resume" shown only if a valid in-progress game exists
+
+---
+
+## Play Screen
+
+- Centered card container on same background; min-width 420px; max-width ... _(560px for simple/turn-based, up to 900px for complex boards)_; responsive
+- Uses boilerplate `Header` with `variant="game"` — close left, status text center, help/theme/donate right
+- Status text during play: ...
+- Game area below header: ...
+- Score/status display: ...
+
+---
+
+## Game Over
+
+- Overlay on the play screen — not a separate screen
+- Result display: ...
+- Records shown: ...
+- Buttons: Play Again, Return to Menu
+
+---
+
+## Modals
+
+- **Help** — rules and strategy content specific to this game; accessible from all screens
+- **Confirm** — used for: new game, quit to menu; message: ...
+
+---
+
+## Local Storage
+
+- Theme preference
+- Last selected mode, difficulty, and color/side
+- Game state — save after every move; always start on home screen on reload; show Resume only if valid in-progress game exists; clear on game over or quit
+- Records: Save (in all modes) wins against the computer if applicable - or time taken and number of moves if applicable - or just wins in general if applicable.
+
+---
+
+## Accessibility
+
+- Keyboard navigation for all interactive elements
+- ARIA labels on all buttons and controls
+- ...
+
+---
+
+## Theming
+
+- Light/dark toggle via `useTheme` hook — applies `.light-palette` / `.dark-palette` to body
+- Never hardcode colors — use semantic CSS variables from `global.css`
 
 ---
 
@@ -89,7 +153,7 @@ _(Include only if the game has a computer player)_
 - [ ] All colors use semantic variables — no hardcoded values
 - [ ] All spacing uses `--space-*` variables
 - [ ] Numbers, scores, and timers use `--font-mono`
-- [ ] Main container: `--shadow-lg`, inset box-shadow border, min-width 420px, centered
+- [ ] Card container: min-width 420px, correct max-width, `overflow: hidden`, no top/horizontal padding
 - [ ] All interactive elements have hover, active, and disabled states with transitions — nothing snaps
 - [ ] Status text: win=`--color-success`, loss=`--color-danger`, neutral=`--color-accent`
 - [ ] Game over overlay animates in with fade + scale
@@ -99,7 +163,7 @@ _(Include only if the game has a computer player)_
 ---
 
 ## Polish
-_(animations on key events (if applicable), piece/card movement, sound if applicable, empty state handling)_
+_(animations on key events, piece/card movement, empty state handling)_
 - [ ] ...
 
 ---
