@@ -7,16 +7,16 @@ Standardize game output by baking the header, modals, theme, and storage pattern
 
 ## Boilerplate (boilerplate-react)
 
-- [ ] Add `src/components/Header.tsx` — accepts `variant` ('home' | 'game'), `center` slot (string or node), `onHelp`, `onThemeToggle`, `onClose` (game only); renders help/theme/donate buttons using SVG icons
-- [ ] Add `src/components/Header.css` — home variant: flex-end, gap space-1, padding space-3, border-bottom; game variant: space-between, left min-width 32px, center flex-1 text-align center, right flex gap space-1; icon-btn styles (transparent, 32px, radius-sm, 16px SVG, checkers hover)
-- [ ] Add `src/components/Modal.tsx` — overlay + panel, focus trap, fade+scale animate in, close on backdrop click and Escape; accepts `title`, `children`, `onClose`
-- [ ] Add `src/components/Modal.css` — overlay, panel (min-width 420px, radius-lg, shadow-lg), header, animate styles
-- [ ] Add `src/components/ConfirmModal.tsx` — wraps Modal, accepts `message`, `onConfirm`, `onCancel`
-- [ ] Add `src/components/HelpModal.tsx` — wraps Modal, accepts `children` for game-specific content
-- [ ] Add `src/hooks/useTheme.ts` — loads theme from localStorage, applies light-palette/dark-palette to body, returns `[theme, toggleTheme]`
-- [ ] Add `src/hooks/useStorage.ts` — generic `saveState`, `loadState`, `clearState` keyed by game name
-- [ ] Update `src/App.tsx` — scaffold screen switching pattern (home/game phases), useTheme wired up, Header used on both screens
-- [ ] Update `src/App.css` — layout only (centering, min-height); remove placeholder content
+- [x] Add `src/components/Header.tsx` — accepts `variant` ('home' | 'game'), `center` slot (string or node), `onHelp`, `onThemeToggle`, `onClose` (game only); renders help/theme/donate buttons using SVG icons
+- [x] Add `src/components/Header.css` — home variant: flex-end, gap space-1, padding space-3, border-bottom; game variant: space-between, left min-width 32px, center flex-1 text-align center, right flex gap space-1; icon-btn styles (transparent, 32px, radius-sm, 16px SVG, checkers hover)
+- [x] Add `src/components/Modal.tsx` — overlay + panel, focus trap, fade+scale animate in, close on backdrop click and Escape; accepts `title`, `children`, `onClose`
+- [x] Add `src/components/Modal.css` — overlay, panel (min-width 420px, radius-lg, shadow-lg), header, animate styles
+- [x] Add `src/components/ConfirmModal.tsx` — wraps Modal, accepts `message`, `onConfirm`, `onCancel`
+- [x] Add `src/components/HelpModal.tsx` — wraps Modal, accepts `children` for game-specific content
+- [x] Add `src/hooks/useTheme.ts` — loads theme from localStorage, applies light-palette/dark-palette to body, returns `[theme, toggleTheme]`
+- [x] Add `src/hooks/useStorage.ts` — generic `saveState`, `loadState`, `clearState` keyed by game name
+- [x] Update `src/App.tsx` — scaffold screen switching pattern (home/game phases), useTheme wired up, Header used on both screens
+- [x] Update `src/App.css` — layout only (centering, min-height); remove placeholder content
 
 ---
 
