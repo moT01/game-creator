@@ -46,11 +46,11 @@ Use the SVGs from `.claude/skills/create-game/icons/` — verify each game uses 
 
 ## Vanilla JS games
 
-- [ ] dots-and-boxes
-- [ ] shut-the-box
+- [x] dots-and-boxes
+- [x] shut-the-box
 - [ ] gomoku
-- [ ] nim
-- [ ] dominoes
+- [x] nim
+- [x] dominoes
 - [ ] fox-and-geese
 - [ ] nine-mens-morris
 - [ ] oware

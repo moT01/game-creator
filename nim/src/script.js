@@ -341,10 +341,15 @@ function renderPlay() {
     <div class="screen screen--play">
       <div class="container">
         <header class="header">
-          <button class="icon-btn" id="btn-close" aria-label="Quit to menu">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M376.6 84.5c11.3-13.6 9.5-33.8-4.1-45.1s-33.8-9.5-45.1 4.1L192 206 56.6 43.5C45.3 29.9 25.1 28.1 11.5 39.4S-3.9 70.9 7.4 84.5L150.3 256 7.4 427.5c-11.3 13.6-9.5 33.8 4.1 45.1s33.8 9.5 45.1-4.1L192 306 327.4 468.5c11.3 13.6 31.5 15.4 45.1 4.1s15.4-31.5 4.1-45.1L233.7 256 376.6 84.5z"/></svg>
-          </button>
-          <div class="header__icons">
+          <div class="header__left">
+            <button class="icon-btn" id="btn-close" aria-label="Quit to menu">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M376.6 84.5c11.3-13.6 9.5-33.8-4.1-45.1s-33.8-9.5-45.1 4.1L192 206 56.6 43.5C45.3 29.9 25.1 28.1 11.5 39.4S-3.9 70.9 7.4 84.5L150.3 256 7.4 427.5c-11.3 13.6-9.5 33.8 4.1 45.1s33.8 9.5 45.1-4.1L192 306 327.4 468.5c11.3 13.6 31.5 15.4 45.1 4.1s15.4-31.5 4.1-45.1L233.7 256 376.6 84.5z"/></svg>
+            </button>
+          </div>
+          <div class="header__center">
+            <div class="turn-label${isThinking ? ' turn-label--thinking' : ''}" aria-live="polite">${turnLabel}</div>
+          </div>
+          <div class="header__right">
             <button class="icon-btn" id="btn-help-play" aria-label="Help">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path d="M64 160c0-53 43-96 96-96s96 43 96 96c0 42.7-27.9 78.9-66.5 91.4-28.4 9.2-61.5 35.3-61.5 76.6l0 24c0 17.7 14.3 32 32 32s32-14.3 32-32l0-24c0-1.7 .6-4.1 3.5-7.3 3-3.3 7.9-6.5 13.7-8.4 64.3-20.7 110.8-81 110.8-152.3 0-88.4-71.6-160-160-160S0 71.6 0 160c0 17.7 14.3 32 32 32s32-14.3 32-32zm96 352c22.1 0 40-17.9 40-40s-17.9-40-40-40-40 17.9-40 40 17.9 40 40 40z"/></svg>
             </button>
@@ -356,14 +361,12 @@ function renderPlay() {
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 0C114.6 0 0 114.6 0 256S114.6 512 256 512c68.8 0 131.3-27.2 177.3-71.4 7.3-7 9.4-17.9 5.3-27.1s-13.7-14.9-23.8-14.1c-4.9 .4-9.8 .6-14.8 .6-101.6 0-184-82.4-184-184 0-72.1 41.5-134.6 102.1-164.8 9.1-4.5 14.3-14.3 13.1-24.4S322.6 8.5 312.7 6.3C294.4 2.2 275.4 0 256 0z"/></svg>
               </span>
             </button>
-            <button class="icon-btn" id="btn-donate-play" aria-label="Donate">
+            <a class="icon-btn" id="btn-donate-play" href="https://www.freecodecamp.org/donate" target="_blank" rel="noopener noreferrer" aria-label="Donate">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M241 87.1l15 20.7 15-20.7C296 52.5 336.2 32 378.9 32 452.4 32 512 91.6 512 165.1l0 2.6c0 112.2-139.9 242.5-212.9 298.2-12.4 9.4-27.6 14.1-43.1 14.1s-30.8-4.6-43.1-14.1C139.9 410.2 0 279.9 0 167.7l0-2.6C0 91.6 59.6 32 133.1 32 175.8 32 216 52.5 241 87.1z"/></svg>
-            </button>
+            </a>
           </div>
         </header>
-        <hr class="divider" />
         <div class="play-area">
-          <div class="turn-label${isThinking ? ' turn-label--thinking' : ''}" aria-live="polite">${turnLabel}</div>
           <div class="piles" id="piles-container">
             ${renderPiles(state.piles, state.selectedPile, state.selectedCount)}
           </div>
@@ -399,9 +402,6 @@ function bindPlayEvents() {
 
   document.getElementById('btn-help-play').addEventListener('click', showHelpModal);
   document.getElementById('btn-theme-play').addEventListener('click', handleThemeToggle);
-  document.getElementById('btn-donate-play').addEventListener('click', () => {
-    window.open('https://www.freecodecamp.org/donate', '_blank');
-  });
 
   document.getElementById('btn-take').addEventListener('click', () => {
     if (state.selectedCount < 1) {
@@ -611,9 +611,9 @@ function renderHome() {
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 0C114.6 0 0 114.6 0 256S114.6 512 256 512c68.8 0 131.3-27.2 177.3-71.4 7.3-7 9.4-17.9 5.3-27.1s-13.7-14.9-23.8-14.1c-4.9 .4-9.8 .6-14.8 .6-101.6 0-184-82.4-184-184 0-72.1 41.5-134.6 102.1-164.8 9.1-4.5 14.3-14.3 13.1-24.4S322.6 8.5 312.7 6.3C294.4 2.2 275.4 0 256 0z"/></svg>
             </span>
           </button>
-          <button class="icon-btn" id="btn-donate-home" aria-label="Donate">
+          <a class="icon-btn" id="btn-donate-home" href="https://www.freecodecamp.org/donate" target="_blank" rel="noopener noreferrer" aria-label="Donate">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M241 87.1l15 20.7 15-20.7C296 52.5 336.2 32 378.9 32 452.4 32 512 91.6 512 165.1l0 2.6c0 112.2-139.9 242.5-212.9 298.2-12.4 9.4-27.6 14.1-43.1 14.1s-30.8-4.6-43.1-14.1C139.9 410.2 0 279.9 0 167.7l0-2.6C0 91.6 59.6 32 133.1 32 175.8 32 216 52.5 241 87.1z"/></svg>
-          </button>
+          </a>
         </header>
         <div class="home__content">
           <h1 class="home__title">Nim</h1>
@@ -691,9 +691,6 @@ function renderHome() {
 
   document.getElementById('btn-help-home').addEventListener('click', showHelpModal);
   document.getElementById('btn-theme-home').addEventListener('click', handleThemeToggle);
-  document.getElementById('btn-donate-home').addEventListener('click', () => {
-    window.open('https://www.freecodecamp.org/donate', '_blank');
-  });
 
   applyTheme(localStorage.getItem('nim_theme') || 'dark');
 }
