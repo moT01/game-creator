@@ -436,7 +436,7 @@ function renderHomeScreen() {
 
   app.innerHTML = `
     <div class="screen home-screen">
-      <div class="screen-header">
+      <div class="home-top-btns">
         <button class="icon-btn btn-help" aria-label="Help">${iconQuestion()}</button>
         <button class="icon-btn btn-theme" aria-label="${theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}">${iconTheme(theme)}</button>
         <a href="https://www.freecodecamp.org/donate" target="_blank" rel="noopener" class="icon-btn btn-donate" aria-label="Donate">${iconHeart()}</a>
@@ -545,19 +545,22 @@ function renderPlayScreen() {
   const theme = getTheme();
   app.innerHTML = `
     <div class="screen play-screen">
-      <div class="screen-header">
-        <button class="icon-btn btn-close" aria-label="Close">${iconX()}</button>
-        <button class="icon-btn btn-help" aria-label="Help">${iconQuestion()}</button>
-        <button class="icon-btn btn-theme" aria-label="${theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}">${iconTheme(theme)}</button>
-        <a href="https://www.freecodecamp.org/donate" target="_blank" rel="noopener" class="icon-btn btn-donate" aria-label="Donate">${iconHeart()}</a>
+      <div class="top-bar">
+        <div class="top-bar-left">
+          <button class="icon-btn btn-close" aria-label="Close">${iconX()}</button>
+        </div>
+        <div class="top-bar-center status-text" aria-live="polite" id="status-text"></div>
+        <div class="top-bar-right">
+          <button class="icon-btn btn-help" aria-label="Help">${iconQuestion()}</button>
+          <button class="icon-btn btn-theme" aria-label="${theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}">${iconTheme(theme)}</button>
+          <a href="https://www.freecodecamp.org/donate" target="_blank" rel="noopener" class="icon-btn btn-donate" aria-label="Donate">${iconHeart()}</a>
+        </div>
       </div>
-      <hr class="divider" />
       <div class="score-row" aria-live="polite">
         <span class="score-label score-dark-label">Dark:</span><span class="mono score-val" id="score-dark-val">${state.score.dark}</span>
         <span class="score-sep">--</span>
         <span class="score-label score-light-label">Light:</span><span class="mono score-val" id="score-light-val">${state.score.light}</span>
       </div>
-      <div class="status-text" aria-live="polite" id="status-text"></div>
       <div class="board-container" id="board-container"></div>
     </div>
   `;
@@ -579,21 +582,21 @@ function renderPlayScreen() {
 function renderStatus() {
   const el = document.getElementById('status-text');
   if (!el) return;
-  if (state.gameOver) { el.textContent = ''; el.className = 'status-text'; return; }
+  if (state.gameOver) { el.textContent = ''; el.className = 'top-bar-center status-text'; return; }
 
   const isComputerTurn = state.mode === 'vs-computer' && state.currentSide !== state.playerColor;
   if (isAnimating || isComputerTurn) {
     el.textContent = 'Computer thinking...';
-    el.className = 'status-text muted';
+    el.className = 'top-bar-center status-text muted';
     return;
   }
 
   if (state.mode === 'vs-computer') {
     el.textContent = 'Your turn';
-    el.className = 'status-text accent';
+    el.className = 'top-bar-center status-text accent';
   } else {
     el.textContent = state.currentSide === 'dark' ? "Dark's turn" : "Light's turn";
-    el.className = 'status-text accent';
+    el.className = 'top-bar-center status-text accent';
   }
 }
 

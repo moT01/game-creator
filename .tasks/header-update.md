@@ -8,16 +8,18 @@ Do not change game logic, layout, or anything outside the header. Use gomoku as 
 ## Reference: gomoku
 
 ### Menu screen
-- `.home-top-btns`: flex row, justify-content flex-end, gap var(--space-1), padding var(--space-3), border-bottom var(--border-default)
+- `.home-top-btns`: flex row, justify-content flex-end, gap var(--space-1), padding var(--space-3) (all sides), border-bottom var(--border-default)
+- Border must span full card width — use negative margins: `margin: calc(-1 * <card-padding-top>) calc(-1 * <card-padding-x>) 0` (match the card's padding values), and add `overflow: hidden` to the card container
 - Buttons: help, theme, donate (right-aligned)
 
 ### Game screen
-- `.top-bar`: 3-column grid (1fr auto 1fr), align-items center, gap var(--space-2), padding var(--space-2) 0, border-bottom var(--border-default)
+- `.top-bar`: 3-column grid (1fr auto 1fr), align-items center, gap var(--space-2), padding var(--space-2) var(--space-3), border-bottom var(--border-default)
+- Same full-width border treatment as menu screen (negative margins + overflow hidden on card)
 - Left col: close/quit button
 - Center col: status text (e.g. "Dark's turn", "You win") — use game title when no status
 - Right col: help, theme, donate buttons
 
-### Button style (.btn-icon)
+### Button style (.btn-icon or .icon-btn depending on game)
 - Background: linear-gradient(135deg, var(--color-surface-raised) 0%, var(--color-surface) 100%)
 - Border: var(--border-default)
 - Box-shadow: var(--shadow-sm)
@@ -25,14 +27,22 @@ Do not change game logic, layout, or anything outside the header. Use gomoku as 
 - Padding: var(--space-2) var(--space-3)
 - Hover: translateY(-1px), color var(--color-text-primary), box-shadow var(--shadow-md)
 - Active: translateY(0), box-shadow inset 0 1px 3px rgba(0,0,0,0.2)
+- Border-radius: var(--radius-md) (8px) — not var(--radius-sm)
 - SVG: 14x14px, display block, pointer-events none
-- Donate button: color var(--yellow-gold)
+- Donate button: same color as other buttons (no special color)
+
+### Icons
+Use the SVGs from `.claude/skills/create-game/icons/` — verify each game uses these exact icons:
+- Help button: `question-mark.html`
+- Theme button: `sun.html` (shown when dark, switches to light) / `moon.html` (shown when light, switches to dark)
+- Donate button: `heart.html`
+- Close/quit button: `x.html`
 
 ---
 
 ## Vanilla JS games
 
-- [ ] dots-and-boxes
+- [x] dots-and-boxes
 - [ ] shut-the-box
 - [ ] nim
 - [ ] dominoes
