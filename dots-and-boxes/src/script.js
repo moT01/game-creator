@@ -431,7 +431,6 @@ const app = document.getElementById('app');
 
 function renderHomeScreen() {
   const records = getRecords();
-  const showRecords = records.wins_normal > 0 || records.wins_hard > 0;
   const theme = getTheme();
   const isVsComputer = settings.mode === 'vs-computer';
 
@@ -443,14 +442,14 @@ function renderHomeScreen() {
         <a href="https://www.freecodecamp.org/donate" target="_blank" rel="noopener" class="icon-btn btn-donate" aria-label="Donate">${iconHeart()}</a>
       </div>
 
-      <h1 class="game-title">Dots and Boxes</h1>
+      <div class="title-group">
+        <h1 class="game-title">Dots and Boxes</h1>
+        <p class="game-subtitle">Most boxes wins</p>
+      </div>
 
-      <div class="selector-group" role="radiogroup" aria-label="Game mode">
-        <span class="selector-label">Mode</span>
-        <div class="selector-pills">
-          <button class="pill${settings.mode === 'vs-computer' ? ' selected' : ''}" role="radio" aria-checked="${settings.mode === 'vs-computer'}" data-mode="vs-computer">vs Computer</button>
-          <button class="pill${settings.mode === 'vs-human' ? ' selected' : ''}" role="radio" aria-checked="${settings.mode === 'vs-human'}" data-mode="vs-human">vs Human</button>
-        </div>
+      <div class="segmented-control" role="radiogroup" aria-label="Game mode">
+        <button class="segment${settings.mode === 'vs-computer' ? ' selected' : ''}" role="radio" aria-checked="${settings.mode === 'vs-computer'}" data-mode="vs-computer">vs Computer</button>
+        <button class="segment${settings.mode === 'vs-human' ? ' selected' : ''}" role="radio" aria-checked="${settings.mode === 'vs-human'}" data-mode="vs-human">vs Human</button>
       </div>
 
       <div class="selector-group" role="radiogroup" aria-label="Grid size">
@@ -462,25 +461,24 @@ function renderHomeScreen() {
         </div>
       </div>
 
-      <div class="selector-group${isVsComputer ? '' : ' hidden'}" role="radiogroup" aria-label="Difficulty">
-        <span class="selector-label">Difficulty</span>
-        <div class="selector-pills">
-          <button class="pill${settings.difficulty === 'normal' ? ' selected' : ''}" role="radio" aria-checked="${settings.difficulty === 'normal'}" data-diff="normal">Normal</button>
-          <button class="pill${settings.difficulty === 'hard' ? ' selected' : ''}" role="radio" aria-checked="${settings.difficulty === 'hard'}" data-diff="hard">Hard</button>
+      ${isVsComputer ? `
+      <div class="wins-section">
+        <span class="selector-label">Wins</span>
+        <div class="wins-list">
+          <div class="wins-row"><span>Normal</span><span class="mono">${records.wins_normal}</span></div>
+          <div class="wins-row"><span>Hard</span><span class="mono">${records.wins_hard}</span></div>
         </div>
       </div>
 
-      <div class="selector-group${isVsComputer ? '' : ' hidden'}" role="radiogroup" aria-label="Your Color">
-        <span class="selector-label">Your Color</span>
+      <div class="color-diff-row" role="group" aria-label="Player options">
         <div class="selector-pills">
           <button class="pill${settings.playerColor === 'dark' ? ' selected' : ''}" role="radio" aria-checked="${settings.playerColor === 'dark'}" data-color="dark">Dark (goes first)</button>
           <button class="pill${settings.playerColor === 'light' ? ' selected' : ''}" role="radio" aria-checked="${settings.playerColor === 'light'}" data-color="light">Light</button>
         </div>
-      </div>
-
-      ${showRecords ? `
-      <div class="records-section">
-        <span class="records-text">Normal wins: <span class="mono">${records.wins_normal}</span> | Hard wins: <span class="mono">${records.wins_hard}</span></span>
+        <label class="checkbox-label">
+          <input type="checkbox" id="hard-mode-check" ${settings.difficulty === 'hard' ? 'checked' : ''} />
+          Hard mode
+        </label>
       </div>` : ''}
 
       <div class="home-actions">
@@ -505,17 +503,19 @@ function renderHomeScreen() {
     renderHomeScreen();
   }));
 
-  app.querySelectorAll('[data-diff]').forEach(btn => btn.addEventListener('click', () => {
-    settings.difficulty = btn.dataset.diff;
-    localStorage.setItem(STORAGE.DIFF, settings.difficulty);
-    renderHomeScreen();
-  }));
-
   app.querySelectorAll('[data-color]').forEach(btn => btn.addEventListener('click', () => {
     settings.playerColor = btn.dataset.color;
     localStorage.setItem(STORAGE.COLOR, settings.playerColor);
     renderHomeScreen();
   }));
+
+  const hardCheck = app.querySelector('#hard-mode-check');
+  if (hardCheck) {
+    hardCheck.addEventListener('change', () => {
+      settings.difficulty = hardCheck.checked ? 'hard' : 'normal';
+      localStorage.setItem(STORAGE.DIFF, settings.difficulty);
+    });
+  }
 
   app.querySelector('#btn-new-game').addEventListener('click', () => {
     clearSavedGame();
