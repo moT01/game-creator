@@ -16,6 +16,7 @@ Every game should look polished and intentional — not like a default browser U
 - Always use spacing scale variables (`--space-4`, not `16px`)
 - Use `--font-mono` for scores, timers, counters, and any number display
 - Never mix more than two font sizes in the same UI region
+- Never introduce new colors — all colors must come from the existing variables in `global.css`
 
 ---
 
