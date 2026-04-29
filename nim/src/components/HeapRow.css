@@ -1,0 +1,193 @@
+.heap-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-raised);
+  transition: border-color var(--transition-default), box-shadow var(--transition-default), background var(--transition-default);
+  cursor: default;
+}
+
+.light-palette .heap-row {
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.heap-row--selected {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-accent), inset 0 0 0 1px var(--color-accent);
+  animation: heap-pulse 2s ease-in-out infinite;
+}
+
+@keyframes heap-pulse {
+  0%, 100% { box-shadow: var(--shadow-accent), inset 0 0 0 1px var(--color-accent); }
+  50% { box-shadow: 0 0 20px rgba(255, 191, 0, 0.5), inset 0 0 0 1px var(--color-accent); }
+}
+
+.heap-row--empty {
+  opacity: 0.45;
+  border-style: dashed;
+}
+
+.heap-row--disabled {
+  cursor: not-allowed;
+}
+
+/* ── Label ────────────────────────────────────────────────────────────────── */
+
+.heap-label {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.heap-count {
+  font-family: var(--font-mono);
+  color: var(--color-text-secondary);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* ── Objects ──────────────────────────────────────────────────────────────── */
+
+.heap-objects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  min-height: 32px;
+}
+
+.heap-objects--empty {
+  align-items: center;
+}
+
+.heap-empty-text {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.heap-object {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: var(--piece-blue);
+  border: none;
+  cursor: pointer;
+  transition: transform var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-default);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.heap-object::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: var(--radius-full);
+  background: var(--piece-highlight);
+  opacity: 0.25;
+}
+
+.heap-object:hover:not(:disabled) {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-md);
+  outline: 2px inset rgba(255, 255, 255, 0.3);
+}
+
+.heap-object:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.heap-object:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--blue-mid);
+}
+
+.heap-object:disabled {
+  cursor: not-allowed;
+}
+
+.heap-object--marked {
+  background: var(--color-danger);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-danger) 40%, transparent);
+  opacity: 0.75;
+}
+
+.heap-object--removing {
+  animation: object-remove 250ms ease forwards;
+}
+
+@keyframes object-remove {
+  to {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+/* ── Controls ─────────────────────────────────────────────────────────────── */
+
+.heap-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+}
+
+.heap-ctrl-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: var(--border-default);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.heap-ctrl-btn:hover:not(:disabled) {
+  background: var(--color-surface-raised);
+  border-color: var(--color-text-muted);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.heap-ctrl-btn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.heap-ctrl-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.heap-ctrl-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--blue-mid);
+}
+
+.heap-ctrl-count {
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  font-weight: var(--weight-bold);
+  color: var(--color-accent);
+  min-width: 20px;
+  text-align: center;
+}
+
+@media (max-width: 460px) {
+  .heap-object {
+    width: 24px;
+    height: 24px;
+  }
+}

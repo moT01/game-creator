@@ -121,27 +121,27 @@ interface GameState {
 ---
 
 ## Game Logic
-- [ ] `computeNimSum(heaps: number[]): number` — XOR reduce all heap sizes
-- [ ] `isGameOver(heaps: number[]): boolean` — `heaps.every(h => h === 0)`
-- [ ] `applyMove(heaps: number[], heapIndex: number, count: number): number[]` — immutably return new heaps array with `heaps[heapIndex] - count`
-- [ ] `findOptimalMove(heaps: number[]): { heap: number; count: number }` — iterate heaps, for each non-empty heap try all removal counts, return first that gives nim-sum 0 after; fall back to take 1 from largest heap
-- [ ] `findRandomMove(heaps: number[]): { heap: number; count: number }` — pick a random non-empty heap, pick a random count 1–size
-- [ ] `getAIMove(heaps: number[], difficulty: Difficulty): { heap: number; count: number }` — routes to optimal or random based on difficulty and 60/40 chance
-- [ ] `validateMove(heaps: number[], heapIndex: number, count: number): boolean` — heapIndex 0–3, count >= 1, count <= heaps[heapIndex]
-- [ ] Win check after every `applyMove` call — if `isGameOver(newHeaps)`, set `winner = currentPlayer`
-- [ ] Turn switch — only after win check confirms game is still in progress
-- [ ] AI trigger — after turn switch, if `mode === 'vs-computer'` and `currentPlayer === 1` and `phase === 'playing'`, call `getAIMove` after 600ms; guard the timeout with a `phase` check before applying
+- [x] `computeNimSum(heaps: number[]): number` — XOR reduce all heap sizes
+- [x] `isGameOver(heaps: number[]): boolean` — `heaps.every(h => h === 0)`
+- [x] `applyMove(heaps: number[], heapIndex: number, count: number): number[]` — immutably return new heaps array with `heaps[heapIndex] - count`
+- [x] `findOptimalMove(heaps: number[]): { heap: number; count: number }` — iterate heaps, for each non-empty heap try all removal counts, return first that gives nim-sum 0 after; fall back to take 1 from largest heap
+- [x] `findRandomMove(heaps: number[]): { heap: number; count: number }` — pick a random non-empty heap, pick a random count 1–size
+- [x] `getAIMove(heaps: number[], difficulty: Difficulty): { heap: number; count: number }` — routes to optimal or random based on difficulty and 60/40 chance
+- [x] `validateMove(heaps: number[], heapIndex: number, count: number): boolean` — heapIndex 0–3, count >= 1, count <= heaps[heapIndex]
+- [x] Win check after every `applyMove` call — if `isGameOver(newHeaps)`, set `winner = currentPlayer`
+- [x] Turn switch — only after win check confirms game is still in progress
+- [x] AI trigger — after turn switch, if `mode === 'vs-computer'` and `currentPlayer === 1` and `phase === 'playing'`, call `getAIMove` after 600ms; guard the timeout with a `phase` check before applying
 
 ---
 
 ## Components
-- [ ] `App` — top-level layout, phase state (`'home' | 'playing'`), `useTheme`, `createStorage('nim-state')`; passes game state down and callbacks up
-- [ ] `HomeScreen` — mode selector (vs-computer / 2-player toggle), difficulty selector (Normal / Hard, shown only in vs-computer mode), records display, New Game / Resume buttons
-- [ ] `PlayScreen` — renders 4 `HeapRow` components, turn indicator in header, Take button, handles heap selection and removeCount adjustments; schedules AI moves
-- [ ] `HeapRow` — renders a single heap row as clickable object circles; selected heap shows highlighted objects up to `removeCount`; disabled when it's AI's turn or heap is empty
-- [ ] `GameOver` — modal overlay using boilerplate `Modal`; shows winner text, win record; Play Again and Return to Menu buttons
-- [ ] `HelpModal` — uses boilerplate `HelpModal`; nim-specific rules and strategy content
-- [ ] `ConfirmModal` — uses boilerplate `ConfirmModal`; for quit-to-menu and new-game-during-play actions
+- [x] `App` — top-level layout, phase state (`'home' | 'playing'`), `useTheme`, `createStorage('nim-state')`; passes game state down and callbacks up
+- [x] `HomeScreen` — mode selector (vs-computer / 2-player toggle), difficulty selector (Normal / Hard, shown only in vs-computer mode), records display, New Game / Resume buttons
+- [x] `PlayScreen` — renders 4 `HeapRow` components, turn indicator in header, Take button, handles heap selection and removeCount adjustments; schedules AI moves
+- [x] `HeapRow` — renders a single heap row as clickable object circles; selected heap shows highlighted objects up to `removeCount`; disabled when it's AI's turn or heap is empty
+- [x] `GameOver` — modal overlay using boilerplate `Modal`; shows winner text, win record; Play Again and Return to Menu buttons
+- [x] `HelpModal` — uses boilerplate `HelpModal`; nim-specific rules and strategy content
+- [x] `ConfirmModal` — uses boilerplate `ConfirmModal`; for quit-to-menu and new-game-during-play actions
 
 ---
 
@@ -216,59 +216,59 @@ interface GameState {
 ---
 
 ## Styling
-- [ ] All colors use semantic variables — no hardcoded values
-- [ ] Light mode: game container and its contents use the lightest surface color (`--color-surface`); page background uses the second lightest color (`--color-bg`) — container must be visually lighter than the background
-- [ ] Object circles use `--piece-blue` for neutral objects, `--color-danger` tint for objects marked for removal
-- [ ] Selected heap row has `--shadow-accent` glow and accent border
-- [ ] All spacing uses `--space-*` variables
-- [ ] Numbers use `--font-mono`
-- [ ] Card container: min-width 420px, max-width 480px, `overflow: hidden`, no top/horizontal padding
-- [ ] All interactive elements have hover, active, and disabled states with transitions — nothing snaps
-- [ ] Status text: win=`--color-success`, loss=`--color-danger`, neutral=`--color-accent`, AI thinking=`--color-text-secondary`
-- [ ] Game over overlay animates in with fade + scale
-- [ ] Responsive at 375px — object circles scale down if needed
-- [ ] Take button lifts on hover, scales down on active, opacity 0.4 when disabled
-- [ ] Heap rows animate removal: objects fade out on take action before state updates
-- [ ] Empty heap rows show muted dashed style, not blank
+- [x] All colors use semantic variables — no hardcoded values
+- [x] Light mode: game container and its contents use the lightest surface color (`--color-surface`); page background uses the second lightest color (`--color-bg`) — container must be visually lighter than the background
+- [x] Object circles use `--piece-blue` for neutral objects, `--color-danger` tint for objects marked for removal
+- [x] Selected heap row has `--shadow-accent` glow and accent border
+- [x] All spacing uses `--space-*` variables
+- [x] Numbers use `--font-mono`
+- [x] Card container: min-width 420px, max-width 480px, `overflow: hidden`, no top/horizontal padding
+- [x] All interactive elements have hover, active, and disabled states with transitions — nothing snaps
+- [x] Status text: win=`--color-success`, loss=`--color-danger`, neutral=`--color-accent`, AI thinking=`--color-text-secondary`
+- [x] Game over overlay animates in with fade + scale
+- [x] Responsive at 375px — object circles scale down if needed
+- [x] Take button lifts on hover, scales down on active, opacity 0.4 when disabled
+- [x] Heap rows animate removal: objects fade out on take action before state updates
+- [x] Empty heap rows show muted dashed style, not blank
 
 ---
 
 ## Polish
-- [ ] Object circles animate out (fade + scale down) when taken, before state updates
-- [ ] AI "thinking" period: status shows "Computer thinking..." with animated ellipsis
-- [ ] Selected heap row pulses with `--shadow-accent` glow
-- [ ] Take button shake animation if pressed when disabled (no heap selected)
-- [ ] Game over modal animates in with fade + scale
-- [ ] Heap label updates live as count changes: "Heap 2 - 3 objects"
+- [x] Object circles animate out (fade + scale down) when taken, before state updates
+- [x] AI "thinking" period: status shows "Computer thinking..." with animated ellipsis
+- [x] Selected heap row pulses with `--shadow-accent` glow
+- [x] Take button shake animation if pressed when disabled (no heap selected)
+- [x] Game over modal animates in with fade + scale
+- [x] Heap label updates live as count changes: "Heap 2 - 3 objects"
 
 ---
 
 ## Testing
 
 **Unit tests — game logic (`src/gameLogic.test.ts`):**
-- [ ] `computeNimSum([1,3,5,7])` returns 0
-- [ ] `computeNimSum([1,2,3])` returns 0 (1^2^3 = 0)
-- [ ] `computeNimSum([0,0,0,1])` returns 1
-- [ ] `computeNimSum([3,5,7])` returns 1 (3^5^7 = 1)
-- [ ] `isGameOver([0,0,0,0])` returns true
-- [ ] `isGameOver([0,0,0,1])` returns false
-- [ ] `applyMove([1,3,5,7], 1, 2)` returns `[1,1,5,7]`
-- [ ] `applyMove([0,0,0,1], 3, 1)` returns `[0,0,0,0]`
-- [ ] `validateMove([1,3,5,7], 1, 3)` returns true
-- [ ] `validateMove([1,3,5,7], 1, 4)` returns false (count > heap size)
-- [ ] `validateMove([1,3,5,7], 1, 0)` returns false (count < 1)
-- [ ] `findOptimalMove([1,3,5,7])` — nim-sum is 0, falls back to take 1 from heap 3 (size 7)
-- [ ] `findOptimalMove([0,3,5,7])` — nim-sum is 1, returns a move that makes nim-sum 0 (e.g. heap 1 take 2: [0,1,5,7] → 1^5^7=3, not 0; heap 2 take 4: [0,3,1,7] → 3^1^7=5, not 0; heap 3 take 6: [0,3,5,1] → 3^5^1=7, not 0; heap 1 take 1: [0,2,5,7] → 2^5^7=0 ✓)
-- [ ] `findOptimalMove` result always passes `validateMove`
-- [ ] Win detected after `applyMove([0,0,0,1], 3, 1)` → `isGameOver` true
+- [x] `computeNimSum([1,3,5,7])` returns 0
+- [x] `computeNimSum([1,2,3])` returns 0 (1^2^3 = 0)
+- [x] `computeNimSum([0,0,0,1])` returns 1
+- [x] `computeNimSum([3,5,7])` returns 1 (3^5^7 = 1)
+- [x] `isGameOver([0,0,0,0])` returns true
+- [x] `isGameOver([0,0,0,1])` returns false
+- [x] `applyMove([1,3,5,7], 1, 2)` returns `[1,1,5,7]`
+- [x] `applyMove([0,0,0,1], 3, 1)` returns `[0,0,0,0]`
+- [x] `validateMove([1,3,5,7], 1, 3)` returns true
+- [x] `validateMove([1,3,5,7], 1, 4)` returns false (count > heap size)
+- [x] `validateMove([1,3,5,7], 1, 0)` returns false (count < 1)
+- [x] `findOptimalMove([1,3,5,7])` — nim-sum is 0, falls back to take 1 from heap 3 (size 7)
+- [x] `findOptimalMove([0,3,5,7])` — nim-sum is 1, returns a move that makes nim-sum 0 (e.g. heap 1 take 2: [0,1,5,7] → 1^5^7=3, not 0; heap 2 take 4: [0,3,1,7] → 3^1^7=5, not 0; heap 3 take 6: [0,3,5,1] → 3^5^1=7, not 0; heap 1 take 1: [0,2,5,7] → 2^5^7=0 ✓)
+- [x] `findOptimalMove` result always passes `validateMove`
+- [x] Win detected after `applyMove([0,0,0,1], 3, 1)` → `isGameOver` true
 
 **Component tests — (`src/App.test.tsx`):**
-- [ ] Home screen renders mode selector and New Game button
-- [ ] Difficulty selector hidden when mode is 2-player
-- [ ] Resume button hidden when no saved state
-- [ ] Play screen renders 4 heap rows with correct object counts
-- [ ] Clicking a heap selects it and enables the Take button
-- [ ] Take button disabled when no heap selected
-- [ ] After taking objects, heap count decreases correctly
-- [ ] Game over modal appears when last object taken
-- [ ] AI move fires after human move in vs-computer mode
+- [x] Home screen renders mode selector and New Game button
+- [x] Difficulty selector hidden when mode is 2-player
+- [x] Resume button hidden when no saved state
+- [x] Play screen renders 4 heap rows with correct object counts
+- [x] Clicking a heap selects it and enables the Take button
+- [x] Take button disabled when no heap selected
+- [x] After taking objects, heap count decreases correctly
+- [x] Game over modal appears when last object taken
+- [x] AI move fires after human move in vs-computer mode
