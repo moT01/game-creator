@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Header from './components/Header'
 import HelpModal from './components/HelpModal'
+import GameOptions, { type GameOptionsValue } from './components/GameOptions'
 import './HomeScreen.css'
 
 interface Props {
@@ -9,8 +10,15 @@ interface Props {
   onStart: () => void
 }
 
+const DEFAULT_OPTIONS: GameOptionsValue = {
+  mode: 'computer',
+  playerGoesFirst: true,
+  hardMode: false,
+}
+
 export default function HomeScreen({ theme, onThemeToggle, onStart }: Props) {
   const [showHelp, setShowHelp] = useState(false)
+  const [options, setOptions] = useState<GameOptionsValue>(DEFAULT_OPTIONS)
 
   return (
     <div className="card">
@@ -25,6 +33,17 @@ export default function HomeScreen({ theme, onThemeToggle, onStart }: Props) {
           <h1 className="game-title">Game Name</h1>
           <p className="game-subtitle">A short description</p>
         </div>
+        <GameOptions
+          value={options}
+          onChange={setOptions}
+          showModeToggle
+          showSideSelect
+          showHardMode
+          stats={[
+            { label: 'Normal', value: 12 },
+            { label: 'Hard', value: 5 },
+          ]}
+        />
         <div className="home-actions">
           <button className="btn btn--primary" onClick={onStart}>New Game</button>
         </div>
