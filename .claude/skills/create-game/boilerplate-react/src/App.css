@@ -56,7 +56,6 @@
 .btn--primary:hover {
   background: var(--color-accent-hover);
   box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
 }
 
 .btn--primary:active {

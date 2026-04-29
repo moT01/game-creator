@@ -20,6 +20,7 @@ interface Props {
   sideLabels?: [string, string];
   showHardMode?: boolean;
   stats?: Stat[];
+  statsTitle?: string;
 }
 
 export default function GameOptions({
@@ -27,9 +28,10 @@ export default function GameOptions({
   onChange,
   showModeToggle = false,
   showSideSelect = false,
-  sideLabels = ['You go first', 'Computer goes first'],
+  sideLabels = ['Go first', 'Go Second'],
   showHardMode = false,
   stats,
+  statsTitle = 'Wins',
 }: Props) {
   if (!showModeToggle && !showSideSelect && !showHardMode && !stats?.length) return null;
 
@@ -59,7 +61,7 @@ export default function GameOptions({
           </button>
         </div>
       )}
-      {showStats && <StatsRow stats={stats!} />}
+      {showStats && <StatsRow title={statsTitle} stats={stats!} />}
       {showComputerOptions && (
         <div className="game-options__computer">
           {showSideSelect && (

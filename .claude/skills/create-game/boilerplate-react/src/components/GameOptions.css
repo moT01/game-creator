@@ -89,10 +89,10 @@
 .checkbox-input:checked::after {
   content: '';
   position: absolute;
-  top: 2px;
-  left: 7px;
-  width: 8px;
-  height: 15px;
+  top: 3px;
+  left: 8px;
+  width: 6px;
+  height: 14px;
   border: 2px solid var(--color-bg);
   border-top: none;
   border-left: none;
