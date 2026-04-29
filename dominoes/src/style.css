@@ -23,7 +23,7 @@
 }
 
 .container--play {
-  max-width: 860px;
+  max-width: 1200px;
   display: flex;
   flex-direction: column;
 }
@@ -330,20 +330,53 @@ body.light-palette .icon-moon { display: flex; }
   color: var(--color-text-muted);
 }
 
-.status-boneyard {
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  transition: color var(--transition-fast);
+/* ─── Boneyard Rows ──────────────────────────────────────────────────────── */
+
+.boneyard-row {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-7);
+  align-items: center;
+}
+
+.boneyard-scattered-tile {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0;
+  cursor: default;
+  flex-shrink: 0;
+  transform: translateY(var(--tile-y, 0px)) rotate(var(--tile-rot, 0deg));
+  transition: transform var(--transition-default), box-shadow var(--transition-default),
+    opacity var(--transition-default);
+}
+
+.boneyard-scattered-tile--drawable {
+  cursor: pointer;
+}
+
+.boneyard-scattered-tile--drawable:hover {
+  transform: translateY(calc(var(--tile-y, 0px) - 6px)) rotate(var(--tile-rot, 0deg));
+  box-shadow: var(--shadow-md);
+  opacity: 1;
+}
+
+.boneyard-scattered-tile--drawable:active {
+  transform: translateY(calc(var(--tile-y, 0px) - 2px)) rotate(var(--tile-rot, 0deg));
+  box-shadow: var(--shadow-sm);
+}
+
+.boneyard-scattered-tile--drawable:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--blue-mid);
 }
 
 @keyframes pulse-boneyard {
-  0%, 100% { color: var(--color-text-muted); }
-  50% { color: var(--color-accent); }
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; box-shadow: 0 0 10px rgba(255, 191, 0, 0.5); }
 }
 
-.status-boneyard.pulse {
-  animation: pulse-boneyard 0.4s ease;
+.boneyard-scattered-tile.pulse {
+  animation: pulse-boneyard 0.5s ease;
 }
 
 /* ─── Computer Hand ──────────────────────────────────────────────────────── */
@@ -377,8 +410,8 @@ body.light-palette .icon-moon { display: flex; }
 .board-area {
   position: relative;
   background: var(--color-surface);
-  min-height: 160px;
-  height: 200px;
+  min-height: 500px;
+  height: 500px;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -403,13 +436,24 @@ body.light-palette .icon-moon { display: flex; }
   pointer-events: none;
 }
 
+/* ─── Board Content ──────────────────────────────────────────────────────── */
+
+.board-content {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  transform-origin: center center;
+}
+
 /* ─── Chain Wrapper ──────────────────────────────────────────────────────── */
 
 .chain-wrapper {
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  padding: var(--space-5) var(--space-7);
+  padding: 0 var(--space-7);
+  height: 144px;
   position: relative;
   z-index: 1;
   transform-origin: center center;
@@ -423,13 +467,39 @@ body.light-palette .icon-moon { display: flex; }
   border-radius: var(--radius-md);
   padding: var(--space-3) var(--space-5);
   white-space: nowrap;
+  background: transparent;
+  font-family: var(--font-body);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.chain-empty--highlight {
+  border-color: var(--color-accent);
+  border-style: dashed;
+  color: var(--color-accent);
+  cursor: pointer;
+  animation: pulse-end 1s ease-in-out infinite;
+}
+
+.chain-empty--highlight:hover {
+  background: rgba(255, 191, 0, 0.1);
+  box-shadow: 0 0 12px rgba(255, 191, 0, 0.4);
+}
+
+.chain-empty--highlight:active {
+  transform: scale(0.98);
+}
+
+.chain-empty--highlight:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--blue-mid);
 }
 
 /* ─── Chain End Targets ──────────────────────────────────────────────────── */
 
 .chain-end {
-  width: 32px;
-  height: 32px;
+  width: 48px;
+  height: 48px;
   border: 2px dashed var(--color-border);
   border-radius: var(--radius-sm);
   background: transparent;
@@ -477,18 +547,18 @@ body.light-palette .icon-moon { display: flex; }
     opacity var(--transition-fast), border-color var(--transition-fast);
 }
 
-/* Horizontal (non-double): 64×32 */
+/* Horizontal (non-double): 96×48 */
 .domino--horizontal {
   flex-direction: row;
-  width: 64px;
-  height: 32px;
+  width: 96px;
+  height: 48px;
 }
 
-/* Vertical (double): 32×64 */
+/* Vertical (double): 48×96 */
 .domino--double {
   flex-direction: column;
-  width: 32px;
-  height: 64px;
+  width: 48px;
+  height: 96px;
 }
 
 .domino-half {
@@ -496,7 +566,7 @@ body.light-palette .icon-moon { display: flex; }
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 3px;
+  padding: 5px;
 }
 
 .domino-divider {
@@ -532,8 +602,8 @@ body.light-palette .icon-moon { display: flex; }
 }
 
 .pip-dot {
-  width: 5px;
-  height: 5px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--color-text-primary);
 }
@@ -546,6 +616,11 @@ body.light-palette .icon-moon { display: flex; }
 
 .chain-tile {
   animation: tile-in var(--transition-fast) ease both;
+}
+
+.chain-tile--computer {
+  border-color: var(--blue-mid);
+  box-shadow: 0 0 12px rgba(25, 142, 238, 0.4);
 }
 
 /* Hand domino button resets */
@@ -602,7 +677,6 @@ body.light-palette .icon-moon { display: flex; }
   min-height: 0;
 }
 
-.draw-btn,
 .pass-btn {
   width: auto;
   padding: var(--space-2) var(--space-5);
@@ -629,7 +703,7 @@ body.light-palette .icon-moon { display: flex; }
   padding: var(--space-3) var(--space-4) var(--space-4);
   background: var(--color-surface-raised);
   border-top: 1px solid var(--color-border);
-  min-height: 72px;
+  min-height: 110px;
 }
 
 /* ─── Zoom Controls ──────────────────────────────────────────────────────── */
@@ -874,27 +948,27 @@ body.light-palette .icon-moon { display: flex; }
   }
 
   .board-area {
-    height: 160px;
+    height: 200px;
   }
 
   .domino--horizontal {
-    width: 52px;
-    height: 26px;
+    width: 72px;
+    height: 36px;
   }
 
   .domino--double {
-    width: 26px;
-    height: 52px;
+    width: 36px;
+    height: 72px;
   }
 
   .pip-dot {
-    width: 4px;
-    height: 4px;
+    width: 5px;
+    height: 5px;
   }
 
   .chain-end {
-    width: 26px;
-    height: 26px;
+    width: 36px;
+    height: 36px;
   }
 
   .player-hand {

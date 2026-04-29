@@ -28,6 +28,15 @@ function dealTiles() {
   };
 }
 
+function generateBoneyardPositions(count) {
+  const rotations = [-5, 4, -3, 6, -4, 3, -6, 5, -2, 7, -4, 3, -6, 4];
+  const yOffsets = [0, 3, -4, 5, -2, 4, -3, 2, -5, 4, -3, 6, -2, 3];
+  return Array.from({ length: count }, (_, i) => ({
+    rot: String(rotations[i % rotations.length]),
+    yOffset: yOffsets[i % yOffsets.length],
+  }));
+}
+
 function determineFirstPlayer(playerHand, computerHand) {
   // Find highest double (6|6 down to 0|0)
   for (let v = 6; v >= 0; v--) {
@@ -266,6 +275,7 @@ let state = {
   goFirst: loadGoFirst(),
   panX: 0,
   panY: 0,
+  boneyardPositions: [],
 };
 
 // ─── Turn Logic ───────────────────────────────────────────────────────────────
@@ -321,6 +331,7 @@ function drawFromBoneyard() {
   if (state.boneyard.length === 0) return;
 
   const tile = state.boneyard.pop();
+  if (state.boneyardPositions.length > 0) state.boneyardPositions.pop();
   if (state.turn === 'player') {
     state.playerHand = [...state.playerHand, tile];
   } else {
@@ -393,6 +404,7 @@ function doComputerTurn() {
   state.rightEnd = result.rightEnd;
   state.consecutivePasses = 0;
   state.isAnimating = false;
+  state.lastComputerTileIndex = move.end === 'right' ? result.chain.length - 1 : 0;
 
   if (checkWin(state.computerHand)) {
     const playerPips = state.playerHand.reduce((s, t) => s + t.a + t.b, 0);
@@ -418,6 +430,7 @@ function handlePlayerPlace(tileIndex, end) {
   state.rightEnd = result.rightEnd;
   state.consecutivePasses = 0;
   state.selectedTileIndex = null;
+  state.lastComputerTileIndex = null;
 
   if (checkWin(state.playerHand)) {
     const computerPips = state.computerHand.reduce((s, t) => s + t.a + t.b, 0);
@@ -463,6 +476,7 @@ function newGame() {
     goFirst: state.goFirst,
     panX: 0,
     panY: 0,
+    boneyardPositions: generateBoneyardPositions(dealt.boneyard.length),
   };
 
   render();
@@ -481,6 +495,7 @@ function resumeGame() {
     result: null,
     openingTile: null,
   };
+  state.boneyardPositions = generateBoneyardPositions(state.boneyard.length);
   render();
   startTurn();
 }
@@ -592,9 +607,13 @@ function renderChain() {
   }
 
   if (chain.length === 0) {
-    const empty = document.createElement('div');
-    empty.className = 'chain-empty';
+    const canPlace = selectedMove !== null;
+    const empty = document.createElement(canPlace ? 'button' : 'div');
+    empty.className = 'chain-empty' + (canPlace ? ' chain-empty--highlight' : '');
     empty.textContent = 'Place the first tile';
+    if (canPlace) {
+      empty.addEventListener('click', () => handlePlayerPlace(selectedTileIndex, 'left'));
+    }
     wrapper.appendChild(empty);
   } else {
     chain.forEach((ct, idx) => {
@@ -602,7 +621,8 @@ function renderChain() {
       // When flipped, the displayed tile shows (b, a) visually
       const displayA = ct.flipped ? ct.b : ct.a;
       const displayB = ct.flipped ? ct.a : ct.b;
-      const el = makeDominoEl(displayA, displayB, isDouble, 'chain-tile');
+      const isLastComputer = idx === state.lastComputerTileIndex;
+      const el = makeDominoEl(displayA, displayB, isDouble, 'chain-tile' + (isLastComputer ? ' chain-tile--computer' : ''));
       if (idx === 0 || idx === chain.length - 1) {
         el.dataset.chainIdx = idx;
       }
@@ -624,7 +644,8 @@ function renderChain() {
     wrapper.appendChild(rightTarget);
   }
 
-  wrapper.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
+  const content = document.querySelector('.board-content');
+  if (content) content.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
 }
 
 // ─── Board Rendering ──────────────────────────────────────────────────────────
@@ -683,15 +704,11 @@ function renderPlayerHand() {
       btn.addEventListener('click', () => {
         if (state.selectedTileIndex === i) {
           state.selectedTileIndex = null;
-          renderPlayerHand();
-          renderChain();
-        } else if (state.leftEnd === null) {
-          handlePlayerPlace(i, 'left');
         } else {
           state.selectedTileIndex = i;
-          renderPlayerHand();
-          renderChain();
         }
+        renderPlayerHand();
+        renderChain();
       });
     }
 
@@ -732,11 +749,8 @@ function renderStatus() {
   else if (turn === 'computer' || isAnimating) msg = 'Computer is thinking...';
 
   const turnEl = bar.querySelector('.status-turn');
-  const boneEl = bar.querySelector('.status-boneyard');
-  if (turnEl) turnEl.textContent = msg;
-  if (boneEl) boneEl.textContent = `Boneyard: ${boneyard.length}`;
-
   if (turnEl) {
+    turnEl.textContent = msg;
     turnEl.className = 'status-turn';
     if (turn === 'player' && !isAnimating) turnEl.classList.add('status-turn--player');
     else turnEl.classList.add('status-turn--computer');
@@ -766,11 +780,11 @@ function showPassMessage(passer, callback) {
 }
 
 function pulseBoneyard() {
-  const boneEl = document.querySelector('.status-boneyard');
-  if (!boneEl) return;
-  boneEl.classList.remove('pulse');
-  void boneEl.offsetWidth; // reflow
-  boneEl.classList.add('pulse');
+  document.querySelectorAll('.boneyard-scattered-tile').forEach(el => {
+    el.classList.remove('pulse');
+    void el.offsetWidth;
+    el.classList.add('pulse');
+  });
 }
 
 // ─── Screens ──────────────────────────────────────────────────────────────────
@@ -970,8 +984,8 @@ function renderPlayScreen() {
   const onDragMove = e => {
     state.panX = drag.startPanX + (e.clientX - drag.startX);
     state.panY = drag.startPanY + (e.clientY - drag.startY);
-    const wrapper = boardArea.querySelector('.chain-wrapper');
-    if (wrapper) wrapper.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
+    const content = boardArea.querySelector('.board-content');
+    if (content) content.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
   };
   const onDragEnd = () => {
     drag = null;
@@ -988,9 +1002,13 @@ function renderPlayScreen() {
     document.addEventListener('mouseup', onDragEnd);
   });
 
+  const boardContent = document.createElement('div');
+  boardContent.className = 'board-content';
+  boardArea.appendChild(boardContent);
+
   const chainWrapper = document.createElement('div');
   chainWrapper.className = 'chain-wrapper';
-  boardArea.appendChild(chainWrapper);
+  boardContent.appendChild(chainWrapper);
 
   // Zoom controls
   const zoomControls = document.createElement('div');
@@ -1013,20 +1031,9 @@ function renderPlayScreen() {
   boardArea.appendChild(zoomControls);
   container.appendChild(boardArea);
 
-  // Draw/Pass buttons
+  // Pass button
   const actionRow = document.createElement('div');
   actionRow.className = 'action-row';
-
-  const drawBtn = document.createElement('button');
-  drawBtn.className = 'btn btn--secondary draw-btn';
-  drawBtn.textContent = 'Draw';
-  drawBtn.setAttribute('aria-label', 'Draw a tile from the boneyard');
-  drawBtn.addEventListener('click', () => {
-    if (state.turn === 'player' && !state.isAnimating && state.boneyard.length > 0) {
-      drawFromBoneyard();
-    }
-  });
-  actionRow.appendChild(drawBtn);
 
   const passBtn = document.createElement('button');
   passBtn.className = 'btn btn--secondary pass-btn';
@@ -1070,24 +1077,61 @@ function renderPlayScreen() {
   scrollChainToCenter();
 }
 
+function renderBoneyard() {
+  const boardContent = document.querySelector('.board-content');
+  if (!boardContent) return;
+
+  boardContent.querySelectorAll('.boneyard-row').forEach(el => el.remove());
+
+  const { boneyard, boneyardPositions, turn, isAnimating, playerHand, leftEnd, rightEnd } = state;
+
+  const moves = turn === 'player' && !isAnimating
+    ? getValidMoves(playerHand, leftEnd, rightEnd)
+    : [];
+  const canDraw = moves.length === 0 && turn === 'player' && !isAnimating;
+
+  const aboveRow = document.createElement('div');
+  aboveRow.className = 'boneyard-row boneyard-row--above';
+  const belowRow = document.createElement('div');
+  belowRow.className = 'boneyard-row boneyard-row--below';
+
+  const half = Math.ceil(boneyard.length / 2);
+  boneyard.forEach((_, i) => {
+    const pos = boneyardPositions[i] || { rot: '0', yOffset: 0 };
+    const el = document.createElement(canDraw ? 'button' : 'div');
+    el.className = 'boneyard-scattered-tile domino domino--back domino--horizontal' +
+      (canDraw ? ' boneyard-scattered-tile--drawable' : '');
+    el.style.setProperty('--tile-rot', `${pos.rot}deg`);
+    el.style.setProperty('--tile-y', `${pos.yOffset}px`);
+    if (canDraw) {
+      el.setAttribute('aria-label', 'Draw from boneyard');
+      el.addEventListener('click', () => drawFromBoneyard());
+    }
+    (i < half ? aboveRow : belowRow).appendChild(el);
+  });
+
+  const chainWrapper = boardContent.querySelector('.chain-wrapper');
+  if (boneyard.length > 0) {
+    boardContent.insertBefore(aboveRow, chainWrapper);
+    chainWrapper.after(belowRow);
+  }
+}
+
 function updateActionButtons() {
   const { turn, isAnimating, playerHand, boneyard, leftEnd, rightEnd } = state;
-  const drawBtn = document.querySelector('.draw-btn');
   const passBtn = document.querySelector('.pass-btn');
-  if (!drawBtn || !passBtn) return;
 
   const moves = turn === 'player' && !isAnimating
     ? getValidMoves(playerHand, leftEnd, rightEnd)
     : [];
   const noMoves = moves.length === 0 && turn === 'player' && !isAnimating;
-
-  const showDraw = noMoves && boneyard.length > 0;
   const showPass = noMoves && boneyard.length === 0;
-  drawBtn.style.display = showDraw ? 'inline-flex' : 'none';
-  passBtn.style.display = showPass ? 'inline-flex' : 'none';
 
+  if (passBtn) passBtn.style.display = showPass ? 'inline-flex' : 'none';
   const actionRow = document.querySelector('.action-row');
-  if (actionRow) actionRow.style.display = (showDraw || showPass) ? 'flex' : 'none';
+  if (actionRow) actionRow.style.display = showPass ? 'flex' : 'none';
+
+  renderBoneyard();
 }
 
 function renderGameOver() {
