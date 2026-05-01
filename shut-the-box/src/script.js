@@ -1,24 +1,79 @@
+const ROUND_MODES = {
+  single: { label: '1 Round', shortLabel: '1', totalRounds: 1 },
+  five: { label: '5 Rounds', shortLabel: '5', totalRounds: 5 },
+  endless: { label: 'Endless', shortLabel: '∞', totalRounds: Infinity },
+};
+
+const ROUND_MODE_STORAGE_KEY = 'stb-round-mode';
+const SAVE_KEY = 'stb-saved-game';
+const BEST_SCORE_KEY_PREFIX = 'stb-best-score-';
+
 // --- Game Logic ---
 
-function initGame() {
+function createFreshBoardState() {
   return {
     tiles: [true, true, true, true, true, true, true, true, true],
     dice: [],
     diceTotal: 0,
     selectedTiles: [],
-    phase: 'rolling',
     canRollOneDie: false,
     diceCount: 2,
   };
 }
 
+function initGame(roundMode = getSelectedRoundMode()) {
+  return {
+    ...createFreshBoardState(),
+    roundMode,
+    currentRound: 1,
+    totalScore: 0,
+    lastRoundScore: 0,
+    finalScore: null,
+    result: null,
+    phase: 'rolling',
+  };
+}
+
+function normalizeLoadedState(savedState) {
+  if (!savedState || !Array.isArray(savedState.tiles) || savedState.phase === 'game-over') {
+    return null;
+  }
+
+  const roundMode = ROUND_MODES[savedState.roundMode] ? savedState.roundMode : 'single';
+  const normalizedState = {
+    ...createFreshBoardState(),
+    ...savedState,
+    roundMode,
+    currentRound: Number.isInteger(savedState.currentRound) && savedState.currentRound > 0 ? savedState.currentRound : 1,
+    totalScore: Number.isFinite(savedState.totalScore) ? savedState.totalScore : 0,
+    lastRoundScore: Number.isFinite(savedState.lastRoundScore) ? savedState.lastRoundScore : 0,
+    finalScore: Number.isFinite(savedState.finalScore) ? savedState.finalScore : null,
+    result: savedState.result === 'won' || savedState.result === 'lost' ? savedState.result : null,
+  };
+
+  if (!['rolling', 'selecting', 'between-rounds'].includes(normalizedState.phase)) {
+    normalizedState.phase = 'rolling';
+  }
+
+  normalizedState.canRollOneDie = !normalizedState.tiles[6] && !normalizedState.tiles[7] && !normalizedState.tiles[8];
+  if (!normalizedState.canRollOneDie) {
+    normalizedState.diceCount = 2;
+  } else if (normalizedState.diceCount !== 1) {
+    normalizedState.diceCount = 2;
+  }
+
+  return normalizedState;
+}
+
 function getValidCombinations(openTileIndices, target) {
   const results = [];
+
   function search(start, remaining, current) {
     if (remaining === 0) {
       results.push([...current]);
       return;
     }
+
     for (let i = start; i < openTileIndices.length; i++) {
       const val = openTileIndices[i] + 1;
       if (val > remaining) break;
@@ -27,6 +82,7 @@ function getValidCombinations(openTileIndices, target) {
       current.pop();
     }
   }
+
   search(0, target, []);
   return results;
 }
@@ -40,47 +96,55 @@ function checkNoMoves(state) {
 }
 
 function rollDice(state) {
-  const count = state.diceCount;
   const dice = [];
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < state.diceCount; i++) {
     dice.push(Math.floor(Math.random() * 6) + 1);
   }
+
   state.dice = dice;
-  state.diceTotal = dice.reduce((a, b) => a + b, 0);
+  state.diceTotal = dice.reduce((sum, value) => sum + value, 0);
+
   if (checkNoMoves(state)) {
-    endGame(state);
+    finishRound(state);
   } else {
     state.phase = 'selecting';
   }
 }
 
 function toggleTileSelection(state, tileIndex) {
-  if (!state.tiles[tileIndex]) return; // shut tile: no-op
-  const alreadySelected = state.selectedTiles.indexOf(tileIndex);
-  if (alreadySelected !== -1) {
-    state.selectedTiles.splice(alreadySelected, 1);
+  if (!state.tiles[tileIndex]) return;
+
+  const selectedIndex = state.selectedTiles.indexOf(tileIndex);
+  if (selectedIndex !== -1) {
+    state.selectedTiles.splice(selectedIndex, 1);
     return;
   }
+
   const currentSum = state.selectedTiles.reduce((sum, i) => sum + (i + 1), 0);
   const tileValue = tileIndex + 1;
   if (currentSum + tileValue > state.diceTotal) {
-    return 'shake'; // signal to UI to shake the tile
+    return 'shake';
   }
+
   state.selectedTiles.push(tileIndex);
 }
 
 function confirmSelection(state) {
   const selectedSum = state.selectedTiles.reduce((sum, i) => sum + (i + 1), 0);
   if (selectedSum !== state.diceTotal) return;
-  for (const i of state.selectedTiles) {
-    state.tiles[i] = false;
+
+  for (const tileIndex of state.selectedTiles) {
+    state.tiles[tileIndex] = false;
   }
+
   state.selectedTiles = [];
   updateCanRollOneDie(state);
-  if (state.tiles.every(t => !t)) {
-    endGame(state);
+
+  if (state.tiles.every(tile => !tile)) {
+    finishMatch(state, state.totalScore, 'won', 0);
     return;
   }
+
   state.phase = 'rolling';
 }
 
@@ -92,7 +156,7 @@ function updateCanRollOneDie(state) {
 }
 
 function setDiceCount(state, count) {
-  if (state.canRollOneDie && state.phase === 'rolling') {
+  if (state.canRollOneDie && state.phase === 'rolling' && (count === 1 || count === 2)) {
     state.diceCount = count;
   }
 }
@@ -101,39 +165,84 @@ function calcScore(tiles) {
   return tiles.reduce((sum, open, i) => sum + (open ? i + 1 : 0), 0);
 }
 
-function endGame(state) {
-  state.score = calcScore(state.tiles);
+function getRoundLimit(roundMode) {
+  return ROUND_MODES[roundMode].totalRounds;
+}
+
+function hasMoreRounds(state) {
+  return state.roundMode === 'endless' || state.currentRound < getRoundLimit(state.roundMode);
+}
+
+function finishRound(state) {
+  const roundScore = calcScore(state.tiles);
+  state.lastRoundScore = roundScore;
+
+  if (state.roundMode !== 'single' && hasMoreRounds(state)) {
+    state.totalScore += roundScore;
+    state.phase = 'between-rounds';
+    state.selectedTiles = [];
+    return;
+  }
+
+  finishMatch(state, state.totalScore + roundScore, 'lost', roundScore);
+}
+
+function finishMatch(state, finalScore, result, lastRoundScore = 0) {
+  state.lastRoundScore = lastRoundScore;
+  state.finalScore = finalScore;
+  state.result = result;
   state.phase = 'game-over';
-  saveBestScore(state.score);
+
+  saveBestScore(state.roundMode, finalScore);
+
+  clearSavedGame();
+}
+
+function startNextRound(state) {
+  state.currentRound += 1;
+  Object.assign(state, createFreshBoardState());
+  state.phase = 'rolling';
+  state.lastRoundScore = 0;
 }
 
 function saveGame(state) {
+  if (!state || state.phase === 'game-over') {
+    clearSavedGame();
+    return;
+  }
+
   try {
-    localStorage.setItem('stb-saved-game', JSON.stringify(state));
-  } catch (e) {}
+    localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+  } catch (error) {}
 }
 
 function loadGame() {
   try {
-    const raw = localStorage.getItem('stb-saved-game');
+    const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return null;
-    const state = JSON.parse(raw);
-    if (!state || !Array.isArray(state.tiles)) return null;
-    return state;
-  } catch (e) {
+    const normalizedState = normalizeLoadedState(JSON.parse(raw));
+    if (!normalizedState) {
+      clearSavedGame();
+      return null;
+    }
+    return normalizedState;
+  } catch (error) {
     return null;
   }
 }
 
 function clearSavedGame() {
-  localStorage.removeItem('stb-saved-game');
+  localStorage.removeItem(SAVE_KEY);
 }
 
-function saveBestScore(score) {
-  const key = 'stb-best-score';
-  const existing = localStorage.getItem(key);
+function getBestScoreKey(roundMode) {
+  return `${BEST_SCORE_KEY_PREFIX}${roundMode}`;
+}
+
+function saveBestScore(roundMode, score) {
+  const existing = localStorage.getItem(getBestScoreKey(roundMode));
   if (existing === null || score < parseInt(existing, 10)) {
-    localStorage.setItem(key, String(score));
+    localStorage.setItem(getBestScoreKey(roundMode), String(score));
   }
 }
 
@@ -141,64 +250,135 @@ function saveBestScore(score) {
 
 let state = null;
 let shakingTile = null;
+let selectedRoundMode = 'single';
 
 // --- Rendering ---
 
-function getBestScore() {
-  const raw = localStorage.getItem('stb-best-score');
+function getBestScore(roundMode) {
+  const raw = localStorage.getItem(getBestScoreKey(roundMode));
   return raw !== null ? parseInt(raw, 10) : null;
 }
 
+function getSelectedRoundMode() {
+  return selectedRoundMode;
+}
+
+function setSelectedRoundMode(roundMode) {
+  if (!ROUND_MODES[roundMode]) return;
+  selectedRoundMode = roundMode;
+  localStorage.setItem(ROUND_MODE_STORAGE_KEY, roundMode);
+  renderRoundModeButtons();
+}
+
+function loadSelectedRoundMode() {
+  const savedMode = localStorage.getItem(ROUND_MODE_STORAGE_KEY);
+  selectedRoundMode = ROUND_MODES[savedMode] ? savedMode : 'single';
+}
+
 function hasSavedGame() {
-  return localStorage.getItem('stb-saved-game') !== null;
+  const raw = localStorage.getItem(SAVE_KEY);
+  return typeof raw === 'string' && raw.length > 0;
 }
 
 function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
+function getRoundProgressText(activeState) {
+  if (activeState.roundMode === 'endless') {
+    return `${activeState.currentRound} / ∞`;
+  }
+  return `${activeState.currentRound} / ${getRoundLimit(activeState.roundMode)}`;
+}
+
+function renderRoundModeButtons() {
+  const mappings = [
+    ['btn-round-single', 'single'],
+    ['btn-round-five', 'five'],
+    ['btn-round-endless', 'endless'],
+  ];
+
+  mappings.forEach(([id, roundMode]) => {
+    const button = document.getElementById(id);
+    const isActive = selectedRoundMode === roundMode;
+    button.classList.toggle('active', isActive);
+    button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+  });
+}
+
 function renderHome() {
-  const best = getBestScore();
-  const bestEl = document.getElementById('home-best');
-  bestEl.textContent = best !== null ? best : '--';
+  document.getElementById('home-best-single').textContent = formatBestScore(getBestScore('single'));
+  document.getElementById('home-best-five').textContent = formatBestScore(getBestScore('five'));
+  document.getElementById('home-best-endless').textContent = formatBestScore(getBestScore('endless'));
+  renderRoundModeButtons();
 
   const resumeBtn = document.getElementById('btn-resume');
-  if (hasSavedGame()) {
-    resumeBtn.classList.add('visible');
-  } else {
-    resumeBtn.classList.remove('visible');
-  }
+  resumeBtn.classList.toggle('visible', hasSavedGame());
+  resumeBtn.hidden = !hasSavedGame();
 
   showScreen('screen-home');
 }
 
+function formatBestScore(score) {
+  return score !== null ? score : '--';
+}
+
 function renderPlay() {
+  renderMatchStats();
   renderTiles();
   renderDice();
   renderStatus();
   renderScore();
   renderButtons();
   renderDiceCountToggle();
+  renderOverlay();
   showScreen('screen-play');
+}
+
+function renderMatchStats() {
+  const statsGrid = document.querySelector('.play-stats-grid');
+  const roundCard = document.getElementById('round-progress').closest('.stat-card');
+  const totalCard = document.getElementById('total-score').closest('.stat-card');
+  const liveScoreLabel = document.getElementById('live-score-label');
+
+  if (state.roundMode === 'single') {
+    statsGrid.hidden = true;
+    roundCard.hidden = true;
+    totalCard.hidden = true;
+    liveScoreLabel.textContent = 'Score';
+    return;
+  }
+
+  statsGrid.hidden = false;
+  roundCard.hidden = false;
+  totalCard.hidden = false;
+  statsGrid.classList.toggle('two-stats', true);
+  document.getElementById('round-progress').textContent = getRoundProgressText(state);
+  document.getElementById('total-score').textContent = state.totalScore;
+  liveScoreLabel.textContent = 'Round Score';
 }
 
 function renderTiles() {
   const container = document.getElementById('tile-row');
   container.innerHTML = '';
+
   for (let i = 0; i < 9; i++) {
     const tile = document.createElement('button');
-    tile.className = 'tile';
-    tile.dataset.index = i;
     const isOpen = state.tiles[i];
     const isSelected = state.selectedTiles.indexOf(i) !== -1;
+
+    tile.className = 'tile';
+    tile.dataset.index = i;
     tile.textContent = i + 1;
     tile.setAttribute('aria-label', `Tile ${i + 1}, ${isOpen ? 'open' : 'shut'}`);
     tile.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+
     if (!isOpen) tile.classList.add('shut');
     if (isSelected) tile.classList.add('selected');
     if (shakingTile === i) tile.classList.add('shake');
     if (state.phase !== 'selecting' || !isOpen) tile.disabled = true;
+
     tile.addEventListener('click', () => onTileClick(i));
     container.appendChild(tile);
   }
@@ -207,57 +387,72 @@ function renderTiles() {
 function renderDice() {
   const container = document.getElementById('dice-area');
   container.innerHTML = '';
+
   if (state.dice.length === 0) {
     const placeholder = document.createElement('div');
     placeholder.className = 'dice-placeholder';
-    placeholder.textContent = 'Roll the dice';
+    placeholder.textContent = state.phase === 'between-rounds' ? 'Continue to start the next round' : 'Roll the dice';
     container.appendChild(placeholder);
     return;
   }
-  for (const val of state.dice) {
+
+  for (const value of state.dice) {
     const die = document.createElement('div');
     die.className = 'die';
-    die.setAttribute('aria-label', `Die showing ${val}`);
-    die.innerHTML = getDiePips(val);
+    die.setAttribute('aria-label', `Die showing ${value}`);
+    die.innerHTML = getDiePips(value);
     container.appendChild(die);
   }
 }
 
-function getDiePips(val) {
+function getDiePips(value) {
   const layouts = {
     1: [false, false, false, false, true, false, false, false, false],
-    2: [true,  false, false, false, false, false, false, false, true],
-    3: [true,  false, false, false, true,  false, false, false, true],
-    4: [true,  false, true,  false, false, false, true,  false, true],
-    5: [true,  false, true,  false, true,  false, true,  false, true],
-    6: [true,  false, true,  true,  false, true,  true,  false, true],
+    2: [true, false, false, false, false, false, false, false, true],
+    3: [true, false, false, false, true, false, false, false, true],
+    4: [true, false, true, false, false, false, true, false, true],
+    5: [true, false, true, false, true, false, true, false, true],
+    6: [true, false, true, true, false, true, true, false, true],
   };
-  const pips = layouts[val] || layouts[1];
+  const pips = layouts[value] || layouts[1];
   return pips.map(active => `<span class="pip${active ? ' pip-on' : ''}"></span>`).join('');
 }
 
 function renderStatus() {
-  const el = document.getElementById('status-line');
+  const statusLine = document.getElementById('status-line');
+
   if (state.phase === 'rolling') {
-    el.textContent = 'Roll the dice to begin your turn.';
-  } else if (state.phase === 'selecting') {
-    const selectedSum = state.selectedTiles.reduce((s, i) => s + (i + 1), 0);
-    el.textContent = `Dice total: ${state.diceTotal}   Selected: ${selectedSum}`;
+    statusLine.textContent = 'Roll the dice to begin your turn.';
+    return;
   }
+
+  if (state.phase === 'selecting') {
+    const selectedSum = state.selectedTiles.reduce((sum, i) => sum + (i + 1), 0);
+    statusLine.textContent = `Dice total: ${state.diceTotal}   Selected: ${selectedSum}`;
+    return;
+  }
+
+  if (state.phase === 'between-rounds') {
+    statusLine.textContent = `Round ${state.currentRound} complete. Running total: ${state.totalScore}`;
+    return;
+  }
+
+  const finalScore = state.finalScore !== null ? state.finalScore : state.totalScore;
+  statusLine.textContent = state.result === 'won'
+    ? `Match complete. Final total: ${finalScore}`
+    : `Run over. Final total: ${finalScore}`;
 }
 
 function renderScore() {
-  const el = document.getElementById('live-score');
-  el.textContent = calcScore(state.tiles);
+  document.getElementById('live-score').textContent = calcScore(state.tiles);
 }
 
 function renderButtons() {
   const rollBtn = document.getElementById('btn-roll');
   const confirmBtn = document.getElementById('btn-confirm');
+  const selectedSum = state.selectedTiles.reduce((sum, i) => sum + (i + 1), 0);
 
   rollBtn.disabled = state.phase !== 'rolling';
-
-  const selectedSum = state.selectedTiles.reduce((s, i) => s + (i + 1), 0);
   confirmBtn.disabled = state.phase !== 'selecting' || selectedSum !== state.diceTotal;
 }
 
@@ -269,39 +464,83 @@ function renderDiceCountToggle() {
     document.getElementById('btn-two-dice').setAttribute('aria-pressed', state.diceCount === 2 ? 'true' : 'false');
     document.getElementById('btn-one-die').classList.toggle('active', state.diceCount === 1);
     document.getElementById('btn-two-dice').classList.toggle('active', state.diceCount === 2);
-  } else {
-    toggleEl.classList.remove('visible');
+    return;
   }
+
+  toggleEl.classList.remove('visible');
 }
 
-function renderGameOver() {
-  const score = state.score !== undefined ? state.score : calcScore(state.tiles);
-  const best = getBestScore();
-  document.getElementById('gameover-score').textContent = score;
-  const banner = document.getElementById('gameover-banner');
-  banner.textContent = score === 0 ? 'Shut the Box!' : '';
-  banner.style.display = score === 0 ? '' : 'none';
-  document.getElementById('gameover-best').textContent = best !== null ? best : '--';
-
+function renderOverlay() {
   const overlay = document.getElementById('gameover-overlay');
+  if (state.phase !== 'between-rounds' && state.phase !== 'game-over') {
+    overlay.classList.remove('visible');
+    return;
+  }
+
+  const heading = document.getElementById('gameover-heading');
+  const banner = document.getElementById('gameover-banner');
+  const message = document.getElementById('gameover-message');
+  const scoreLabel = document.getElementById('gameover-score-label');
+  const scoreValue = document.getElementById('gameover-score');
+  const metaLabel = document.getElementById('gameover-meta-label');
+  const metaValue = document.getElementById('gameover-meta-value');
+  const primaryButton = document.getElementById('btn-play-again');
+
+  if (state.phase === 'between-rounds') {
+    const nextRound = state.currentRound + 1;
+    heading.textContent = `Round ${state.currentRound} Complete`;
+    banner.textContent = '';
+    banner.style.display = 'none';
+    message.textContent = `You scored ${state.lastRoundScore} this round.`;
+    scoreLabel.textContent = 'Running Total';
+    scoreValue.textContent = state.totalScore;
+    metaLabel.textContent = 'Up Next';
+    metaValue.textContent = state.roundMode === 'endless' ? `Round ${nextRound}` : `Round ${nextRound} of ${getRoundLimit(state.roundMode)}`;
+    primaryButton.textContent = 'Continue';
+  } else {
+    const finalScore = state.finalScore !== null ? state.finalScore : state.totalScore;
+    const isWin = state.result === 'won';
+
+    heading.textContent = isWin ? 'Match Complete' : 'Game Over';
+    banner.textContent = isWin ? 'Shut the Box!' : '';
+    banner.style.display = isWin ? '' : 'none';
+    message.textContent = isWin
+      ? `You cleared the board on round ${state.currentRound}.`
+      : `Your last round added ${state.lastRoundScore} points.`;
+    scoreLabel.textContent = 'Final Total';
+    scoreValue.textContent = finalScore;
+    primaryButton.textContent = 'Play Again';
+
+    if (state.roundMode === 'single') {
+      metaLabel.textContent = 'Best 1-Round Score';
+      metaValue.textContent = formatBestScore(getBestScore('single'));
+    } else {
+      metaLabel.textContent = 'Best This Mode';
+      metaValue.textContent = formatBestScore(getBestScore(state.roundMode));
+    }
+  }
+
   overlay.classList.add('visible');
-  if (score === 0) {
+
+  if (state.phase === 'game-over' && state.result === 'won') {
     const container = document.querySelector('.play-container');
     if (container) {
       container.classList.add('celebrate');
       setTimeout(() => container.classList.remove('celebrate'), 500);
     }
   }
+
   overlay.querySelector('[data-first-focus]').focus();
 }
 
 // --- Event Handlers ---
 
-function onTileClick(i) {
+function onTileClick(tileIndex) {
   if (state.phase !== 'selecting') return;
-  const result = toggleTileSelection(state, i);
+
+  const result = toggleTileSelection(state, tileIndex);
   if (result === 'shake') {
-    shakingTile = i;
+    shakingTile = tileIndex;
     renderTiles();
     setTimeout(() => {
       shakingTile = null;
@@ -309,6 +548,7 @@ function onTileClick(i) {
     }, 200);
     return;
   }
+
   saveGame(state);
   renderTiles();
   renderStatus();
@@ -319,14 +559,11 @@ function onRoll() {
   rollDice(state);
   saveGame(state);
   renderPlay();
-  // Add roll animation class to dice
-  document.querySelectorAll('.die').forEach(d => {
-    d.classList.add('rolling');
-    setTimeout(() => d.classList.remove('rolling'), 350);
+
+  document.querySelectorAll('.die').forEach(die => {
+    die.classList.add('rolling');
+    setTimeout(() => die.classList.remove('rolling'), 350);
   });
-  if (state.phase === 'game-over') {
-    renderGameOver();
-  }
 }
 
 function onConfirm() {
@@ -334,29 +571,21 @@ function onConfirm() {
   confirmSelection(state);
   saveGame(state);
   renderPlay();
-  // Animate newly shut tiles
-  justShut.forEach(i => {
-    const tile = document.querySelector(`.tile[data-index="${i}"]`);
+
+  justShut.forEach(tileIndex => {
+    const tile = document.querySelector(`.tile[data-index="${tileIndex}"]`);
     if (tile) tile.classList.add('shutting');
   });
-  if (state.phase === 'game-over') {
-    setTimeout(() => renderGameOver(), 250);
-  }
 }
 
 function onNewGame() {
-  if (hasSavedGame()) {
-    showConfirmModal('Quit this game? Your progress will be lost.', () => {
-      clearSavedGame();
-      startNewGame();
-    });
-  } else {
-    startNewGame();
-  }
+  clearSavedGame();
+  startNewGame();
 }
 
-function startNewGame() {
-  state = initGame();
+function startNewGame(roundMode = getSelectedRoundMode()) {
+  state = initGame(roundMode);
+  setSelectedRoundMode(roundMode);
   saveGame(state);
   renderPlay();
 }
@@ -365,31 +594,42 @@ function onResume() {
   const saved = loadGame();
   if (saved) {
     state = saved;
+    setSelectedRoundMode(saved.roundMode);
     renderPlay();
-  } else {
-    startNewGame();
+    return;
   }
+
+  startNewGame();
 }
 
 function onClosePlay() {
-  showConfirmModal('Quit this game? Your progress will be lost.', () => {
-    clearSavedGame();
+  showConfirmModal('Return to menu? Your game will be saved.', () => {
     state = null;
     renderHome();
   });
 }
 
-function onPlayAgain() {
+function onOverlayPrimary() {
   document.getElementById('gameover-overlay').classList.remove('visible');
+
+  if (state.phase === 'between-rounds') {
+    startNextRound(state);
+    saveGame(state);
+    renderPlay();
+    return;
+  }
+
   clearSavedGame();
-  state = initGame();
-  saveGame(state);
-  renderPlay();
+  startNewGame(state ? state.roundMode : getSelectedRoundMode());
 }
 
-function onMenuFromGameOver() {
+function onMenuFromOverlay() {
   document.getElementById('gameover-overlay').classList.remove('visible');
-  clearSavedGame();
+
+  if (state.phase === 'game-over') {
+    clearSavedGame();
+  }
+
   state = null;
   renderHome();
 }
@@ -424,9 +664,9 @@ function closeConfirmModal() {
 }
 
 function onConfirmModalQuit() {
-  const cb = confirmCallback;
+  const callback = confirmCallback;
   closeConfirmModal();
-  if (cb) cb();
+  if (callback) callback();
 }
 
 // --- Theme ---
@@ -447,23 +687,30 @@ function trapFocus(modal) {
   const focusable = modal.querySelectorAll('button, [href], input, [tabindex]:not([tabindex="-1"])');
   const first = focusable[0];
   const last = focusable[focusable.length - 1];
-  modal.addEventListener('keydown', function handler(e) {
-    if (e.key === 'Escape') {
-      modal.classList.remove('visible');
-      if (modal.id === 'confirm-modal') confirmCallback = null;
+
+  modal.addEventListener('keydown', function handleKeydown(event) {
+    if (event.key === 'Escape') {
+      if (modal.id === 'help-modal') {
+        closeHelpModal();
+      } else if (modal.id === 'confirm-modal') {
+        closeConfirmModal();
+      }
       return;
     }
-    if (e.key !== 'Tab') return;
-    if (e.shiftKey) {
+
+    if (event.key !== 'Tab') return;
+
+    if (event.shiftKey) {
       if (document.activeElement === first) {
-        e.preventDefault();
+        event.preventDefault();
         last.focus();
       }
-    } else {
-      if (document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
+      return;
+    }
+
+    if (document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
     }
   });
 }
@@ -471,6 +718,7 @@ function trapFocus(modal) {
 // --- Init ---
 
 document.addEventListener('DOMContentLoaded', () => {
+  loadSelectedRoundMode();
   initTheme();
 
   // Home screen
@@ -478,6 +726,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-resume').addEventListener('click', onResume);
   document.getElementById('btn-help-home').addEventListener('click', showHelpModal);
   document.getElementById('btn-theme-home').addEventListener('click', toggleTheme);
+  document.getElementById('btn-round-single').addEventListener('click', () => setSelectedRoundMode('single'));
+  document.getElementById('btn-round-five').addEventListener('click', () => setSelectedRoundMode('five'));
+  document.getElementById('btn-round-endless').addEventListener('click', () => setSelectedRoundMode('endless'));
 
   // Play screen
   document.getElementById('btn-roll').addEventListener('click', onRoll);
@@ -487,16 +738,18 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-theme-play').addEventListener('click', toggleTheme);
   document.getElementById('btn-one-die').addEventListener('click', () => {
     setDiceCount(state, 1);
+    saveGame(state);
     renderDiceCountToggle();
   });
   document.getElementById('btn-two-dice').addEventListener('click', () => {
     setDiceCount(state, 2);
+    saveGame(state);
     renderDiceCountToggle();
   });
 
-  // Game over overlay
-  document.getElementById('btn-play-again').addEventListener('click', onPlayAgain);
-  document.getElementById('btn-menu').addEventListener('click', onMenuFromGameOver);
+  // Overlay
+  document.getElementById('btn-play-again').addEventListener('click', onOverlayPrimary);
+  document.getElementById('btn-menu').addEventListener('click', onMenuFromOverlay);
 
   // Help modal
   document.getElementById('btn-close-help').addEventListener('click', closeHelpModal);

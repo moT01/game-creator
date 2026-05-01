@@ -7,18 +7,20 @@
 
 **Players:** 1
 
-**Modes / variants:** Solo only — score tracked against personal best
+**Modes / variants:** Solo only — choose 1 round, 5 rounds, or endless; 1-round mode tracks personal best
 
-**Win / draw conditions:** Game ends when no valid tile combination matches the dice total; score = sum of open tiles; 0 = perfect ("Shut the Box")
+**Win / draw conditions:** 1 round: game ends when no valid tile combination matches the dice total; score = sum of open tiles; 0 = perfect ("Shut the Box"). 5-round/endless: busted rounds add to a running total and reset the board; the run ends immediately when the player shuts the box, or after round 5 in the 5-round mode.
 
 **Special rules / one-off mechanics:**
 - One-die option: available only when tiles 7, 8, AND 9 are all shut; player chooses 1 or 2 dice before rolling that turn
 - A player must shut tiles totaling EXACTLY the dice total in a single selection — partial sums not allowed mid-turn; they select tiles one-by-one and confirm when sum matches
-- If no subset of open tiles sums to the dice total, the turn (and the player's game) ends immediately
+- If no subset of open tiles sums to the dice total, the round ends immediately
+- In 5-round/endless modes, a busted round adds its open-tile score to the running total and the next round begins on a fresh board if rounds remain
+- In 5-round/endless modes, shutting the box ends the full run immediately and adds 0 points for that round
 
 **UI flow:**
-1. Home screen — records, New Game / Resume
-2. Play screen: roll phase -> select phase -> roll phase -> ... -> game-over overlay
+1. Home screen — records, round selection, New Game / Resume
+2. Play screen: roll phase -> select phase -> roll phase -> ... -> between-rounds overlay or game-over overlay
 3. From any screen: help modal, theme toggle
 
 **Edge cases:**
@@ -44,15 +46,22 @@
   dice: [],              // [] before first roll; [n] or [n, n] after roll
   diceTotal: 0,
   selectedTiles: [],     // indices of tiles selected for current move (not yet confirmed)
-  phase: 'rolling' | 'selecting' | 'game-over',
+  phase: 'rolling' | 'selecting' | 'between-rounds' | 'game-over',
   canRollOneDie: false,  // true when tiles[6], tiles[7], tiles[8] are all false
   diceCount: 2,          // 1 or 2; changeable only when canRollOneDie is true
+  roundMode: 'single' | 'five' | 'endless',
+  currentRound: 1,
+  totalScore: 0,
+  lastRoundScore: 0,
+  finalScore: null,
+  result: null,          // 'won' | 'lost'
 }
 ```
 
 **State flags:**
 - `phase: 'rolling'` — waiting for player to roll
 - `phase: 'selecting'` — dice rolled, player choosing tiles
+- `phase: 'between-rounds'` — waiting to continue after a busted round in 5-round/endless mode
 - `phase: 'game-over'` — no valid moves or all tiles shut
 - `canRollOneDie` — recalculated after every tile confirmation: `tiles[6] === false && tiles[7] === false && tiles[8] === false`
 
@@ -61,7 +70,8 @@
 2. Dice animate and land on values; `diceTotal` computed
 3. `getValidCombinations(openTiles, diceTotal)` called — if empty, transition to `phase: 'game-over'`
 4. Player clicks open tiles to toggle `selectedTiles`; if `selectedSum === diceTotal`, Confirm button activates
-5. Player confirms — selected tiles shut, `selectedTiles` cleared, `canRollOneDie` updated, check if all tiles shut (score 0 → game-over), else back to `phase: 'rolling'`
+5. Player confirms — selected tiles shut, `selectedTiles` cleared, `canRollOneDie` updated, check if all tiles shut (run ends with no added points for that round), else back to `phase: 'rolling'`
+6. If a round ends with open tiles remaining and more rounds are allowed, add the round score to `totalScore`, show the between-rounds overlay, then reset the board for the next round
 
 **Move validation approach:**
 - `getValidCombinations(openTileIndices, target)` — recursive subset-sum returning all valid subsets; used to check if any move exists after a roll
@@ -117,7 +127,9 @@
 - [x] `updateCanRollOneDie(state)` — `state.canRollOneDie = !state.tiles[6] && !state.tiles[7] && !state.tiles[8]`; resets `state.diceCount` to 2 if no longer eligible
 - [x] `setDiceCount(state, count)` — only sets if `state.canRollOneDie && state.phase === 'rolling'`; count is 1 or 2
 - [x] `calcScore(tiles)` — returns sum of values where `tiles[i] === true` (i.e., `open tiles → value = i+1`)
-- [x] `endGame(state)` — computes score via `calcScore`; sets `phase: 'game-over'`; calls `saveBestScore(score)`
+- [x] `finishRound(state)` — computes the busted round score; either advances to `phase: 'between-rounds'` with `totalScore += roundScore` or finishes the run
+- [x] `finishMatch(state, finalScore, result)` — stores final run result, sets `phase: 'game-over'`, and saves personal best only for 1-round games
+- [x] `startNextRound(state)` — increments `currentRound` and resets the board while preserving `roundMode` and `totalScore`
 - [x] `saveGame(state)` — serializes state to `localStorage['stb-saved-game']`
 - [x] `loadGame()` — reads and parses `localStorage['stb-saved-game']`; returns null if absent or invalid
 - [x] `clearSavedGame()` — removes `localStorage['stb-saved-game']`
@@ -127,9 +139,9 @@
 
 ## UI & Rendering
 
-- [x] **Home screen** — full viewport; game-themed background (dark wood or green felt texture via CSS, no images); centered container min-width 420px with `--shadow-lg` and inset border; top row: help, theme, donate icon buttons (SVGs from `.claude/icons/`); title "Shut the Box"; records section showing best score; New Game button always visible; Resume button visible only when `localStorage['stb-saved-game']` exists
-- [x] **Play screen** — centered container min-width 420px; header with close (x), help, theme, donate icons + horizontal rule; tile row: 9 tile buttons numbered 1-9, open tiles clickable and highlighted when selected, shut tiles visually flipped/dimmed; dice area: shows 1 or 2 dice faces (SVG or CSS-drawn pips); dice count toggle (1 die / 2 dice) visible and enabled only when `canRollOneDie`; Roll button (active during `phase: 'rolling'`); Confirm button (active when `selectedSum === diceTotal`); status line: current dice total, selected sum; score display: live sum of open tiles using `--font-mono`
-- [x] **Game over overlay** — fades in over play screen; shows final score in large `--font-mono`; "Shut the Box!" banner if score is 0 in `--color-success`; shows personal best; Play Again and Menu buttons
+- [x] **Home screen** — full viewport; game-themed background (dark wood or green felt texture via CSS, no images); centered container min-width 420px with `--shadow-lg` and inset border; top row: help, theme, donate icon buttons (SVGs from `.claude/icons/`); title "Shut the Box"; records section showing best 1-round score; round selector for 1 / 5 / endless; New Game button always visible; Resume button visible only when `localStorage['stb-saved-game']` exists
+- [x] **Play screen** — centered container min-width 420px; header with close (x), help, theme, donate icons + horizontal rule; match stats for mode / round / running total; separate round-score card; tile row: 9 tile buttons numbered 1-9, open tiles clickable and highlighted when selected, shut tiles visually flipped/dimmed; dice area: shows 1 or 2 dice faces (SVG or CSS-drawn pips); dice count toggle (1 die / 2 dice) visible and enabled only when `canRollOneDie`; Roll button (active during `phase: 'rolling'`); Confirm button (active when `selectedSum === diceTotal`); status line: current dice total, selected sum
+- [x] **Overlay flow** — reused for both between-rounds and final game-over states; between-rounds shows round score, running total, and Continue/Menu; final state shows final total, win banner when applicable, and Play Again/Menu
 - [x] **HelpModal** — triggered by help icon on any screen; content from Help & Strategy Guide section; close button; accessible via keyboard (Escape closes)
 - [x] **ConfirmModal** — triggered when closing play screen (x button) or starting new game while one is in progress; message: "Quit this game? Your progress will be lost."; Cancel and Quit buttons; min-width 420px
 

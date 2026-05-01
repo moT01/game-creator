@@ -28,15 +28,38 @@
         </div>
 
         <h1 class="home-title">Shut the Box</h1>
+        <p class="home-subtitle">Lowest score wins</p>
+
+        <div class="round-select" aria-labelledby="round-select-label">
+          <div id="round-select-label" class="record-label">Rounds</div>
+          <div class="round-options" role="group" aria-labelledby="round-select-label">
+            <button id="btn-round-single" class="round-option active" type="button" aria-label="Play 1 round" aria-pressed="true">1</button>
+            <button id="btn-round-five" class="round-option" type="button" aria-label="Play 5 rounds" aria-pressed="false">5</button>
+            <button id="btn-round-endless" class="round-option round-option-infinity" type="button" aria-label="Play endless rounds" aria-pressed="false">&infin;</button>
+          </div>
+        </div>
 
         <div class="home-records">
-          <div class="record-label">Personal Best</div>
-          <div class="record-value" id="home-best">--</div>
+          <div class="record-heading-row">
+            <span class="record-label">Best Scores</span>
+          </div>
+          <div class="record-row">
+            <span class="record-name">1 Round</span>
+            <span class="record-value" id="home-best-single">--</span>
+          </div>
+          <div class="record-row">
+            <span class="record-name">5 Rounds</span>
+            <span class="record-value" id="home-best-five">--</span>
+          </div>
+          <div class="record-row">
+            <span class="record-name">&infin; Rounds</span>
+            <span class="record-value" id="home-best-endless">--</span>
+          </div>
         </div>
 
         <div class="home-actions">
           <button id="btn-new-game-home" class="btn btn-primary">New Game</button>
-          <button id="btn-resume" class="btn btn-secondary">Resume</button>
+          <button id="btn-resume" class="btn btn-secondary" hidden>Resume</button>
         </div>
       </div>
     </div>
@@ -65,8 +88,19 @@
           </div>
         </div>
 
+        <div class="play-stats-grid">
+          <div class="stat-card">
+            <span class="score-label">Round</span>
+            <span id="round-progress" class="score-value">1 / 1</span>
+          </div>
+          <div class="stat-card">
+            <span class="score-label">Total</span>
+            <span id="total-score" class="score-value">0</span>
+          </div>
+        </div>
+
         <div class="play-score-row">
-          <span class="score-label">Score</span>
+          <span id="live-score-label" class="score-label">Round Score</span>
           <span id="live-score" class="score-value">45</span>
         </div>
 
@@ -90,11 +124,12 @@
         <div class="overlay-panel">
           <h2 id="gameover-heading" class="overlay-heading" data-first-focus tabindex="-1">Game Over</h2>
           <div id="gameover-banner" class="gameover-banner"></div>
-          <div class="gameover-score-label">Final Score</div>
+          <div id="gameover-message" class="gameover-message"></div>
+          <div id="gameover-score-label" class="gameover-score-label">Final Score</div>
           <div id="gameover-score" class="gameover-score"></div>
           <div class="gameover-best-row">
-            <span class="gameover-best-label">Personal Best</span>
-            <span id="gameover-best" class="gameover-best-value"></span>
+            <span id="gameover-meta-label" class="gameover-best-label">Personal Best</span>
+            <span id="gameover-meta-value" class="gameover-best-value"></span>
           </div>
           <div class="overlay-actions">
             <button id="btn-play-again" class="btn btn-primary">Play Again</button>
@@ -125,6 +160,7 @@
           <li>Once tiles 7, 8, and 9 are all shut, you may roll one die instead of two.</li>
           <li>If no open tiles can match your roll total, your game ends. Your score = sum of remaining open tiles.</li>
           <li>Score 0 = "Shut the Box."</li>
+          <li>Choose 1 round, 5 rounds, or endless. In multi-round modes, busted rounds add to your running total and the board resets until you finish the set or shut the box.</li>
         </ul>
 
         <h3 class="help-section-title">Strategy</h3>
