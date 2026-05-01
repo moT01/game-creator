@@ -161,7 +161,7 @@ function getAllMoves(board, foxPos, side) {
 function checkStatus(board, foxPos, currentTurn) {
   if (countGeese(board) <= 3) return 'fox-wins';
   if (currentTurn === 'fox' && getAllMoves(board, foxPos, 'fox').length === 0) return 'geese-win';
-  if (currentTurn === 'geese' && getAllMoves(board, foxPos, 'geese').length === 0) return 'draw';
+  if (currentTurn === 'geese' && getAllMoves(board, foxPos, 'geese').length === 0) return 'fox-wins';
   return 'playing';
 }
 
@@ -172,9 +172,32 @@ function evaluateBoard(board, foxPos) {
   if (geeseCount <= 3) return 1000;
   const foxMoves = getAllMoves(board, foxPos, 'fox');
   if (foxMoves.length === 0) return -1000;
-  const geeseMoves = getAllMoves(board, foxPos, 'geese');
+
+  const [fr, fc] = foxPos;
   const captured = 13 - geeseCount;
-  return captured * 10 + foxMoves.length * 2 - geeseMoves.length;
+
+  // Fox: captures and mobility
+  let score = captured * 10 + foxMoves.length * 3;
+
+  // Geese: advancement — higher row = closer to trapping the fox
+  let advancement = 0;
+  for (let r = 0; r < 7; r++) {
+    for (let c = 0; c < 7; c++) {
+      if (board[r][c] === 'goose') advancement += r;
+    }
+  }
+  score -= advancement;
+
+  // Geese: encirclement — how many squares adjacent to the fox are blocked
+  const dirs = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+  let blocked = 0;
+  for (const [dr, dc] of dirs) {
+    const nr = fr + dr, nc = fc + dc;
+    if (!isValid(nr, nc) || board[nr][nc] === 'goose') blocked++;
+  }
+  score -= blocked * 5;
+
+  return score;
 }
 
 function minimax(board, foxPos, depth, isMaximizing, alpha, beta) {
@@ -183,7 +206,7 @@ function minimax(board, foxPos, depth, isMaximizing, alpha, beta) {
   const side = isMaximizing ? 'fox' : 'geese';
   const moves = getAllMoves(board, foxPos, side);
   if (moves.length === 0) {
-    return isMaximizing ? -1000 : 0; // fox trapped = geese win; geese trapped = draw
+    return isMaximizing ? -1000 : 1000; // fox trapped = geese win; geese trapped = fox wins
   }
   if (depth === 0) return evaluateBoard(board, foxPos);
 
@@ -216,12 +239,20 @@ function getBestMove(board, foxPos, side, difficulty) {
   let moves = getAllMoves(board, foxPos, side);
 
   if (difficulty === 'hard') {
-    // order captures first for fox
     if (side === 'fox') {
+      // order captures first for fox
       moves = [...moves].sort((a, b) => {
         const aJump = isFoxJump(a.from, a.to) ? 1 : 0;
         const bJump = isFoxJump(b.from, b.to) ? 1 : 0;
         return bJump - aJump;
+      });
+    } else {
+      // order geese moves to prefer advancing and closing in on the fox
+      const [fr, fc] = foxPos;
+      moves = [...moves].sort((a, b) => {
+        const aDist = Math.abs(a.to[0] - fr) + Math.abs(a.to[1] - fc);
+        const bDist = Math.abs(b.to[0] - fr) + Math.abs(b.to[1] - fc);
+        return aDist - bDist;
       });
     }
   }
@@ -558,7 +589,7 @@ function buildBoardLines() {
         const y1 = r * CELL + OFFSET;
         const x2 = nc * CELL + OFFSET;
         const y2 = nr * CELL + OFFSET;
-        lines += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--color-border)" stroke-width="2"/>`;
+        lines += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--color-board-line)" stroke-width="2"/>`;
       }
     }
   }
@@ -611,7 +642,8 @@ function renderBoard() {
       } else if (isGooseCell) {
         pieceHtml = `<div class="piece piece--goose${isSelected ? ' piece--selected' : ''}"></div>`;
       } else if (isValidMove) {
-        pieceHtml = `<div class="valid-move-dot"></div>`;
+        const selectedPiece = selected ? board[selected[0]][selected[1]] : 'fox';
+        pieceHtml = `<div class="valid-move-dot valid-move-dot--${selectedPiece}"></div>`;
       }
 
       cells += `<div class="${classes}" role="button" aria-label="${ariaLabel}" ${ariaPressedAttr} tabindex="${tabIndex}"
@@ -645,12 +677,16 @@ function renderRecords() {
   const r = loadRecords();
   return `
     <div class="records">
-      <div class="records-title">Win Records</div>
       <div class="records-grid">
-        <span class="records-label">Fox (Normal)</span><span class="records-value">${r.foxNormal}</span>
-        <span class="records-label">Fox (Hard)</span><span class="records-value">${r.foxHard}</span>
-        <span class="records-label">Geese (Normal)</span><span class="records-value">${r.geeseNormal}</span>
-        <span class="records-label">Geese (Hard)</span><span class="records-value">${r.geeseHard}</span>
+        <span class="records-title">Wins</span>
+        <span class="records-col-header">Normal</span>
+        <span class="records-col-header">Hard</span>
+        <span class="records-label">Fox</span>
+        <span class="records-value">${r.foxNormal}</span>
+        <span class="records-value">${r.foxHard}</span>
+        <span class="records-label">Geese</span>
+        <span class="records-value">${r.geeseNormal}</span>
+        <span class="records-value">${r.geeseHard}</span>
       </div>
     </div>`;
 }
@@ -671,7 +707,7 @@ function renderHomeScreen() {
           <button class="toggle-btn${prefs.mode === 'vs-computer' ? ' active' : ''}"
             onclick="setMode('vs-computer')">vs Computer</button>
           <button class="toggle-btn${prefs.mode === 'vs-player' ? ' active' : ''}"
-            onclick="setMode('vs-player')">vs Player</button>
+            onclick="setMode('vs-player')">2 Player</button>
         </div>
       </div>
 
@@ -696,7 +732,7 @@ function renderHomeScreen() {
         </div>
       </div>` : ''}
 
-      ${renderRecords()}
+      ${isVsComputer ? renderRecords() : ''}
 
       <div class="home-actions">
         <button class="btn btn--primary" onclick="startNewGame()">New Game</button>
@@ -747,7 +783,6 @@ function renderGameOver() {
     <div class="overlay" role="dialog" aria-modal="true" aria-label="Game over">
       <div class="overlay-panel">
         <div class="result-text ${resultClass}">${resultText}</div>
-        ${renderRecords()}
         <div class="overlay-actions">
           <button class="btn btn--primary" onclick="startNewGame()">Play Again</button>
           <button class="btn btn--secondary" onclick="goToMenu()">Menu</button>
@@ -766,14 +801,15 @@ function renderHelpModal() {
         </div>
         <div class="modal-body">
           <h3>Objective</h3>
-          <p>Fox: capture geese until only 3 remain. Geese: surround the fox so it cannot move.</p>
+          <p>Geese: advance as a group and trap the fox so it has no legal move.</p>
+          <p>Fox: break through the geese by capturing them until only 3 remain.</p>
 
           <h3>How to Move</h3>
           <ul>
-            <li>Geese move first, one step at a time — forward (down) or sideways only.</li>
+            <li>Geese move first. They can only step down or sideways — never up or diagonally.</li>
             <li>Fox moves one step in any direction, or jumps over one goose to capture it.</li>
             <li>No multi-jump: fox may capture only once per turn.</li>
-            <li>Fox wins when 10 or more geese are captured (3 or fewer remain).</li>
+            <li>Fox wins when 10 or more geese are captured (3 or fewer remain), or when the geese have no legal move.</li>
             <li>Geese win when the fox has no legal move.</li>
           </ul>
 
