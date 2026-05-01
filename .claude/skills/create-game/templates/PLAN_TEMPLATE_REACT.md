@@ -166,13 +166,4 @@ _(Include only if the game has a computer player)_
 ## Polish
 _(animations on key events, piece/card movement, empty state handling)_
 - [ ] ...
-
----
-
-## Testing
-
-**Unit tests — game logic (`src/gameLogic.test.ts`):**
-- [ ] ...
-
-**Component tests — (`src/App.test.tsx`):**
-- [ ] ...
+oc
