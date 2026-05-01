@@ -4,7 +4,6 @@ const STORAGE = {
   THEME: 'dab_theme',
   MODE: 'dab_mode',
   GRID: 'dab_gridSize',
-  DIFF: 'dab_difficulty',
   COLOR: 'dab_playerColor',
   GAME: 'dab_game',
   RECORDS: 'dab_records',
@@ -22,8 +21,7 @@ let vEdgeOwner = [];
 
 let settings = {
   mode: localStorage.getItem(STORAGE.MODE) || 'vs-computer',
-  gridSize: parseInt(localStorage.getItem(STORAGE.GRID)) || 6,
-  difficulty: localStorage.getItem(STORAGE.DIFF) || 'normal',
+  gridSize: parseInt(localStorage.getItem(STORAGE.GRID)) || 4,
   playerColor: localStorage.getItem(STORAGE.COLOR) || 'dark',
 };
 
@@ -32,9 +30,13 @@ let settings = {
 function getRecords() {
   try {
     const r = JSON.parse(localStorage.getItem(STORAGE.RECORDS));
-    if (r && typeof r.wins_normal === 'number' && typeof r.wins_hard === 'number') return r;
+    if (r && typeof r === 'object') return r;
   } catch (e) {}
-  return { wins_normal: 0, wins_hard: 0 };
+  return {};
+}
+
+function getWinKey(gridSize) {
+  return `wins_${gridSize}`;
 }
 
 function saveRecords(r) {
@@ -53,12 +55,11 @@ function randItem(arr) {
 
 // ─── Game Logic ───────────────────────────────────────────────────────────────
 
-function initGame(gridSize, mode, difficulty, playerColor) {
+function initGame(gridSize, mode, playerColor) {
   const g = gridSize;
   state = {
     gridSize: g,
     mode,
-    difficulty,
     playerColor,
     humanSide: playerColor,
     hEdges: make2D(g + 1, g, false),
@@ -130,7 +131,7 @@ function allEdgesClaimed() {
   return count === total;
 }
 
-function handleEdgeClick(type, r, c) {
+function handleEdgeClick(type, r, c, isComputer = false) {
   if (state.gameOver) return;
   if (isAnimating) return;
 
@@ -142,8 +143,8 @@ function handleEdgeClick(type, r, c) {
   // already claimed?
   if (type === 'h' ? state.hEdges[r][c] : state.vEdges[r][c]) return;
 
-  // correct side in vs-computer?
-  if (state.mode === 'vs-computer' && state.currentSide !== state.playerColor) return;
+  // block human from clicking on computer's turn
+  if (!isComputer && state.mode === 'vs-computer' && state.currentSide !== state.playerColor) return;
 
   const completed = claimEdge(type, r, c);
   scoreBoxes(completed, state.currentSide);
@@ -189,11 +190,11 @@ function scheduleComputerMove() {
 function runComputerMove() {
   isAnimating = false;
   const move = getComputerMove();
-  if (move) handleEdgeClick(move.type, move.r, move.c);
+  if (move) handleEdgeClick(move.type, move.r, move.c, true);
 }
 
 function getComputerMove() {
-  return state.difficulty === 'hard' ? aiHard() : aiNormal();
+  return aiHard();
 }
 
 // ─── AI ───────────────────────────────────────────────────────────────────────
@@ -339,8 +340,11 @@ function endGame() {
 
   if (state.mode === 'vs-computer' && state.winner === state.playerColor) {
     const rec = getRecords();
-    if (state.difficulty === 'hard') rec.wins_hard++;
-    else rec.wins_normal++;
+    const key = getWinKey(state.gridSize);
+    rec[key] = (rec[key] || 0) + 1;
+    const bestKey = `best_${state.gridSize}`;
+    const playerScore = state.score[state.playerColor];
+    if (playerScore > (rec[bestKey] || 0)) rec[bestKey] = playerScore;
     saveRecords(rec);
   }
   clearSavedGame();
@@ -449,36 +453,34 @@ function renderHomeScreen() {
 
       <div class="segmented-control" role="radiogroup" aria-label="Game mode">
         <button class="segment${settings.mode === 'vs-computer' ? ' selected' : ''}" role="radio" aria-checked="${settings.mode === 'vs-computer'}" data-mode="vs-computer">vs Computer</button>
-        <button class="segment${settings.mode === 'vs-human' ? ' selected' : ''}" role="radio" aria-checked="${settings.mode === 'vs-human'}" data-mode="vs-human">vs Human</button>
+        <button class="segment${settings.mode === 'vs-human' ? ' selected' : ''}" role="radio" aria-checked="${settings.mode === 'vs-human'}" data-mode="vs-human">2 Player</button>
       </div>
 
-      <div class="selector-group" role="radiogroup" aria-label="Grid size">
-        <span class="selector-label">Grid Size</span>
-        <div class="selector-pills">
-          <button class="pill${settings.gridSize === 4 ? ' selected' : ''}" role="radio" aria-checked="${settings.gridSize === 4}" data-grid="4">4x4</button>
-          <button class="pill${settings.gridSize === 6 ? ' selected' : ''}" role="radio" aria-checked="${settings.gridSize === 6}" data-grid="6">6x6</button>
-          <button class="pill${settings.gridSize === 8 ? ' selected' : ''}" role="radio" aria-checked="${settings.gridSize === 8}" data-grid="8">8x8</button>
+      <div class="selector-group" role="radiogroup" aria-label="Dots">
+        <span class="selector-label">Dots</span>
+        <div class="segmented-control">
+          <button class="segment${settings.gridSize === 2 ? ' selected' : ''}" role="radio" aria-checked="${settings.gridSize === 2}" data-grid="2">3x3</button>
+          <button class="segment${settings.gridSize === 4 ? ' selected' : ''}" role="radio" aria-checked="${settings.gridSize === 4}" data-grid="4">5x5</button>
+          <button class="segment${settings.gridSize === 6 ? ' selected' : ''}" role="radio" aria-checked="${settings.gridSize === 6}" data-grid="6">7x7</button>
         </div>
       </div>
 
       ${isVsComputer ? `
       <div class="wins-section">
-        <span class="selector-label">Wins</span>
         <div class="wins-list">
-          <div class="wins-row"><span>Normal</span><span class="mono">${records.wins_normal}</span></div>
-          <div class="wins-row"><span>Hard</span><span class="mono">${records.wins_hard}</span></div>
+          <div class="wins-row wins-row-header"><span class="selector-label">Wins</span><span>Wins</span><span>Best</span></div>
+          ${[[2,4,'3x3'],[4,16,'5x5'],[6,36,'7x7']].map(([g, total, label]) => {
+            const best = records[`best_${g}`];
+            return `<div class="wins-row"><span>${label}</span><span class="mono">${records[getWinKey(g)] || 0}</span><span class="mono">${best != null ? `${best}/${total}` : '--'}</span></div>`;
+          }).join('')}
         </div>
       </div>
 
       <div class="color-diff-row" role="group" aria-label="Player options">
-        <div class="selector-pills">
-          <button class="pill${settings.playerColor === 'dark' ? ' selected' : ''}" role="radio" aria-checked="${settings.playerColor === 'dark'}" data-color="dark">Dark (goes first)</button>
-          <button class="pill${settings.playerColor === 'light' ? ' selected' : ''}" role="radio" aria-checked="${settings.playerColor === 'light'}" data-color="light">Light</button>
+        <div class="segmented-control" role="radiogroup" aria-label="Player color">
+          <button class="segment${settings.playerColor === 'dark' ? ' selected' : ''}" role="radio" aria-checked="${settings.playerColor === 'dark'}" data-color="dark">Dark (goes first)</button>
+          <button class="segment${settings.playerColor === 'light' ? ' selected' : ''}" role="radio" aria-checked="${settings.playerColor === 'light'}" data-color="light">Light</button>
         </div>
-        <label class="checkbox-label">
-          <input type="checkbox" id="hard-mode-check" ${settings.difficulty === 'hard' ? 'checked' : ''} />
-          Hard mode
-        </label>
       </div>` : ''}
 
       <div class="home-actions">
@@ -509,17 +511,9 @@ function renderHomeScreen() {
     renderHomeScreen();
   }));
 
-  const hardCheck = app.querySelector('#hard-mode-check');
-  if (hardCheck) {
-    hardCheck.addEventListener('change', () => {
-      settings.difficulty = hardCheck.checked ? 'hard' : 'normal';
-      localStorage.setItem(STORAGE.DIFF, settings.difficulty);
-    });
-  }
-
   app.querySelector('#btn-new-game').addEventListener('click', () => {
     clearSavedGame();
-    initGame(settings.gridSize, settings.mode, settings.difficulty, settings.playerColor);
+    initGame(settings.gridSize, settings.mode, settings.playerColor);
   });
 
   const btnResume = app.querySelector('#btn-resume');
@@ -603,7 +597,7 @@ function renderStatus() {
 // ─── SVG Board ────────────────────────────────────────────────────────────────
 
 function getCellSize() {
-  return Math.min(Math.floor(400 / state.gridSize), 60);
+  return Math.min(Math.floor(500 / state.gridSize), 80);
 }
 
 function renderBoard() {
@@ -661,7 +655,7 @@ function renderBoard() {
       if (claimed) cls += owner === 'dark' ? ' edge-dark' : ' edge-light';
       else cls += ' edge-unclaimed';
       line.setAttribute('class', cls);
-      line.setAttribute('stroke-width', claimed ? 4 : 2);
+      line.setAttribute('stroke-width', claimed ? 6 : 4);
       if (claimed) line.setAttribute('pointer-events', 'none');
       svg.appendChild(line);
 
@@ -670,7 +664,7 @@ function renderBoard() {
         hit.setAttribute('x1', x1); hit.setAttribute('y1', y1);
         hit.setAttribute('x2', x2); hit.setAttribute('y2', y2);
         hit.setAttribute('stroke', 'transparent');
-        hit.setAttribute('stroke-width', 16);
+        hit.setAttribute('stroke-width', 20);
         hit.setAttribute('class', 'edge-hit');
         hit.setAttribute('tabindex', '0');
         hit.setAttribute('role', 'button');
@@ -680,13 +674,11 @@ function renderBoard() {
         hit.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleEdgeClick('h', r, c); } });
         hit.addEventListener('mouseenter', () => {
           const vis = svg.querySelector(`.edge-line.edge-unclaimed[data-key="h-${r}-${c}"]`);
-          if (vis) vis.classList.add('edge-hover');
-          hit.classList.add('hovered');
+          if (vis) vis.classList.add(`edge-hover-${state.currentSide}`);
         });
         hit.addEventListener('mouseleave', () => {
           const vis = svg.querySelector(`.edge-line.edge-unclaimed[data-key="h-${r}-${c}"]`);
-          if (vis) vis.classList.remove('edge-hover');
-          hit.classList.remove('hovered');
+          if (vis) vis.classList.remove('edge-hover-dark', 'edge-hover-light');
         });
         line.setAttribute('data-key', `h-${r}-${c}`);
         svg.appendChild(hit);
@@ -711,7 +703,7 @@ function renderBoard() {
       if (claimed) cls += owner === 'dark' ? ' edge-dark' : ' edge-light';
       else cls += ' edge-unclaimed';
       line.setAttribute('class', cls);
-      line.setAttribute('stroke-width', claimed ? 4 : 2);
+      line.setAttribute('stroke-width', claimed ? 6 : 4);
       if (claimed) line.setAttribute('pointer-events', 'none');
       svg.appendChild(line);
 
@@ -720,7 +712,7 @@ function renderBoard() {
         hit.setAttribute('x1', x1); hit.setAttribute('y1', y1);
         hit.setAttribute('x2', x2); hit.setAttribute('y2', y2);
         hit.setAttribute('stroke', 'transparent');
-        hit.setAttribute('stroke-width', 16);
+        hit.setAttribute('stroke-width', 20);
         hit.setAttribute('class', 'edge-hit');
         hit.setAttribute('tabindex', '0');
         hit.setAttribute('role', 'button');
@@ -730,11 +722,11 @@ function renderBoard() {
         hit.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleEdgeClick('v', r, c); } });
         hit.addEventListener('mouseenter', () => {
           const vis = svg.querySelector(`.edge-line.edge-unclaimed[data-key="v-${r}-${c}"]`);
-          if (vis) vis.classList.add('edge-hover');
+          if (vis) vis.classList.add(`edge-hover-${state.currentSide}`);
         });
         hit.addEventListener('mouseleave', () => {
           const vis = svg.querySelector(`.edge-line.edge-unclaimed[data-key="v-${r}-${c}"]`);
-          if (vis) vis.classList.remove('edge-hover');
+          if (vis) vis.classList.remove('edge-hover-dark', 'edge-hover-light');
         });
         line.setAttribute('data-key', `v-${r}-${c}`);
         svg.appendChild(hit);
@@ -782,7 +774,6 @@ function pulseScore(side) {
 // ─── Overlays ─────────────────────────────────────────────────────────────────
 
 function showGameOver() {
-  const records = getRecords();
   let resultText, resultClass;
   if (state.mode === 'vs-computer') {
     if (state.winner === 'draw') { resultText = 'Draw!'; resultClass = 'result-draw'; }
@@ -793,10 +784,6 @@ function showGameOver() {
     else { resultText = state.winner === 'dark' ? 'Dark wins!' : 'Light wins!'; resultClass = 'result-win'; }
   }
 
-  const winsLine = state.mode === 'vs-computer'
-    ? `<p class="gameover-wins">Normal wins: <span class="mono">${records.wins_normal}</span> | Hard wins: <span class="mono">${records.wins_hard}</span></p>`
-    : '';
-
   const overlay = document.createElement('div');
   overlay.className = 'overlay gameover-overlay';
   overlay.setAttribute('role', 'dialog');
@@ -806,7 +793,6 @@ function showGameOver() {
     <div class="overlay-panel gameover-panel">
       <div class="result-text ${resultClass}">${resultText}</div>
       <div class="gameover-score mono">Dark: ${state.score.dark} | Light: ${state.score.light}</div>
-      ${winsLine}
       <div class="overlay-actions">
         <button class="btn-primary" id="btn-play-again">Play Again</button>
         <button class="btn-secondary" id="btn-menu">Menu</button>
@@ -819,7 +805,7 @@ function showGameOver() {
   overlay.querySelector('#btn-play-again').focus();
   overlay.querySelector('#btn-play-again').addEventListener('click', () => {
     overlay.remove();
-    initGame(state.gridSize, state.mode, state.difficulty, state.playerColor);
+    initGame(state.gridSize, state.mode, state.playerColor);
   });
   overlay.querySelector('#btn-menu').addEventListener('click', () => {
     overlay.remove();
@@ -892,8 +878,8 @@ function showConfirmModal(message, onConfirm) {
     <div class="overlay-panel confirm-panel">
       <p class="confirm-message">${message}</p>
       <div class="overlay-actions">
-        <button class="btn-primary" id="btn-confirm">Confirm</button>
         <button class="btn-secondary" id="btn-cancel">Cancel</button>
+        <button class="btn-primary" id="btn-confirm">Confirm</button>
       </div>
     </div>
   `;

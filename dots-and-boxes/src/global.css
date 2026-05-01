@@ -167,7 +167,7 @@ body {
   --piece-highlight: rgba(255, 255, 255, 0.8);
 
   /* Semantic overrides */
-  --color-bg: var(--gray-00);
+  --color-bg: var(--gray-05);
   --color-surface: var(--gray-05);
   --color-surface-raised: var(--gray-10);
   --color-border: var(--gray-15);
