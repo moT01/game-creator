@@ -468,7 +468,7 @@ function renderHomeScreen() {
       ${isVsComputer ? `
       <div class="wins-section">
         <div class="wins-list">
-          <div class="wins-row wins-row-header"><span class="selector-label">Wins</span><span>Wins</span><span>Best</span></div>
+          <div class="wins-row wins-row-header"><span class="selector-label">Mode</span><span>Wins</span><span>Best</span></div>
           ${[[2,4,'3x3'],[4,16,'5x5'],[6,36,'7x7']].map(([g, total, label]) => {
             const best = records[`best_${g}`];
             return `<div class="wins-row"><span>${label}</span><span class="mono">${records[getWinKey(g)] || 0}</span><span class="mono">${best != null ? `${best}/${total}` : '--'}</span></div>`;
