@@ -176,43 +176,108 @@ function evaluateBoard(board, foxPos) {
   const [fr, fc] = foxPos;
   const captured = 13 - geeseCount;
 
-  // Fox: captures and mobility
   let score = captured * 10 + foxMoves.length * 3;
 
-  // Geese: advancement — higher row = closer to trapping the fox
-  let advancement = 0;
+  // Collect goose data in one pass
+  let isolated = 0;
+  let totalDist = 0;
+  let minRow = 7, maxRow = 0;
+  const columns = new Set();
+  const geesePositions = [];
+
   for (let r = 0; r < 7; r++) {
     for (let c = 0; c < 7; c++) {
-      if (board[r][c] === 'goose') advancement += r;
+      if (board[r][c] === 'goose') {
+        geesePositions.push([r, c]);
+        totalDist += Math.abs(r - fr) + Math.abs(c - fc);
+        minRow = Math.min(minRow, r);
+        maxRow = Math.max(maxRow, r);
+        columns.add(c);
+        const hasNeighbor = getAdjacentSteps(r, c).some(([nr, nc]) => board[nr][nc] === 'goose');
+        if (!hasNeighbor) isolated++;
+      }
     }
   }
-  score -= advancement;
 
-  // Geese: encirclement — how many squares adjacent to the fox are blocked
-  const dirs = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+  // Proximity to fox: geese close to fox are surrounding it
+  score += totalDist * 0.5;
+
+  // Isolated geese are easy captures
+  score += isolated * 5;
+
+  // Tight row spread = good coordinated formation
+  score += (maxRow - minRow) * 3;
+
+  // Back pieces lagging: reward when the most backward goose is advancing
+  score -= minRow * 2;
+
+  // Column coverage: spread across columns = no escape lanes
+  score -= columns.size * 2;
+
+  // Front line gaps: holes in the most advanced row let fox through
+  const frontGeeseCols = geesePositions.filter(([r]) => r === maxRow).map(([, c]) => c);
+  if (frontGeeseCols.length > 1) {
+    const left = Math.min(...frontGeeseCols);
+    const right = Math.max(...frontGeeseCols);
+    let gaps = 0;
+    for (let c = left + 1; c < right; c++) {
+      if (isValid(maxRow, c) && board[maxRow][c] !== 'goose') gaps++;
+    }
+    score += gaps * 3;
+  }
+
+  // Immediate capture threats
+  score += getFoxJumps(board, fr, fc).length * 15;
+
+  // Fork setup: squares fox can reach where it would have 2+ jumps
+  const dirs8 = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+  let forkThreat = 0;
+  for (const [dr, dc] of dirs8) {
+    const nr = fr + dr, nc = fc + dc;
+    if (isValid(nr, nc) && board[nr][nc] === 'empty') {
+      const jumpsFromThere = getFoxJumps(board, nr, nc);
+      if (jumpsFromThere.length >= 2) forkThreat += jumpsFromThere.length;
+    }
+  }
+  score += forkThreat * 8;
+
+  // Encirclement: the main objective — block all fox escapes
   let blocked = 0;
-  for (const [dr, dc] of dirs) {
+  for (const [dr, dc] of dirs8) {
     const nr = fr + dr, nc = fc + dc;
     if (!isValid(nr, nc) || board[nr][nc] === 'goose') blocked++;
   }
-  score -= blocked * 5;
+  score -= blocked * 12;
 
   return score;
+}
+
+function quiescence(board, foxPos, alpha, beta) {
+  const standPat = evaluateBoard(board, foxPos);
+  if (standPat >= beta) return beta;
+  alpha = Math.max(alpha, standPat);
+
+  const jumps = getFoxJumps(board, foxPos[0], foxPos[1]);
+  for (const to of jumps) {
+    const { board: nb, foxPos: nf } = applyMove(board, foxPos, foxPos, to);
+    const score = quiescence(nb, nf, alpha, beta);
+    if (score >= beta) return beta;
+    alpha = Math.max(alpha, score);
+  }
+  return alpha;
 }
 
 function minimax(board, foxPos, depth, isMaximizing, alpha, beta) {
   const geeseCount = countGeese(board);
   if (geeseCount <= 3) return 1000;
-  const side = isMaximizing ? 'fox' : 'geese';
-  const moves = getAllMoves(board, foxPos, side);
-  if (moves.length === 0) {
-    return isMaximizing ? -1000 : 1000; // fox trapped = geese win; geese trapped = fox wins
-  }
-  if (depth === 0) return evaluateBoard(board, foxPos);
 
   if (isMaximizing) {
+    const foxMoves = getAllMoves(board, foxPos, 'fox')
+      .sort((a, b) => (isFoxJump(b.from, b.to) ? 1 : 0) - (isFoxJump(a.from, a.to) ? 1 : 0));
+    if (foxMoves.length === 0) return -1000;
+    if (depth === 0) return quiescence(board, foxPos, alpha, beta);
     let best = -Infinity;
-    for (const move of moves) {
+    for (const move of foxMoves) {
       const { board: nb, foxPos: nf } = applyMove(board, foxPos, move.from, move.to);
       const score = minimax(nb, nf, depth - 1, false, alpha, beta);
       best = Math.max(best, score);
@@ -221,8 +286,11 @@ function minimax(board, foxPos, depth, isMaximizing, alpha, beta) {
     }
     return best;
   } else {
+    const geeseMoves = getGeeseCandidateMoves(board, foxPos);
+    if (geeseMoves.length === 0) return 1000;
+    if (depth === 0) return evaluateBoard(board, foxPos);
     let best = Infinity;
-    for (const move of moves) {
+    for (const move of geeseMoves) {
       const { board: nb, foxPos: nf } = applyMove(board, foxPos, move.from, move.to);
       const score = minimax(nb, nf, depth - 1, true, alpha, beta);
       best = Math.min(best, score);
@@ -233,37 +301,106 @@ function minimax(board, foxPos, depth, isMaximizing, alpha, beta) {
   }
 }
 
-function getBestMove(board, foxPos, side, difficulty) {
-  let depth = difficulty === 'hard' ? 6 : 3;
-  const isMaximizing = side === 'fox';
-  let moves = getAllMoves(board, foxPos, side);
+function getGeeseCandidateMoves(board, foxPos) {
+  const [fr, fc] = foxPos;
+  const dirs8 = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
 
-  if (difficulty === 'hard') {
-    if (side === 'fox') {
-      // order captures first for fox
-      moves = [...moves].sort((a, b) => {
-        const aJump = isFoxJump(a.from, a.to) ? 1 : 0;
-        const bJump = isFoxJump(b.from, b.to) ? 1 : 0;
-        return bJump - aJump;
-      });
-    } else {
-      // order geese moves to prefer advancing and closing in on the fox
-      const [fr, fc] = foxPos;
-      moves = [...moves].sort((a, b) => {
-        const aDist = Math.abs(a.to[0] - fr) + Math.abs(a.to[1] - fc);
-        const bDist = Math.abs(b.to[0] - fr) + Math.abs(b.to[1] - fc);
-        return aDist - bDist;
-      });
+  // Identify immediately threatened geese
+  const immediateThreat = new Set(
+    getFoxJumps(board, fr, fc).map(dest => {
+      const [jr, jc] = getJumpedSquare(foxPos, dest);
+      return jr + ',' + jc;
+    })
+  );
+
+  // Identify geese in fork setups (fox one step from double capture)
+  const forkThreat = new Set();
+  for (const [dr, dc] of dirs8) {
+    const nr = fr + dr, nc = fc + dc;
+    if (isValid(nr, nc) && board[nr][nc] === 'empty') {
+      const potJumps = getFoxJumps(board, nr, nc);
+      if (potJumps.length >= 2) {
+        for (const dest of potJumps) {
+          const [jr, jc] = getJumpedSquare([nr, nc], dest);
+          forkThreat.add(jr + ',' + jc);
+        }
+      }
     }
   }
+
+  // Only consider geese that have legal moves available
+  const movingGeese = [];
+  for (let r = 0; r < 7; r++) {
+    for (let c = 0; c < 7; c++) {
+      if (board[r][c] !== 'goose') continue;
+      const gooseMoves = getGooseMoves(board, r, c);
+      if (gooseMoves.length === 0) continue;
+      const key = r + ',' + c;
+      const priority = immediateThreat.has(key) ? 0 : forkThreat.has(key) ? 1 : 2;
+      const dist = Math.abs(r - fr) + Math.abs(c - fc);
+      movingGeese.push({ r, c, key, priority, dist, gooseMoves });
+    }
+  }
+
+  // If 8 or fewer geese can move, use all of them — no pruning needed
+  let selected = movingGeese;
+
+  if (movingGeese.length > 8) {
+    const sel = new Map();
+    for (const g of movingGeese) {
+      if (g.priority < 2) sel.set(g.key, g);
+    }
+    const unselected = () => movingGeese.filter(g => !sel.has(g.key));
+
+    // 2 most backward moveable geese
+    const byRow = unselected().sort((a, b) => a.r - b.r);
+    for (let i = 0; i < Math.min(2, byRow.length); i++) sel.set(byRow[i].key, byRow[i]);
+
+    // fill to 8 with geese closest to fox
+    const byDist = unselected().sort((a, b) => a.dist - b.dist);
+    for (const g of byDist) {
+      if (sel.size >= 8) break;
+      sel.set(g.key, g);
+    }
+    selected = [...sel.values()];
+  }
+
+  // Generate moves for selected geese
+  const moves = [];
+  for (const { r, c, gooseMoves } of selected) {
+    for (const to of gooseMoves) {
+      moves.push({ from: [r, c], to });
+    }
+  }
+
+  // Order: threatened first, fork second, then closest to fox
+  moves.sort((a, b) => {
+    const aKey = a.from[0] + ',' + a.from[1];
+    const bKey = b.from[0] + ',' + b.from[1];
+    const aPri = immediateThreat.has(aKey) ? 0 : forkThreat.has(aKey) ? 1 : 2;
+    const bPri = immediateThreat.has(bKey) ? 0 : forkThreat.has(bKey) ? 1 : 2;
+    if (aPri !== bPri) return aPri - bPri;
+    const aDist = Math.abs(a.to[0] - fr) + Math.abs(a.to[1] - fc);
+    const bDist = Math.abs(b.to[0] - fr) + Math.abs(b.to[1] - fc);
+    return aDist - bDist;
+  });
+
+  return moves;
+}
+
+function getBestMove(board, foxPos, side, difficulty) {
+  const depth = difficulty === 'hard' ? 7 : 5;
+  const isMaximizing = side === 'fox';
+  const moves = side === 'fox'
+    ? getAllMoves(board, foxPos, 'fox').sort((a, b) => (isFoxJump(b.from, b.to) ? 1 : 0) - (isFoxJump(a.from, a.to) ? 1 : 0))
+    : getGeeseCandidateMoves(board, foxPos);
 
   const start = Date.now();
   let bestMove = moves[0];
   let bestScore = isMaximizing ? -Infinity : Infinity;
 
   for (const move of moves) {
-    // Timer guard: fall back to depth 4 if over 1s
-    if (Date.now() - start > 1000 && depth > 4) depth = 4;
+    if (Date.now() - start > 1500) break;
 
     const { board: nb, foxPos: nf } = applyMove(board, foxPos, move.from, move.to);
     const score = minimax(nb, nf, depth - 1, !isMaximizing, -Infinity, Infinity);
