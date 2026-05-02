@@ -2,6 +2,30 @@
    Background
    ============================================================ */
 
+.bg-dice-container {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.bg-die {
+  position: absolute;
+  font-size: clamp(3rem, 15vw, 6rem);
+  color: var(--color-text-muted);
+  opacity: 0.25;
+  user-select: none;
+  pointer-events: none;
+}
+
+.bg-die.die-1 { top: 12%;    left: 18%;  transform: rotate(-15deg); }
+.bg-die.die-2 { top: 15%;    right: 18%; transform: rotate(12deg);  }
+.bg-die.die-3 { top: 50%;    left: 12%;  transform: rotate(5deg);   }
+.bg-die.die-4 { bottom: 15%; left: 18%;  transform: rotate(20deg);  }
+.bg-die.die-5 { bottom: 15%; right: 18%; transform: rotate(-8deg);  }
+.bg-die.die-6 { top: 50%;    right: 12%; transform: rotate(-18deg); }
+
 body {
   background-color: var(--color-bg);
   background-image:
@@ -398,7 +422,7 @@ body.light-palette .round-option:not(.active):not([aria-pressed="true"]):focus-v
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-3);
-  padding: var(--space-2) var(--space-6) 0;
+  padding: 0 var(--space-6);
 }
 
 .play-meta-group {
@@ -406,11 +430,17 @@ body.light-palette .round-option:not(.active):not([aria-pressed="true"]):focus-v
   align-items: baseline;
   gap: var(--space-2);
   min-width: 0;
+  margin-bottom: 10px;
+}
+
+.play-meta-group[hidden] {
+  display: none;
 }
 
 .play-meta-group-right {
   justify-content: flex-end;
   flex-wrap: wrap;
+  margin-left: auto;
 }
 
 .score-label {
@@ -457,7 +487,6 @@ body.light-palette .round-option:not(.active):not([aria-pressed="true"]):focus-v
 
 .tile:hover:not(.shut):not(:disabled) {
   background: var(--color-accent-hover);
-  transform: translateY(-2px);
   box-shadow: var(--shadow-md), inset 0 0 0 2px rgba(255,255,255,0.3);
 }
 
@@ -472,13 +501,14 @@ body.light-palette .round-option:not(.active):not([aria-pressed="true"]):focus-v
 }
 
 .tile.selected {
-  background: var(--color-accent);
-  box-shadow: var(--shadow-accent), 0 0 0 2px var(--color-accent);
-  transform: translateY(-2px);
+  background: var(--color-accent-hover);
+  box-shadow: var(--shadow-md), 0 0 0 2px var(--gray-90), 0 0 14px rgba(255, 191, 0, 0.35);
+  transform: translateY(-5px);
 }
 
 .tile.selected:hover:not(:disabled) {
   background: var(--color-accent-hover);
+  box-shadow: var(--shadow-md), 0 0 0 2px var(--gray-90), 0 0 14px rgba(255, 191, 0, 0.35);
 }
 
 .tile.shut {
@@ -525,7 +555,7 @@ body.light-palette .round-option:not(.active):not([aria-pressed="true"]):focus-v
    ============================================================ */
 
 .status-line {
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   color: var(--color-accent);
   text-align: center;
   font-family: var(--font-mono);
@@ -537,6 +567,10 @@ body.light-palette .status-line {
   color: var(--color-text-primary);
 }
 
+body.light-palette .die {
+  background: var(--color-text-secondary);
+}
+
 /* ============================================================
    Dice Area
    ============================================================ */
@@ -546,8 +580,11 @@ body.light-palette .status-line {
   gap: var(--space-4);
   justify-content: center;
   align-items: center;
+  flex: 1;
   min-height: 72px;
   padding: 0 var(--space-6);
+  position: relative;
+  top: 10px;
 }
 
 .dice-placeholder {
@@ -756,6 +793,10 @@ body.light-palette .status-line {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--space-3) var(--space-4);
+}
+
+.gameover-best-row[hidden] {
+  display: none;
 }
 
 .gameover-best-label {

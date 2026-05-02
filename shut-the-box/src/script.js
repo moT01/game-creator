@@ -388,14 +388,18 @@ function renderDice() {
   container.innerHTML = '';
 
   if (state.dice.length === 0) {
-    const placeholder = document.createElement('div');
-    placeholder.className = 'dice-placeholder';
-    placeholder.textContent = state.phase === 'between-rounds' ? 'Continue to start the next round' : 'Roll the dice';
-    container.appendChild(placeholder);
+    if (state.phase === 'between-rounds') {
+      const placeholder = document.createElement('div');
+      placeholder.className = 'dice-placeholder';
+      placeholder.textContent = 'Continue to start the next round';
+      container.appendChild(placeholder);
+      return;
+    }
     return;
   }
 
-  for (const value of state.dice) {
+  const diceToShow = state.phase === 'rolling' ? state.dice.slice(0, state.diceCount) : state.dice;
+  for (const value of diceToShow) {
     const die = document.createElement('div');
     die.className = 'die';
     die.setAttribute('aria-label', `Die showing ${value}`);
@@ -421,13 +425,12 @@ function renderStatus() {
   const statusLine = document.getElementById('status-line');
 
   if (state.phase === 'rolling') {
-    statusLine.textContent = 'Roll the dice to begin your turn.';
+    statusLine.textContent = 'Roll the dice';
     return;
   }
 
   if (state.phase === 'selecting') {
-    const selectedSum = state.selectedTiles.reduce((sum, i) => sum + (i + 1), 0);
-    statusLine.textContent = `Dice total: ${state.diceTotal}   Selected: ${selectedSum}`;
+    statusLine.textContent = `Select tiles that add up to ${state.diceTotal}`;
     return;
   }
 
@@ -443,7 +446,7 @@ function renderStatus() {
 }
 
 function renderScore() {
-  document.getElementById('live-score').textContent = calcScore(state.tiles);
+  document.getElementById('live-score').textContent = state.dice.length === 0 ? '-' : calcScore(state.tiles);
 }
 
 function renderButtons() {
@@ -491,8 +494,7 @@ function renderOverlay() {
     heading.textContent = `Round ${state.currentRound} Complete`;
     banner.textContent = '';
     banner.style.display = 'none';
-    message.textContent = `You scored ${state.lastRoundScore} this round.`;
-    message.hidden = false;
+    message.hidden = true;
     scoreLabel.textContent = 'Running Total';
     scoreValue.textContent = state.totalScore;
     metaRow.hidden = false;
