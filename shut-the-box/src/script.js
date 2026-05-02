@@ -287,9 +287,9 @@ function showScreen(id) {
 
 function getRoundProgressText(activeState) {
   if (activeState.roundMode === 'endless') {
-    return `${activeState.currentRound} / ∞`;
+    return `${activeState.currentRound}`;
   }
-  return `${activeState.currentRound} / ${getRoundLimit(activeState.roundMode)}`;
+  return `${activeState.currentRound}/${getRoundLimit(activeState.roundMode)}`;
 }
 
 function renderRoundModeButtons() {
@@ -337,25 +337,24 @@ function renderPlay() {
 }
 
 function renderMatchStats() {
-  const statsGrid = document.querySelector('.play-stats-grid');
-  const roundCard = document.getElementById('round-progress').closest('.stat-card');
-  const totalCard = document.getElementById('total-score').closest('.stat-card');
+  const roundMeta = document.getElementById('play-round-meta');
   const liveScoreLabel = document.getElementById('live-score-label');
+  const totalScoreLabel = document.getElementById('total-score-label');
+  const totalScore = document.getElementById('total-score');
 
   if (state.roundMode === 'single') {
-    statsGrid.hidden = true;
-    roundCard.hidden = true;
-    totalCard.hidden = true;
+    roundMeta.hidden = true;
+    totalScoreLabel.hidden = true;
+    totalScore.hidden = true;
     liveScoreLabel.textContent = 'Score';
     return;
   }
 
-  statsGrid.hidden = false;
-  roundCard.hidden = false;
-  totalCard.hidden = false;
-  statsGrid.classList.toggle('two-stats', true);
+  roundMeta.hidden = false;
+  totalScoreLabel.hidden = false;
+  totalScore.hidden = false;
   document.getElementById('round-progress').textContent = getRoundProgressText(state);
-  document.getElementById('total-score').textContent = state.totalScore;
+  totalScore.textContent = state.totalScore;
   liveScoreLabel.textContent = 'Round Score';
 }
 
@@ -482,6 +481,7 @@ function renderOverlay() {
   const message = document.getElementById('gameover-message');
   const scoreLabel = document.getElementById('gameover-score-label');
   const scoreValue = document.getElementById('gameover-score');
+  const metaRow = document.getElementById('gameover-meta-row');
   const metaLabel = document.getElementById('gameover-meta-label');
   const metaValue = document.getElementById('gameover-meta-value');
   const primaryButton = document.getElementById('btn-play-again');
@@ -492,8 +492,10 @@ function renderOverlay() {
     banner.textContent = '';
     banner.style.display = 'none';
     message.textContent = `You scored ${state.lastRoundScore} this round.`;
+    message.hidden = false;
     scoreLabel.textContent = 'Running Total';
     scoreValue.textContent = state.totalScore;
+    metaRow.hidden = false;
     metaLabel.textContent = 'Up Next';
     metaValue.textContent = state.roundMode === 'endless' ? `Round ${nextRound}` : `Round ${nextRound} of ${getRoundLimit(state.roundMode)}`;
     primaryButton.textContent = 'Continue';
@@ -504,20 +506,11 @@ function renderOverlay() {
     heading.textContent = isWin ? 'Match Complete' : 'Game Over';
     banner.textContent = isWin ? 'Shut the Box!' : '';
     banner.style.display = isWin ? '' : 'none';
-    message.textContent = isWin
-      ? `You cleared the board on round ${state.currentRound}.`
-      : `Your last round added ${state.lastRoundScore} points.`;
-    scoreLabel.textContent = 'Final Total';
+    message.hidden = true;
+    metaRow.hidden = true;
+    scoreLabel.textContent = 'Final Score';
     scoreValue.textContent = finalScore;
     primaryButton.textContent = 'Play Again';
-
-    if (state.roundMode === 'single') {
-      metaLabel.textContent = 'Best 1-Round Score';
-      metaValue.textContent = formatBestScore(getBestScore('single'));
-    } else {
-      metaLabel.textContent = 'Best This Mode';
-      metaValue.textContent = formatBestScore(getBestScore(state.roundMode));
-    }
   }
 
   overlay.classList.add('visible');
