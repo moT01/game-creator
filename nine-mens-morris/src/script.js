@@ -36,7 +36,7 @@ const MILLS = [
 
 // ─── Game Logic ───────────────────────────────────────────────────────────────
 
-function initGame(mode, difficulty, playerColor) {
+function initGame(mode, playerColor) {
   return {
     board: Array(24).fill(null),
     phase: 'placement',
@@ -48,7 +48,6 @@ function initGame(mode, difficulty, playerColor) {
     gameOver: null,
     boardHistory: [],
     mode,
-    difficulty,
     playerColor,
   };
 }
@@ -258,7 +257,6 @@ function cloneState(state) {
     gameOver: state.gameOver ? { ...state.gameOver } : null,
     boardHistory: [...state.boardHistory],
     mode: state.mode,
-    difficulty: state.difficulty,
     playerColor: state.playerColor,
   };
 }
@@ -321,7 +319,7 @@ const STRATEGIC_NODES = new Set([1, 3, 4, 6, 9, 11, 12, 14]);
 
 function getBestMove(state) {
   const computerColor = opponent(state.playerColor);
-  const depth = state.difficulty === 'hard' ? 5 : 3;
+  const depth = 3;
   const moves = getValidMoves(state);
   if (moves.length === 0) return null;
 
@@ -332,10 +330,6 @@ function getBestMove(state) {
     const next = cloneState(state);
     applyAction(next, move);
     let score = minimax(next, depth - 1, -Infinity, Infinity, next.currentPlayer === computerColor, computerColor);
-
-    if (state.difficulty === 'hard' && move.type === 'place' && STRATEGIC_NODES.has(move.node)) {
-      score += 3;
-    }
 
     if (score > bestScore) {
       bestScore = score;
@@ -425,15 +419,19 @@ function setTheme(t) {
   document.body.classList.toggle('light-palette', t === 'light');
 }
 
-function getRecords() {
-  const raw = localStorage.getItem('nmm_records');
-  if (raw) return JSON.parse(raw);
-  return { pvc: { normal: 0, hard: 0 } };
+function renderRecords() {
+  const rec = getRecords();
+  return `<div class="records"><span class="records-title">Wins</span><span class="records-value">${rec.pvc}</span></div>`;
 }
 
-function recordWin(difficulty) {
+function getRecords() {
+  const raw = localStorage.getItem('nmm_records');
+  return raw ? JSON.parse(raw) : { pvc: 0 };
+}
+
+function recordWin() {
   const rec = getRecords();
-  rec.pvc[difficulty]++;
+  rec.pvc++;
   localStorage.setItem('nmm_records', JSON.stringify(rec));
 }
 
@@ -453,14 +451,12 @@ function clearSavedGame() {
 function getLastPrefs() {
   return {
     mode: localStorage.getItem('nmm_mode') || 'pvc',
-    difficulty: localStorage.getItem('nmm_difficulty') || 'normal',
     playerColor: localStorage.getItem('nmm_playerColor') || 'black',
   };
 }
 
-function savePrefs(mode, difficulty, playerColor) {
+function savePrefs(mode, playerColor) {
   localStorage.setItem('nmm_mode', mode);
-  localStorage.setItem('nmm_difficulty', difficulty);
   localStorage.setItem('nmm_playerColor', playerColor);
 }
 
@@ -470,7 +466,7 @@ function iconBtn(iconKey, label, classes = '') {
   return `<button class="icon-btn ${classes}" aria-label="${label}">${ICONS[iconKey]}</button>`;
 }
 
-function renderHeader(showClose = false) {
+function renderHeader(showClose = false, centerContent = '') {
   const theme = getTheme();
   const themeIcon = theme === 'dark' ? 'sun' : 'moon';
   const themeLabel = theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
@@ -478,6 +474,7 @@ function renderHeader(showClose = false) {
     <div class="header-left">
       ${showClose ? `<button class="icon-btn" id="btn-close" aria-label="Close game">${ICONS.x}</button>` : '<div class="icon-btn-placeholder"></div>'}
     </div>
+    ${centerContent ? `<div class="header-center">${centerContent}</div>` : ''}
     <div class="header-right">
       <button class="icon-btn" id="btn-help" aria-label="Help">${ICONS.question}</button>
       <button class="icon-btn" id="btn-theme" aria-label="${themeLabel}" aria-pressed="${theme === 'light'}">${ICONS[themeIcon]}</button>
@@ -488,7 +485,6 @@ function renderHeader(showClose = false) {
 
 function renderHomeScreen() {
   const prefs = getLastPrefs();
-  const rec = getRecords();
   const saved = loadGame();
 
   return `<div class="screen home-screen">
@@ -496,34 +492,22 @@ function renderHomeScreen() {
     <hr class="header-rule" />
     <div class="home-content">
       <h1 class="game-title">Nine Men's Morris</h1>
-      <div class="records-display">
-        vs Computer &mdash; Normal wins: <span class="mono">${rec.pvc.normal}</span>&nbsp;&nbsp;Hard wins: <span class="mono">${rec.pvc.hard}</span>
-      </div>
+      <p class="game-subtitle">A classic strategy game for two</p>
       <div class="setup-group">
         <label class="setup-label">Mode</label>
         <div class="pill-group" id="mode-group">
           <button class="pill ${prefs.mode === 'pvc' ? 'active' : ''}" data-value="pvc">vs Computer</button>
-          <button class="pill ${prefs.mode === 'pvp' ? 'active' : ''}" data-value="pvp">vs Player</button>
-        </div>
-      </div>
-      <div class="setup-group pvc-only" id="difficulty-group-wrap" style="${prefs.mode !== 'pvc' ? 'display:none' : ''}">
-        <label class="setup-label">Difficulty</label>
-        <div class="pill-group" id="difficulty-group">
-          <button class="pill ${prefs.difficulty === 'normal' ? 'active' : ''}" data-value="normal">Normal</button>
-          <button class="pill ${prefs.difficulty === 'hard' ? 'active' : ''}" data-value="hard">Hard</button>
+          <button class="pill ${prefs.mode === 'pvp' ? 'active' : ''}" data-value="pvp">2 Player</button>
         </div>
       </div>
       <div class="setup-group pvc-only" id="color-group-wrap" style="${prefs.mode !== 'pvc' ? 'display:none' : ''}">
         <label class="setup-label">Play as</label>
         <div class="pill-group" id="color-group">
-          <button class="pill ${prefs.playerColor === 'black' ? 'active' : ''}" data-value="black">
-            <span class="piece-dot blue"></span> Blue
-          </button>
-          <button class="pill ${prefs.playerColor === 'white' ? 'active' : ''}" data-value="white">
-            <span class="piece-dot gold"></span> Gold
-          </button>
+          <button class="pill ${prefs.playerColor === 'black' ? 'active' : ''}" data-value="black">Blue (goes first)</button>
+          <button class="pill ${prefs.playerColor === 'white' ? 'active' : ''}" data-value="white">Gold</button>
         </div>
       </div>
+      <div id="records-wrap" style="width:100%;${prefs.mode !== 'pvc' ? 'display:none' : ''}">${renderRecords()}</div>
       <div class="home-actions">
         <button class="btn-primary" id="btn-new-game">New Game</button>
         ${saved ? `<button class="btn-secondary" id="btn-resume">Resume</button>` : ''}
@@ -684,12 +668,9 @@ function renderPiecesInHand(state) {
 function renderPlayScreen(state) {
   const status = getStatusText(state);
   return `<div class="screen play-screen">
-    ${renderHeader(true)}
+    ${renderHeader(true, `<span class="status-text ${status.cls}" id="status-text" aria-live="polite">${status.text}</span>`)}
     <hr class="header-rule" />
     <div class="play-content">
-      <div class="status-bar" aria-live="polite">
-        <span class="status-text ${status.cls}" id="status-text">${status.text}</span>
-      </div>
       ${renderPiecesInHand(state)}
       <div class="board-wrap">
         ${renderSVGBoard(state)}
@@ -721,7 +702,6 @@ function renderGameOverOverlay(state) {
   return `<div class="game-over-overlay" role="dialog" aria-modal="true" aria-label="Game over">
     <div class="game-over-panel">
       <div class="game-over-result ${resultCls}">${resultText}</div>
-      ${state.mode === 'pvc' ? `<div class="game-over-record">Normal wins: <span class="mono">${rec.pvc.normal}</span> &nbsp; Hard wins: <span class="mono">${rec.pvc.hard}</span></div>` : ''}
       <div class="game-over-actions">
         <button class="btn-primary" id="btn-play-again">Play Again</button>
         <button class="btn-secondary" id="btn-menu">Menu</button>
@@ -865,14 +845,13 @@ function bindHomeEvents() {
 
   const prefs = getLastPrefs();
   let mode = prefs.mode;
-  let difficulty = prefs.difficulty;
   let playerColor = prefs.playerColor;
 
   function updatePvcVisibility() {
-    const dWrap = document.getElementById('difficulty-group-wrap');
     const cWrap = document.getElementById('color-group-wrap');
-    if (dWrap) dWrap.style.display = mode === 'pvc' ? '' : 'none';
+    const rWrap = document.getElementById('records-wrap');
     if (cWrap) cWrap.style.display = mode === 'pvc' ? '' : 'none';
+    if (rWrap) rWrap.style.display = mode === 'pvc' ? '' : 'none';
   }
 
   document.getElementById('mode-group').addEventListener('click', (e) => {
@@ -883,13 +862,6 @@ function bindHomeEvents() {
     updatePvcVisibility();
   });
 
-  document.getElementById('difficulty-group').addEventListener('click', (e) => {
-    const pill = e.target.closest('.pill');
-    if (!pill) return;
-    difficulty = pill.dataset.value;
-    document.querySelectorAll('#difficulty-group .pill').forEach(p => p.classList.toggle('active', p === pill));
-  });
-
   document.getElementById('color-group').addEventListener('click', (e) => {
     const pill = e.target.closest('.pill');
     if (!pill) return;
@@ -898,8 +870,8 @@ function bindHomeEvents() {
   });
 
   document.getElementById('btn-new-game').addEventListener('click', () => {
-    savePrefs(mode, difficulty, playerColor);
-    gameState = initGame(mode, difficulty, playerColor);
+    savePrefs(mode, playerColor);
+    gameState = initGame(mode, playerColor);
     clearSavedGame();
     currentScreen = 'play';
     render();
@@ -927,8 +899,7 @@ function bindPlayEvents() {
   if (btnClose) {
     btnClose.addEventListener('click', () => {
       if (!gameState.gameOver) {
-        showConfirm('This will end the current game.', () => {
-          clearSavedGame();
+        showConfirm('Your progress will be saved.', () => {
           gameState = null;
           currentScreen = 'home';
           render();
@@ -945,8 +916,8 @@ function bindPlayEvents() {
   const btnPlayAgain = document.getElementById('btn-play-again');
   if (btnPlayAgain) {
     btnPlayAgain.addEventListener('click', () => {
-      const { mode, difficulty, playerColor } = gameState;
-      gameState = initGame(mode, difficulty, playerColor);
+      const { mode, playerColor } = gameState;
+      gameState = initGame(mode, playerColor);
       clearSavedGame();
       render();
       scheduleAiIfNeeded();
@@ -1079,7 +1050,7 @@ function applyRemovalAnimation(nodeIndex) {
 function finalizeAfterAction() {
   if (gameState.gameOver) {
     if (gameState.mode === 'pvc' && gameState.gameOver.winner === gameState.playerColor) {
-      recordWin(gameState.difficulty);
+      recordWin();
     }
     clearSavedGame();
   } else {
