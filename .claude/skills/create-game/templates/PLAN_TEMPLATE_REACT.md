@@ -139,12 +139,19 @@ _(Include only if the game has a computer player)_
 ---
 
 ## Components
-- [ ] `App` — top-level layout, phase state, `useTheme`, `createStorage`
-- [ ] `HomeScreen` — see Home Screen spec below
-- [ ] `PlayScreen` — see Play Screen spec below
-- [ ] `GameOver` — overlay with result, best score, play again / return to menu; uses boilerplate `Modal`
-- [ ] `HelpModal` — uses boilerplate `HelpModal`; fill in game-specific rules content
-- [ ] `ConfirmModal` — uses boilerplate `ConfirmModal`; for destructive actions (new game, quit to menu)
+
+Pre-built — do not reimplement:
+`Header`, `Modal`, `ConfirmModal`, `GameOverModal`, `SegmentedControl`, `StatsRow`, `useTheme`, `useStorage`
+
+Modify:
+- [ ] `App.tsx` — replace `<game-name>` (×2), define `GameState`, fill in `startGame`
+- [ ] `HomeOptions.tsx` — title, subtitle, `GameOptions` type, `DEFAULT_OPTIONS`, wins; adjust opponent/mode selects
+- [ ] `HelpModal.tsx` — replace placeholder with game rules
+- [ ] `GameScreen.tsx` — wire `useGame`, pass to `GameBoard`, update header status text, fill in `GameOverModal` props
+
+Build:
+- [ ] `useGame.ts` — game state shape, all logic, return state and actions
+- [ ] `GameBoard.tsx` — board UI, props from `useGame`
 - [ ] ...
 
 ---

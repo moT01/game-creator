@@ -72,9 +72,25 @@ The boilerplate includes pre-built components and hooks — use them, do not rei
 - `src/components/Header.tsx` — home and game screen header with all icon buttons
 - `src/components/Modal.tsx` — overlay, focus trap, animate in
 - `src/components/ConfirmModal.tsx` — confirmation dialog
-- `src/components/HelpModal.tsx` — help/rules dialog
+- `src/components/HelpModal.tsx` — help/rules modal; edit content directly inside the file
+- `src/components/GameOverModal.tsx` — game over overlay; result, note, stats placeholder, Play Again + Home buttons
+- `src/components/SegmentedControl.tsx` — multi-option toggle; accepts any options array
+- `src/components/StatsRow.tsx` — label + value stat display
 - `src/hooks/useTheme.ts` — theme state, body class, localStorage
 - `src/hooks/useStorage.ts` — save/load/clear game state by key
+
+The following files are pre-wired but must be modified for each game:
+
+**Always modify:**
+- `App.tsx` — replace `<game-name>` (×2), define `GameState` type, fill in `startGame` to build initial state from options
+- `HomeOptions.tsx` — update game title and subtitle; update `GameOptions` type and `DEFAULT_OPTIONS`; load wins from storage
+- `HelpModal.tsx` — replace placeholder content with actual game rules
+- `useGame.ts` — define `GameState`, implement all game logic, return state and actions
+- `GameBoard.tsx` — build the board UI; add props matching what `useGame` returns
+- `GameScreen.tsx` — destructure state/actions from `useGame`; pass to `GameBoard`; update header `center` text; wire `showGameOver` to actual game over condition; fill in `GameOverModal` props and stats placeholder
+
+**Modify if applicable:**
+- `HomeOptions.tsx` — remove opponent select for solo games; remove mode select if no modes, or update its options array; remove `value.opponent === 'computer'` conditions if modes/wins apply to both opponent types
 
 ---
 

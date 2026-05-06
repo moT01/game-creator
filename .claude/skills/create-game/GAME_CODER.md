@@ -43,11 +43,22 @@ Identify the first section with unchecked items and implement all of them. Befor
 
 The boilerplate includes pre-built components and hooks — use them, do not reimplement:
 - `src/components/Header.tsx` — use on every screen with the correct `variant` prop (`"home"` or `"game"`) and required props
-- `src/components/Modal.tsx` — base modal used by ConfirmModal and HelpModal
+- `src/components/Modal.tsx` — base modal used by ConfirmModal, HelpModal, and GameOverModal
 - `src/components/ConfirmModal.tsx` — use for all destructive action confirmations
-- `src/components/HelpModal.tsx` — use for the help/rules modal; pass game-specific content as children
+- `src/components/HelpModal.tsx` — edit game rules content directly inside the file; does not take children
+- `src/components/GameOverModal.tsx` — pre-wired in GameScreen; fill in result, resultType, note, and stats placeholder
+- `src/components/SegmentedControl.tsx` — multi-option toggle; use in HomeOptions for opponent/mode selects
+- `src/components/StatsRow.tsx` — label + value stat display
 - `src/hooks/useTheme.ts` — use in `App` for theme state; pass `theme` and `onThemeToggle` down to screens
 - `src/hooks/useStorage.ts` — use `createStorage('<game-name>_state')` for save/load/clear
+
+These files are pre-wired but must be modified:
+- `App.tsx` — replace `<game-name>` (×2), define `GameState` type, fill in `startGame`
+- `HomeOptions.tsx` — update title, subtitle, `GameOptions` type, `DEFAULT_OPTIONS`, wins; adjust or remove opponent/mode selects
+- `HelpModal.tsx` — replace placeholder with game rules
+- `useGame.ts` — implement all game logic; return state and actions
+- `GameBoard.tsx` — build board UI; add props from `useGame`
+- `GameScreen.tsx` — destructure from `useGame`; pass to `GameBoard`; update header status text; wire `showGameOver`; fill in `GameOverModal` props
 
 Only implement the next section - do not implement more than one section at a time. Only implement what is in the plan. Do not add abstractions, files, or dependencies not listed. Follow all conventions in `CLAUDE.md`.
 
