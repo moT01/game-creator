@@ -31,7 +31,7 @@ export default function Header(props: Props) {
   const { theme, onThemeToggle, onHelp } = props
 
   const rightButtons = (
-    <div className="header__right">
+    <div className="header-right">
       <button className="icon-btn" onClick={onHelp} aria-label="Help">
         {ICONS.help}
       </button>
@@ -52,20 +52,20 @@ export default function Header(props: Props) {
 
   if (props.variant === 'home') {
     return (
-      <header className="header header--home">
+      <header className="header header-home">
         {rightButtons}
       </header>
     )
   }
 
   return (
-    <header className="header header--game">
-      <div className="header__left">
+    <header className="header header-game">
+      <div className="header-left">
         <button className="icon-btn" onClick={props.onClose} aria-label="Close">
           {ICONS.close}
         </button>
       </div>
-      <div className="header__center">
+      <div className="header-center">
         {props.center}
       </div>
       {rightButtons}

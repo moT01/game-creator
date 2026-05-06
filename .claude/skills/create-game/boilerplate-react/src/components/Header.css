@@ -5,29 +5,29 @@
   border-bottom: var(--border-default);
 }
 
-.header--home {
+.header-home {
   justify-content: flex-end;
   gap: var(--space-1);
 }
 
-.header--game {
+.header-game {
   justify-content: space-between;
 }
 
-.header__left {
+.header-left {
   display: flex;
   align-items: center;
   min-width: 32px;
 }
 
-.header__center {
+.header-center {
   flex: 1;
   text-align: center;
   font-size: var(--text-md);
   color: var(--color-text-secondary);
 }
 
-.header__right {
+.header-right {
   display: flex;
   align-items: center;
   gap: var(--space-1);

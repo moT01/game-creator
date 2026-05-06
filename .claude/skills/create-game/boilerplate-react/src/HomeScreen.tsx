@@ -1,24 +1,19 @@
 import { useState } from 'react'
 import Header from './components/Header'
-import HelpModal from './components/HelpModal'
-import GameOptions, { type GameOptionsValue } from './components/GameOptions'
+import HomeOptions, { DEFAULT_OPTIONS, type GameOptions } from './HomeOptions'
 import './HomeScreen.css'
 
 interface Props {
   theme: 'dark' | 'light'
   onThemeToggle: () => void
-  onStart: () => void
+  onHelp: () => void
+  onStart: (options: GameOptions) => void
+  onResume: () => void
+  hasGame: boolean
 }
 
-const DEFAULT_OPTIONS: GameOptionsValue = {
-  mode: 'computer',
-  playerGoesFirst: true,
-  hardMode: false,
-}
-
-export default function HomeScreen({ theme, onThemeToggle, onStart }: Props) {
-  const [showHelp, setShowHelp] = useState(false)
-  const [options, setOptions] = useState<GameOptionsValue>(DEFAULT_OPTIONS)
+export default function HomeScreen({ theme, onThemeToggle, onHelp, onStart, onResume, hasGame }: Props) {
+  const [options, setOptions] = useState<GameOptions>(DEFAULT_OPTIONS)
 
   return (
     <div className="card">
@@ -26,33 +21,17 @@ export default function HomeScreen({ theme, onThemeToggle, onStart }: Props) {
         variant="home"
         theme={theme}
         onThemeToggle={onThemeToggle}
-        onHelp={() => setShowHelp(true)}
+        onHelp={onHelp}
       />
       <div className="home-content">
-        <div className="game-heading">
-          <h1 className="game-title">Game Name</h1>
-          <p className="game-subtitle">A short description</p>
-        </div>
-        <GameOptions
-          value={options}
-          onChange={setOptions}
-          showModeToggle
-          showSideSelect
-          showHardMode
-          stats={[
-            { label: 'Normal', value: 12 },
-            { label: 'Hard', value: 5 },
-          ]}
-        />
+        <HomeOptions value={options} onChange={setOptions} />
         <div className="home-actions">
-          <button className="btn btn--primary" onClick={onStart}>New Game</button>
+          <button className="btn btn--primary" onClick={() => onStart(options)}>New Game</button>
+          {hasGame && (
+            <button className="btn btn--secondary" onClick={onResume}>Resume Game</button>
+          )}
         </div>
       </div>
-      {showHelp && (
-        <HelpModal onClose={() => setShowHelp(false)}>
-          <p>Help content goes here.</p>
-        </HelpModal>
-      )}
     </div>
   )
 }
