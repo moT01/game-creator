@@ -11,7 +11,7 @@ export default function HelpModal({ onClose, children }: Props) {
     <Modal title="How to Play" onClose={onClose}>
       {children}
       <div className="help-modal-footer">
-        <button className="btn btn--primary" onClick={onClose}>Got it</button>
+        <button className="btn btn-primary" onClick={onClose}>Got it</button>
       </div>
     </Modal>
   )

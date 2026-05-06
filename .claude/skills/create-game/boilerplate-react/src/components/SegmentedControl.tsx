@@ -17,7 +17,7 @@ export default function SegmentedControl<T extends string>({ options, value, onC
       {options.map(opt => (
         <button
           key={opt.value}
-          className={`segmented-control__option${value === opt.value ? ' segmented-control__option--active' : ''}`}
+          className={`segmented-control-option${value === opt.value ? ' segmented-control-option-active' : ''}`}
           onClick={() => onChange(opt.value)}
         >
           {opt.label}

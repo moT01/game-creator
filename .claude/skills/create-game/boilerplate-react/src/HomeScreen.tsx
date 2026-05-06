@@ -26,9 +26,9 @@ export default function HomeScreen({ theme, onThemeToggle, onHelp, onStart, onRe
       <div className="home-content">
         <HomeOptions value={options} onChange={setOptions} />
         <div className="home-actions">
-          <button className="btn btn--primary" onClick={() => onStart(options)}>New Game</button>
-          {hasGame && (
-            <button className="btn btn--secondary" onClick={onResume}>Resume Game</button>
+          <button className="btn btn-primary" onClick={() => onStart(options)}>New Game</button>
+          {!hasGame && (
+            <button className="btn btn-secondary" onClick={onResume}>Resume Game</button>
           )}
         </div>
       </div>

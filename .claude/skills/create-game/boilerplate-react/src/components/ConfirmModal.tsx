@@ -19,8 +19,8 @@ export default function ConfirmModal({
     <Modal title="Quit Game" onClose={onCancel}>
       <p className="confirm-message">{message}</p>
       <div className="confirm-actions">
-        <button className="btn btn--secondary" onClick={onCancel}>{cancelLabel}</button>
-        <button className="btn btn--primary" onClick={onConfirm}>{confirmLabel}</button>
+        <button className="btn btn-secondary" onClick={onCancel}>{cancelLabel}</button>
+        <button className="btn btn-primary" onClick={onConfirm}>{confirmLabel}</button>
       </div>
     </Modal>
   )

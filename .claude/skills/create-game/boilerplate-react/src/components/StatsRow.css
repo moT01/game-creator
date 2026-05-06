@@ -5,8 +5,8 @@
   width: 50%;
 }
 
-.stats-row__title {
-  font-size: var(--text-xs);
+.stats-row-title {
+  font-size: var(--text-md);
   font-weight: var(--weight-bold);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -15,21 +15,15 @@
   text-align: center;
 }
 
-.stats-row__stat {
+.stats-row-stat {
   display: flex;
   align-items: baseline;
   gap: var(--space-3);
   width: 60%;
 }
 
-.stats-row__label {
-  flex: 1;
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-}
-
-.stats-row__value {
+.stats-row-value {
   font-family: var(--font-mono);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   font-weight: var(--weight-bold);
 }
