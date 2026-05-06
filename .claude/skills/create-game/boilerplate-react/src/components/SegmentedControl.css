@@ -37,3 +37,8 @@
   outline: none;
   box-shadow: inset 0 0 0 2px var(--blue-mid);
 }
+
+.segmented-control-sm .segmented-control-option {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-md);
+}

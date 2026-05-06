@@ -9,11 +9,13 @@ interface Props<T extends string> {
   options: Option<T>[]
   value: T
   onChange: (value: T) => void
+  small?: boolean
+  className?: string
 }
 
-export default function SegmentedControl<T extends string>({ options, value, onChange }: Props<T>) {
+export default function SegmentedControl<T extends string>({ options, value, onChange, small, className }: Props<T>) {
   return (
-    <div className="segmented-control">
+    <div className={`segmented-control${small ? ' segmented-control-sm' : ''}${className ? ` ${className}` : ''}`}>
       {options.map(opt => (
         <button
           key={opt.value}

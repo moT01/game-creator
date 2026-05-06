@@ -27,6 +27,7 @@ export default function HomeOptions({ value, onChange }: Props) {
       </div>
       {/* Opponent select - delete for solo games */}
       <SegmentedControl
+        className="opponent-select"
         options={[
           { label: 'vs Computer', value: 'computer' },
           { label: '2 Player', value: '2player' },
@@ -35,17 +36,22 @@ export default function HomeOptions({ value, onChange }: Props) {
         onChange={opponent => onChange({ ...value, opponent })}
       />
       {/* Mode select - delete if no modes */}
-      <SegmentedControl
-        options={[
-          { label: '3x3', value: '3x3' },
-          { label: '5x5', value: '5x5' },
-          { label: '7x7', value: '7x7' },
-        ]}
-        value={value.mode}
-        onChange={mode => onChange({ ...value, mode })}
-      />
+      {value.opponent === 'computer' && (
+        <SegmentedControl
+          small
+          options={[
+            { label: '3x3', value: '3x3' },
+            { label: '5x5', value: '5x5' },
+            { label: '7x7', value: '7x7' },
+          ]}
+          value={value.mode}
+          onChange={mode => onChange({ ...value, mode })}
+        />
+      )}
       {/* Records - modify as needed */}
-      <StatsRow title="Wins" stats={[{ label: 'Total', value: wins }]} />
+      {value.opponent === 'computer' && (
+        <StatsRow stats={[{ label: 'Wins', value: wins }]} />
+      )}
     </div>
   )
 }

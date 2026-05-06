@@ -1,22 +1,22 @@
 import './StatsRow.css'
 
 interface Stat {
+  label: string
   value: string | number
 }
 
 interface Props {
-  title: string
   stats: Stat[]
 }
 
-export default function StatsRow({ title, stats }: Props) {
+export default function StatsRow({ stats }: Props) {
   if (!stats.length) return null
 
   return (
     <div className="stats-row">
-      <span className="stats-row-title">{title}</span>
       {stats.map((stat, i) => (
         <div key={i} className="stats-row-stat">
+          <span className="stats-row-label">{stat.label}</span>
           <span className="stats-row-value">{stat.value}</span>
         </div>
       ))}
