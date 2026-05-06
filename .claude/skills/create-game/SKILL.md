@@ -167,11 +167,9 @@ Wait for explicit approval. If the user requests changes, update the mockup and 
 
 ## Step 7 — Launch coder
 
-```
-Task: "Read and follow `.claude/skills/create-game/GAME_CODER.md`.
+Read `.claude/skills/create-game/GAME_CODER.md` and apply its instructions directly, continuing in this same response.
 Game name: <game-name>
-Known game: <known-game>"
-```
+Known game: <known-game>
 
 ---
 
