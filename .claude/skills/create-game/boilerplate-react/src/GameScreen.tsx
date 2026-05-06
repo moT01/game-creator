@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import Header from './components/Header'
+import GameBoard from './GameBoard'
 import ConfirmModal from './components/ConfirmModal'
 import GameOverModal from './components/GameOverModal'
+import { useGame } from './hooks/useGame'
+import type { GameOptions } from './HomeOptions'
 import './GameScreen.css'
 
 interface Props {
@@ -9,9 +12,12 @@ interface Props {
   onThemeToggle: () => void
   onHelp: () => void
   onClose: () => void
+  options: GameOptions
 }
 
-export default function GameScreen({ theme, onThemeToggle, onHelp, onClose }: Props) {
+export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, options }: Props) {
+  // REPLACE: const { ... } = useGame(options)
+  void useGame(options)
   const [showConfirm, setShowConfirm] = useState(false)
   const [showGameOver, setShowGameOver] = useState(false)
 
@@ -26,7 +32,7 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose }: Pr
         center="Your turn"
       />
       <div className="game-content">
-        <div className="game-placeholder">Game board goes here</div>
+        <GameBoard />
       </div>
       {showConfirm && (
         <ConfirmModal

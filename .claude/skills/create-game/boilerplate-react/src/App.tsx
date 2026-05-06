@@ -18,6 +18,7 @@ function App() {
   const [phase, setPhase] = useState<Phase>('home')
   const [theme, toggleTheme] = useTheme('<game-name>')
   const [gameState, setGameState] = useState<GameState | null>(() => storage.load<GameState>())
+  const [gameOptions, setGameOptions] = useState<GameOptions | null>(null)
   const [showHelp, setShowHelp] = useState(false)
 
   function startGame(options: GameOptions) {
@@ -25,6 +26,7 @@ function App() {
     const state: GameState = {}
     storage.save(state)
     setGameState(state)
+    setGameOptions(options)
     setPhase('game')
   }
 
@@ -40,19 +42,16 @@ function App() {
           hasGame={gameState !== null}
         />
       )}
-      {phase === 'game' && (
+      {phase === 'game' && gameOptions && (
         <GameScreen
           theme={theme}
           onThemeToggle={toggleTheme}
           onHelp={() => setShowHelp(true)}
           onClose={() => setPhase('home')}
+          options={gameOptions}
         />
       )}
-      {showHelp && (
-        <HelpModal onClose={() => setShowHelp(false)}>
-          <p>Help content goes here.</p>
-        </HelpModal>
-      )}
+      {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
     </div>
   )
 }

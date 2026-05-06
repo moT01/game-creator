@@ -9,7 +9,7 @@
 .game-over-result-draw { color: var(--color-accent); }
 
 .game-over-note {
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   color: var(--color-text-muted);
   text-align: center;
 }

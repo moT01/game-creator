@@ -13,7 +13,7 @@ interface Props {
 
 export default function GameOverModal({ result, resultType = 'win', note, onPlayAgain, onHome }: Props) {
   return (
-    <Modal title="Game Over" onClose={onHome}>
+    <Modal onClose={onHome}>
       <p className={`game-over-result game-over-result-${resultType}`}>{result}</p>
       {note && <p className="game-over-note">{note}</p>}
       <div className="game-over-stats">
