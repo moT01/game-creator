@@ -53,6 +53,25 @@
   width: auto;
 }
 
+.help-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.help-heading {
+  font-size: var(--text-md);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+}
+
+.help-section p {
+  font-size: var(--text-md);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-normal);
+}
+
 @keyframes modal-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }

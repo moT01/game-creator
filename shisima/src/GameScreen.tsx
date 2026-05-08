@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Header from './components/Header'
 import GameBoard from './GameBoard'
 import ConfirmModal from './components/ConfirmModal'
 import GameOverModal from './components/GameOverModal'
+import StatsRow from './components/StatsRow'
 import { useGame } from './hooks/useGame'
 import type { GameOptions } from './HomeOptions'
 import './GameScreen.css'
@@ -14,13 +15,50 @@ interface Props {
   onClose: () => void
   options: GameOptions
   onGameOver: () => void
+  onPlayAgain: () => void
 }
 
-export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, options, onGameOver }: Props) {
-  // REPLACE: const { ... } = useGame(options)
-  void useGame(options)
+export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, options, onGameOver, onPlayAgain }: Props) {
+  const { state, humanPlayer, handlePointClick, hasNoMoves } = useGame(options)
   const [showConfirm, setShowConfirm] = useState(false)
-  const [showGameOver, setShowGameOver] = useState(false)
+
+  const isComputerTurn = options.opponent === 'computer' && state.currentPlayer !== humanPlayer
+  const isHumanTurn = options.opponent === '2player' || state.currentPlayer === humanPlayer
+
+  useEffect(() => {
+    if (state.phase === 'over') onGameOver()
+  }, [state.phase]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function getStatusText(): string {
+    if (state.phase !== 'playing') return ''
+    if (hasNoMoves) return 'No moves — turn skipped'
+    if (isComputerTurn) return 'Computer thinking...'
+    if (options.opponent === '2player') {
+      return state.currentPlayer === 1 ? "Player 1's turn" : "Player 2's turn"
+    }
+    return 'Your turn'
+  }
+
+  function getGameOverResult(): string {
+    if (state.winner === 'draw') return 'Draw'
+    if (state.winner === null) return ''
+    if (options.opponent === 'computer') {
+      return state.winner === humanPlayer ? 'You Win!' : 'Computer Wins'
+    }
+    return state.winner === 1 ? 'Player 1 Wins' : 'Player 2 Wins'
+  }
+
+  function getResultType(): 'win' | 'loss' | 'draw' {
+    if (state.winner === 'draw') return 'draw'
+    if (options.opponent === 'computer' && state.winner !== humanPlayer) return 'loss'
+    return 'win'
+  }
+
+  function getNote(): string {
+    if (state.winner === 'draw') return 'Same position repeated 3 times.'
+    if (state.winner !== null) return 'All 3 pieces in a row — well played!'
+    return ''
+  }
 
   return (
     <div className="card">
@@ -30,10 +68,22 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
         onThemeToggle={onThemeToggle}
         onHelp={onHelp}
         onClose={() => setShowConfirm(true)}
-        center="Your turn"
+        center={
+          <span aria-live="polite" className={hasNoMoves ? 'status-no-moves' : undefined}>
+            {getStatusText()}
+          </span>
+        }
       />
       <div className="game-content">
-        <GameBoard />
+        <GameBoard
+          board={state.board}
+          selectedPoint={state.selectedPoint}
+          validMoves={state.validMoves}
+          currentPlayer={state.currentPlayer}
+          isHumanTurn={isHumanTurn}
+          phase={state.phase}
+          onPointClick={handlePointClick}
+        />
       </div>
       {showConfirm && (
         <ConfirmModal
@@ -44,12 +94,13 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
           onCancel={() => setShowConfirm(false)}
         />
       )}
-      {showGameOver && (
+      {state.phase === 'over' && (
         <GameOverModal
-          result="You Win!"
-          resultType="win"
-          note="Optional note about what happened"
-          onPlayAgain={() => setShowGameOver(false)}
+          result={getGameOverResult()}
+          resultType={getResultType()}
+          note={getNote()}
+          stats={<StatsRow stats={[{ label: 'Moves', value: state.moveCount }]} />}
+          onPlayAgain={onPlayAgain}
           onHome={onClose}
         />
       )}

@@ -1,16 +1,19 @@
+import { createStorage } from './hooks/useStorage'
 import SegmentedControl from './components/SegmentedControl'
 import StatsRow from './components/StatsRow'
 import './HomeOptions.css'
 
 export interface GameOptions {
   opponent: 'computer' | '2player'
-  mode: '3x3' | '5x5' | '7x7'
+  side: 'first' | 'second'
 }
 
 export const DEFAULT_OPTIONS: GameOptions = {
   opponent: 'computer',
-  mode: '3x3',
+  side: 'first',
 }
+
+const winsStorage = createStorage<number>('shisima_wins')
 
 interface Props {
   value: GameOptions
@@ -18,14 +21,14 @@ interface Props {
 }
 
 export default function HomeOptions({ value, onChange }: Props) {
-  const wins = 0 // load from storage
+  const wins = winsStorage.load() ?? 0
+
   return (
     <div className="home-options">
       <div className="game-heading">
-        <h1 className="game-title">Game Name</h1>
-        <p className="game-subtitle">A short description</p>
+        <h1 className="game-title">Shisima</h1>
+        <p className="game-subtitle">An ancient Kenyan strategy game</p>
       </div>
-      {/* Opponent select - delete for solo games */}
       <SegmentedControl
         className="opponent-select"
         options={[
@@ -35,20 +38,17 @@ export default function HomeOptions({ value, onChange }: Props) {
         value={value.opponent}
         onChange={opponent => onChange({ ...value, opponent })}
       />
-      {/* Mode select - delete if no modes */}
       {value.opponent === 'computer' && (
         <SegmentedControl
           small
           options={[
-            { label: '3x3', value: '3x3' },
-            { label: '5x5', value: '5x5' },
-            { label: '7x7', value: '7x7' },
+            { label: 'Go First', value: 'first' },
+            { label: 'Go Second', value: 'second' },
           ]}
-          value={value.mode}
-          onChange={mode => onChange({ ...value, mode })}
+          value={value.side}
+          onChange={side => onChange({ ...value, side })}
         />
       )}
-      {/* Records - modify as needed */}
       {value.opponent === 'computer' && (
         <StatsRow stats={[{ label: 'Wins', value: wins }]} />
       )}
