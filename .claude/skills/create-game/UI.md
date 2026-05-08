@@ -33,8 +33,6 @@ Every game should look polished and intentional — not like a default browser U
 
 - Use the icons in `./claude/skills/create-game/icons` when applicable.
 - Secondary buttons use surface colors with a border
-- Every button must have hover (lift `-1px`, stronger shadow), active (scale down, push shadow inward), and disabled (`opacity: 0.4`) states
-- All state changes use transitions — nothing snaps
 
 ---
 
@@ -47,15 +45,6 @@ Every game should look polished and intentional — not like a default browser U
 ---
 
 ## Interactive States
-
-Every interactive element needs all four states:
-
-| State    | What to change                                      |
-|----------|-----------------------------------------------------|
-| Default  | Base styles                                         |
-| Hover    | Lighten background or add glow/shadow, lift `-1px`  |
-| Active   | Scale down slightly, push shadow inward             |
-| Disabled | `opacity: 0.4`, `cursor: not-allowed`               |
 
 - Replace browser focus outlines with a custom `box-shadow` focus ring
 - Hoverable game squares get an inset border on hover, not just a color change
@@ -94,11 +83,9 @@ Every interactive element needs all four states:
 - [ ] All modals should have a `min-width: 420px;`
 - [ ] All colors use semantic variables
 - [ ] All spacing uses scale variables
-- [ ] All interactive elements have hover, active, and disabled states with transitions
 - [ ] Numbers/scores use `--font-mono`
 - [ ] Game container has `max-width` and is centered
 - [ ] Tested at mobile width (375px)
-- [ ] Buttons lift on hover
 - [ ] Headings use tight letter-spacing, uppercase labels use wide letter-spacing
 - [ ] Focus states are custom, not browser default
 - [ ] Hoverable game squares have inset border feedback
