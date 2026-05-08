@@ -136,6 +136,10 @@ body {
   align-items: center;
   justify-content: center;
   -webkit-font-smoothing: antialiased;
+  background-image:
+    radial-gradient(ellipse 60% 60% at 50% 50%, transparent 20%, var(--color-bg) 80%),
+    radial-gradient(circle, var(--gray-15) 1px, transparent 1px);
+  background-size: 100% 100%, 28px 28px;
 }
 
 .dark-palette {
