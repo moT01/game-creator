@@ -76,7 +76,6 @@ _(Include only if the game has a computer player)_
 - Uses boilerplate `Header` with `variant="home"` — help, theme, donate buttons; border-bottom spans full card width
 - Game title and subtitle
 - Mode selector (if applicable): ...
-- Difficulty selector Normal/Hard (if computer opponent): ...
 - Color/side selector (if applicable): ...
 - Records: display records from local storage
 - Buttons: "New Game" always shown; "Resume" shown only if a valid in-progress game exists
@@ -85,7 +84,7 @@ _(Include only if the game has a computer player)_
 
 ## Play Screen
 
-- Centered card container on same background; min-width 420px; max-width ... _(choose based on what the game needs — the board or play area should feel spacious, not cramped)_; responsive
+- Centered card container on same background; min-width 420px; ... _(choose based on what the game needs — the board or play area should feel spacious, not cramped)_; responsive
 - Uses boilerplate `Header` with `variant="game"` — close left, status text center, help/theme/donate right
 - Status text during play: ...
 - Game area below header: ...
@@ -112,7 +111,7 @@ _(Include only if the game has a computer player)_
 ## Local Storage
 
 - Theme preference
-- Last selected mode, difficulty, and color/side
+- Last selected mode, difficulty (if applicable), and color/side
 - Game state — save after every move; always start on home screen on reload; show Resume only if valid in-progress game exists; clear on game over or quit
 - Records: Save (in all modes) wins against the computer if applicable - or time taken and number of moves if applicable - or just wins in general if applicable.
 
@@ -161,7 +160,7 @@ Build:
 - [ ] Pieces use `--piece-blue` and `--piece-gold` for the two players
 - [ ] All spacing uses `--space-*` variables
 - [ ] Numbers, scores, and timers use `--font-mono`
-- [ ] Card container: min-width 420px, max-width sized to the game's needs, `overflow: hidden`, no top/horizontal padding
+- [ ] Card container: min-width 420px, `overflow: hidden`, no top/horizontal padding
 - [ ] All interactive elements have hover, active, and disabled states with transitions — nothing snaps
 - [ ] Status text: win=`--color-success`, loss=`--color-danger`, neutral=`--color-accent`
 - [ ] Game over overlay animates in with fade + scale
