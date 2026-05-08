@@ -151,7 +151,8 @@ export default function GameBoard({ gameState, selectedPiece, legalMoves, captur
         {/* legal move dots */}
         {destinations.map(([r, c]) => (
           <circle key={`dot${r}${c}`} cx={toX(c)} cy={toY(r)} r={8}
-            fill="var(--color-accent)" opacity={0.4} pointerEvents="none" />
+            fill={gameState.currentPlayer === 'dark' ? 'var(--piece-blue)' : 'var(--piece-gold)'}
+            opacity={0.5} pointerEvents="none" />
         ))}
 
         {/* capture preview highlight */}
