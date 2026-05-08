@@ -44,8 +44,6 @@ function App() {
   }
 
   function handleClose() {
-    gameStorage.clear()
-    setHasGame(false)
     setPhase('home')
   }
 
