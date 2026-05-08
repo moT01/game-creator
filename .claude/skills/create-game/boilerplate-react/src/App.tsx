@@ -5,29 +5,42 @@ import HomeScreen from './HomeScreen'
 import GameScreen from './GameScreen'
 import HelpModal from './components/HelpModal'
 import type { GameOptions } from './HomeOptions'
+import { DEFAULT_OPTIONS } from './HomeOptions'
 import './App.css'
 
-const storage = createStorage('<game-name>_state')
-
-// REPLACE: define the shape of a game in progress
-type GameState = Record<string, unknown>
+const gameStorage = createStorage('<game-name>_state')
+const optsStorage = createStorage<GameOptions>('<game-name>_opts')
 
 type Phase = 'home' | 'game'
 
 function App() {
   const [phase, setPhase] = useState<Phase>('home')
   const [theme, toggleTheme] = useTheme('<game-name>')
-  const [gameState, setGameState] = useState<GameState | null>(() => storage.load<GameState>())
+  const [hasGame, setHasGame] = useState(() => gameStorage.load() !== null)
   const [gameOptions, setGameOptions] = useState<GameOptions | null>(null)
   const [showHelp, setShowHelp] = useState(false)
 
   function startGame(options: GameOptions) {
     // REPLACE: build initial game state from options, then save
-    const state: GameState = {}
-    storage.save(state)
-    setGameState(state)
+    gameStorage.save({})
+    optsStorage.save(options)
+    setHasGame(true)
     setGameOptions(options)
     setPhase('game')
+  }
+
+  function handleResume() {
+    const opts = optsStorage.load() ?? DEFAULT_OPTIONS
+    setGameOptions(opts)
+    setPhase('game')
+  }
+
+  function handleClose() {
+    setPhase('home')
+  }
+
+  function handleGameOver() {
+    setHasGame(false)
   }
 
   return (
@@ -38,8 +51,8 @@ function App() {
           onThemeToggle={toggleTheme}
           onHelp={() => setShowHelp(true)}
           onStart={startGame}
-          onResume={() => setPhase('game')}
-          hasGame={gameState !== null}
+          onResume={handleResume}
+          hasGame={hasGame}
         />
       )}
       {phase === 'game' && gameOptions && (
@@ -47,8 +60,9 @@ function App() {
           theme={theme}
           onThemeToggle={toggleTheme}
           onHelp={() => setShowHelp(true)}
-          onClose={() => setPhase('home')}
+          onClose={handleClose}
           options={gameOptions}
+          onGameOver={handleGameOver}
         />
       )}
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}

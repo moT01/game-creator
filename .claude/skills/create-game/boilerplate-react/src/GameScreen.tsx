@@ -13,9 +13,10 @@ interface Props {
   onHelp: () => void
   onClose: () => void
   options: GameOptions
+  onGameOver: () => void
 }
 
-export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, options }: Props) {
+export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, options, onGameOver }: Props) {
   // REPLACE: const { ... } = useGame(options)
   void useGame(options)
   const [showConfirm, setShowConfirm] = useState(false)
