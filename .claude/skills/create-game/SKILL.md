@@ -64,9 +64,10 @@ Wait for the user's response before doing anything else.
 
 ## Step 3 — Bootstrap the project
 
-1. Run `cp -R .claude/skills/create-game/boilerplate-react <game-name>` from the repo root to copy the boilerplate
+1. Run `cp -R .claude/skills/create-game/boilerplate <game-name>` from the repo root to copy the boilerplate
 2. In `<game-name>/index.html`, replace the placeholder title with a capitalized human-friendly version of the game name
-3. Run `npm install` inside `<game-name>/`.
+3. In `<game-name>/platform.yaml`, replace the placeholder site name with the game name (lowercase, hyphenated if multiple words) — this is used for deployment and preview links
+4. Run `npm install` inside `<game-name>/`.
 
 The boilerplate includes pre-built components and hooks — use them, do not reimplement:
 - `src/components/Header.tsx` — home and game screen header with all icon buttons
@@ -99,7 +100,7 @@ The following files are pre-wired but must be modified for each game:
 ## Step 4a — Create the plan file
 
 1. Create a `context` directory in <game-name> - so you have `<game-name>/context/`.
-2. Copy `.claude/skills/create-game/templates/PLAN_TEMPLATE_REACT.md` to `<game-name>/context/PLAN.md`. In the new file...
+2. Copy `.claude/skills/create-game/templates/PLAN_TEMPLATE.md` to `<game-name>/context/PLAN.md`. In the new file...
 3. Replace all `<game-name>` placeholders with the actual game name
 4. Replace all `<known-game>` placeholders with the known game name
 

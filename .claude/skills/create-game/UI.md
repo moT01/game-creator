@@ -2,8 +2,6 @@
 
 All games share the same visual language. Read this file before writing any CSS.
 
-See `.claude/skills/create-game/examples/` for screenshots of existing games — use these as a visual reference for layout, style, and overall feel.
-
 CSS variables (colors, spacing, typography, shadows, transitions, radius) are defined in `global.css` — use them, never hardcode values.
 
 Every game should look polished and intentional — not like a default browser UI. If something looks flat, add depth. If something snaps and would be better with a transition, add a transition. If something feels generic, it probably is.
@@ -31,7 +29,6 @@ Every game should look polished and intentional — not like a default browser U
 
 ## Buttons
 
-- Use the icons in `./claude/skills/create-game/icons` when applicable.
 - Secondary buttons use surface colors with a border
 
 ---
@@ -55,7 +52,7 @@ Every game should look polished and intentional — not like a default browser U
 ## Game-Specific Patterns
 
 - Pieces use `--piece-blue` and `--piece-gold` for the two players — do not use arbitrary colors
-- Move indicators should use the moving player's piece color at reduced opacity
+- All interactive piece feedback - selection glow, hover highlights, move destination dots, etc — should use the moving player's piece color at reduced opacity.
 - Status messages: win uses `--color-success`, loss uses `--color-danger`, neutral uses `--color-accent`
 - Overlays and result screens: dark translucent background over the board, content panel with `--radius-lg` and `--shadow-lg`, animate in with fade + scale
 - Headings use tight letter-spacing (`-0.02em`), uppercase labels use wide letter-spacing (`0.06em`)
