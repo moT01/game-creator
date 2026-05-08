@@ -1,0 +1,96 @@
+.board-wrapper {
+  width: 100%;
+  padding: var(--space-4);
+}
+
+.board-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius-md);
+}
+
+.board-piece {
+  transition: opacity 0.15s, filter 0.15s;
+}
+
+.board-piece-selected {
+  filter: drop-shadow(0 0 12px rgba(255, 191, 0, 0.6));
+}
+
+.board-piece-chain {
+  animation: piece-pulse 1s ease-in-out infinite;
+}
+
+.board-piece-dimmed {
+  opacity: 0.3;
+}
+
+.board-piece-exiting {
+  animation: piece-exit 0.22s ease forwards;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes piece-exit {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.15); }
+}
+
+@keyframes piece-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.board-target {
+  cursor: pointer;
+  fill-opacity: 0;
+  transition: fill-opacity 0.12s;
+}
+
+.board-target:hover {
+  fill: var(--color-accent);
+  fill-opacity: 0.12;
+}
+
+.board-target:active {
+  fill: var(--color-accent);
+  fill-opacity: 0.25;
+}
+
+.capture-choice {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  height: 100%;
+}
+
+.capture-choice-btn {
+  flex: 1;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+  white-space: nowrap;
+}
+
+.capture-choice-btn:hover {
+  background: var(--color-accent);
+  color: var(--color-bg);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.capture-choice-btn:active {
+  transform: scale(0.97);
+}
+
+.capture-choice-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-accent);
+}

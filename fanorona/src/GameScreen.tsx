@@ -1,11 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createStorage } from './hooks/useStorage'
 import Header from './components/Header'
 import GameBoard from './GameBoard'
 import ConfirmModal from './components/ConfirmModal'
 import GameOverModal from './components/GameOverModal'
 import { useGame } from './hooks/useGame'
+import { other } from './game'
 import type { GameOptions } from './HomeOptions'
 import './GameScreen.css'
+
+const winsStorage = createStorage<number>('fanorona_wins')
 
 interface Props {
   theme: 'dark' | 'light'
@@ -13,13 +17,51 @@ interface Props {
   onHelp: () => void
   onClose: () => void
   options: GameOptions
+  onGameOver: () => void
 }
 
-export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, options }: Props) {
-  // REPLACE: const { ... } = useGame(options)
-  void useGame(options)
+export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, options, onGameOver }: Props) {
+  const { gameState, selectedPiece, legalMoves, captureChoice, selectPiece, resetGame, resolveCapture } = useGame(options)
   const [showConfirm, setShowConfirm] = useState(false)
-  const [showGameOver, setShowGameOver] = useState(false)
+
+  const isOver = gameState.phase === 'gameover'
+
+  useEffect(() => {
+    if (!isOver) return
+    onGameOver()
+    if (options.opponent === 'computer' && gameState.winner === 'dark') {
+      const current = winsStorage.load() ?? 0
+      winsStorage.save(current + 1)
+    }
+  }, [isOver]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function getStatusText(): string {
+    if (isOver) return ''
+    if (options.opponent === 'computer') {
+      return gameState.currentPlayer === 'dark' ? 'Your turn' : 'Computer thinking...'
+    }
+    return gameState.currentPlayer === 'dark' ? "Dark's turn" : "Light's turn"
+  }
+
+  function getResult(): string {
+    if (gameState.winner === null) return 'No winner'
+    if (options.opponent === 'computer') {
+      return gameState.winner === 'dark' ? 'You Win!' : 'Computer Wins!'
+    }
+    return gameState.winner === 'dark' ? 'Dark Wins!' : 'Light Wins!'
+  }
+
+  function getResultType(): 'win' | 'loss' | undefined {
+    if (options.opponent !== 'computer' || gameState.winner === null) return undefined
+    return gameState.winner === 'dark' ? 'win' : 'loss'
+  }
+
+  function getNote(): string | undefined {
+    if (gameState.winner === null) return undefined
+    const loser = other(gameState.winner)
+    const loserHasPieces = gameState.board.some(row => row.some(cell => cell === loser))
+    return loserHasPieces ? 'No legal moves remaining' : undefined
+  }
 
   return (
     <div className="card">
@@ -29,10 +71,17 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
         onThemeToggle={onThemeToggle}
         onHelp={onHelp}
         onClose={() => setShowConfirm(true)}
-        center="Your turn"
+        center={getStatusText()}
       />
       <div className="game-content">
-        <GameBoard />
+        <GameBoard
+          gameState={gameState}
+          selectedPiece={selectedPiece}
+          legalMoves={legalMoves}
+          captureChoice={captureChoice}
+          onCellClick={selectPiece}
+          onResolveCapture={resolveCapture}
+        />
       </div>
       {showConfirm && (
         <ConfirmModal
@@ -43,12 +92,13 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
           onCancel={() => setShowConfirm(false)}
         />
       )}
-      {showGameOver && (
+      {isOver && (
         <GameOverModal
-          result="You Win!"
-          resultType="win"
-          note="Optional note about what happened"
-          onPlayAgain={() => setShowGameOver(false)}
+          result={getResult()}
+          resultType={getResultType()}
+          note={getNote()}
+          stats={[{ label: 'Moves', value: gameState.moveCount }]}
+          onPlayAgain={resetGame}
           onHome={onClose}
         />
       )}
