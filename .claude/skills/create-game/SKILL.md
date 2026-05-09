@@ -110,6 +110,8 @@ The template covers all required sections. Fill out every section completely —
 
 Be sure to include all of the user's decisions from step 2.
 
+Only document what is game-specific. Do not re-document boilerplate behavior — the coder knows how Header, Modal, card containers, colors, spacing, and transitions work. Focus the plan on: game rules, data model, AI strategy, help content, game-specific status/result text, storage keys, game logic functions, board UI specifics, and game-specific styling.
+
 Before writing, think through the non-obvious mechanics of this specific game:
 - What surprises first-time implementers?
 - What state changes are easy to forget or get wrong?
@@ -144,12 +146,11 @@ Read the completed plan and check:
 - Components are listed without specific responsibilities
 - Testing has no specific test cases (if applicable)
 - Edge cases section is empty
-- Styling section is missing standard checklist items or still has `- [ ] ...` placeholders
+- Styling section is empty — it should list game-specific board, piece, and animation items
 
 **Meaningful improvement:**
 - Special rules exist but state flags are missing from the data model
 - Computer player mentioned but AI strategy is vague
-- Testing has a start but obvious cases for this game are missing
 - Edge cases feel thin given the complexity of the game
 - Help & Strategy Guide content feels generic rather than game-specific
 - Styling items don't call out specific variables, states, or transitions

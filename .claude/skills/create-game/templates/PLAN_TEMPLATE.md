@@ -69,66 +69,26 @@ _(Include only if the game has a computer player)_
 
 ---
 
-## Home Screen
+## Screens & Storage
 
-- Full viewport (100vw × 100vh), game-themed background
-- Centered card container: min-width 420px, overflow hidden, no top/horizontal padding
-- Uses boilerplate `Header` with `variant="home"` — help, theme, donate buttons; border-bottom spans full card width
-- Game title and subtitle
-- Mode selector (if applicable): ...
-- Color/side selector (if applicable): ...
-- Records: display records from local storage
-- Buttons: "New Game" always shown; "Resume" shown only if a valid in-progress game exists
-
----
-
-## Play Screen
-
-- Centered card container on same background; min-width 420px; ... _(choose based on what the game needs — the board or play area should feel spacious, not cramped)_; responsive
-- Uses boilerplate `Header` with `variant="game"` — close left, status text center, help/theme/donate right
-- Status text during play: ...
-- Game area below header: ...
-- Score/status display: ...
-
----
-
-## Game Over
-
-- Overlay on the play screen — not a separate screen
-- Result display: ...
-- Records shown: ...
-- Buttons: Play Again, Return to Menu
-
----
-
-## Modals
-
-- **Help** — rules and strategy content specific to this game; accessible from all screens
-- **Confirm** — used for: new game, quit to menu; message: ...
-
----
-
-## Local Storage
-
-- Theme preference
-- Last selected mode, difficulty (if applicable), and color/side
-- Game state — save after every move; always start on home screen on reload; show Resume only if valid in-progress game exists; clear on game over or quit
-- Records: Save (in all modes) wins against the computer if applicable - or time taken and number of moves if applicable - or just wins in general if applicable.
-
----
-
-## Accessibility
-
-- Keyboard navigation for all interactive elements
-- ARIA labels on all buttons and controls
+**Home screen options:**
+_(list selectors shown — opponent, side, mode, difficulty, etc.; note which are conditional)_
 - ...
 
----
+**Status text (play screen):**
+_(list all status strings and when each appears)_
+- ...
 
-## Theming
+**Game over result / note:**
+_(result strings per outcome; note strings)_
+- ...
 
-- Light/dark toggle via `useTheme` hook — applies `.light-palette` / `.dark-palette` to body
-- Never hardcode colors — use semantic CSS variables from `global.css`
+**Local storage keys:**
+- `<game-name>_opts` — `GameOptions`; loaded on home screen
+- `<game-name>_state` — full `GameState`; saved after every move; cleared on game over or quit; Resume shown only when this exists and `phase === 'playing'`
+- _(add win/record keys as applicable)_
+
+**Confirm modal message:** _(shown when user clicks close during a game)_
 
 ---
 
@@ -156,19 +116,6 @@ Build:
 ---
 
 ## Styling
-- [ ] All colors use semantic variables — no hardcoded values
-- [ ] Pieces use `--piece-blue` and `--piece-gold` for the two players
-- [ ] All spacing uses `--space-*` variables
-- [ ] Numbers, scores, and timers use `--font-mono`
-- [ ] Card container: min-width 420px, `overflow: hidden`, no top/horizontal padding
-- [ ] All interactive elements have hover, active, and disabled states with transitions — nothing snaps
-- [ ] Status text: win=`--color-success`, loss=`--color-danger`, neutral=`--color-accent`
-- [ ] Game over overlay animates in with fade + scale
-- [ ] Responsive at 375px
-- [ ] ...
 
----
-
-## Polish
-_(animations on key events, piece/card movement, empty state handling)_
+_(Board, pieces, and game-specific UI only — boilerplate handles colors, spacing, transitions, card layout, and game over overlay)_
 - [ ] ...

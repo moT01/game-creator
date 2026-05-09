@@ -29,6 +29,8 @@ Use `<game-name>` for all variable names, file names, and code references — ne
 
 Only read files explicitly listed in the plan or mentioned in inputs. Do not explore the project structure or search for files.
 
+Do not read boilerplate component or hook files (Header, Modal, ConfirmModal, GameOverModal, SegmentedControl, useTheme, useStorage, or their CSS) — their interfaces are documented above. Only read files you are actively modifying.
+
 ---
 
 ## Step 1 — Read the plan
