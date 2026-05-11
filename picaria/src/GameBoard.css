@@ -3,13 +3,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: var(--space-4);
 }
 
 .board-svg {
   width: 100%;
   aspect-ratio: 1;
-  min-width: min(50vw, 550px);
+  min-width: min(50vw, 600px);
   overflow: visible;
 }
 

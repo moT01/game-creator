@@ -142,7 +142,7 @@ function getBestPlacement(board: (0 | 1 | 2)[], piecesPlaced: number, computerPl
   for (let i = 0; i < 9; i++) {
     if (board[i] !== 0) continue
     const next = applyPlacement(board, i, computerPlayer)
-    const score = minimax(next, piecesPlaced + 1, opponent, computerPlayer, 5, -Infinity, Infinity)
+    const score = minimax(next, piecesPlaced + 1, opponent, computerPlayer, 1, -Infinity, Infinity)
     if (score > bestScore) {
       bestScore = score
       bestIndex = i
@@ -161,7 +161,7 @@ function getBestMove(board: (0 | 1 | 2)[], computerPlayer: 1 | 2): [number, numb
     for (const to of ADJACENCY[from]) {
       if (board[to] !== 0) continue
       const next = applyMove(board, from, to)
-      const score = minimax(next, 6, opponent, computerPlayer, 5, -Infinity, Infinity)
+      const score = minimax(next, 6, opponent, computerPlayer, 1, -Infinity, Infinity)
       if (score > bestScore) {
         bestScore = score
         bestFrom = from

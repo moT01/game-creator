@@ -38,6 +38,8 @@ export default function HomeOptions({ value, onChange }: Props) {
         onChange={opponent => onChange({ ...value, opponent })}
       />
       {value.opponent === 'computer' && (
+        <>
+        <StatsRow stats={[{ label: 'Wins', value: wins }]} />
         <SegmentedControl
           small
           options={[
@@ -47,9 +49,7 @@ export default function HomeOptions({ value, onChange }: Props) {
           value={value.side}
           onChange={side => onChange({ ...value, side })}
         />
-      )}
-      {value.opponent === 'computer' && (
-        <StatsRow stats={[{ label: 'Wins', value: wins }]} />
+        </>
       )}
     </div>
   )
