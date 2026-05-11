@@ -14,13 +14,17 @@ interface Props {
   onClose: () => void
   options: GameOptions
   onGameOver: () => void
+  onPlayAgain: () => void
 }
 
-export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, options, onGameOver }: Props) {
+export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, options, onGameOver, onPlayAgain }: Props) {
   // REPLACE: const { ... } = useGame(options)
   void useGame(options)
   const [showConfirm, setShowConfirm] = useState(false)
-  const [showGameOver, setShowGameOver] = useState(false)
+  const [gameOverDismissed, setGameOverDismissed] = useState(false)
+  // REPLACE: const isGameOver = state.phase === 'over'
+  const isGameOver = false
+  const showGameOver = isGameOver && !gameOverDismissed
 
   return (
     <div className="card">
@@ -29,7 +33,7 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
         theme={theme}
         onThemeToggle={onThemeToggle}
         onHelp={onHelp}
-        onClose={() => setShowConfirm(true)}
+        onClose={() => isGameOver ? setGameOverDismissed(false) : setShowConfirm(true)}
         center="Your turn"
       />
       <div className="game-content">
@@ -49,7 +53,8 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
           result="You Win!"
           resultType="win"
           note="Optional note about what happened"
-          onPlayAgain={() => setShowGameOver(false)}
+          onDismiss={() => setGameOverDismissed(true)}
+          onPlayAgain={onPlayAgain}
           onHome={onClose}
         />
       )}

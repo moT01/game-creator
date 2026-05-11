@@ -18,6 +18,7 @@ function App() {
   const [theme, toggleTheme] = useTheme('<game-name>')
   const [hasGame, setHasGame] = useState(() => gameStorage.load() !== null)
   const [gameOptions, setGameOptions] = useState<GameOptions | null>(null)
+  const [gameKey, setGameKey] = useState(0)
   const [showHelp, setShowHelp] = useState(false)
 
   function startGame(options: GameOptions) {
@@ -43,6 +44,11 @@ function App() {
     setHasGame(false)
   }
 
+  function handlePlayAgain() {
+    // REPLACE: save a fresh initial state before incrementing gameKey
+    setGameKey(k => k + 1)
+  }
+
   return (
     <div className="app">
       {phase === 'home' && (
@@ -57,12 +63,14 @@ function App() {
       )}
       {phase === 'game' && gameOptions && (
         <GameScreen
+          key={gameKey}
           theme={theme}
           onThemeToggle={toggleTheme}
           onHelp={() => setShowHelp(true)}
           onClose={handleClose}
           options={gameOptions}
           onGameOver={handleGameOver}
+          onPlayAgain={handlePlayAgain}
         />
       )}
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}

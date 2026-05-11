@@ -21,16 +21,18 @@ interface Props {
 export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, options, onGameOver, onPlayAgain }: Props) {
   const { state, humanPlayer, handlePointClick, hasNoMoves } = useGame(options)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [gameOverDismissed, setGameOverDismissed] = useState(false)
 
   const isComputerTurn = options.opponent === 'computer' && state.currentPlayer !== humanPlayer
   const isHumanTurn = options.opponent === '2player' || state.currentPlayer === humanPlayer
+  const showGameOver = state.phase === 'over' && !gameOverDismissed
 
   useEffect(() => {
     if (state.phase === 'over') onGameOver()
   }, [state.phase]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function getStatusText(): string {
-    if (state.phase !== 'playing') return ''
+    if (state.phase === 'over') return getGameOverResult()
     if (hasNoMoves) return 'No moves — turn skipped'
     if (isComputerTurn) return 'Computer thinking...'
     if (options.opponent === '2player') {
@@ -56,7 +58,7 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
 
   function getNote(): string {
     if (state.winner === 'draw') return 'Same position repeated 3 times.'
-    if (state.winner !== null) return 'All 3 pieces in a row — well played!'
+    if (state.winner !== null) return 'All 3 pieces in a row'
     return ''
   }
 
@@ -67,7 +69,7 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
         theme={theme}
         onThemeToggle={onThemeToggle}
         onHelp={onHelp}
-        onClose={() => setShowConfirm(true)}
+        onClose={() => state.phase === 'over' ? setGameOverDismissed(false) : setShowConfirm(true)}
         center={
           <span aria-live="polite" className={hasNoMoves ? 'status-no-moves' : undefined}>
             {getStatusText()}
@@ -94,12 +96,13 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
           onCancel={() => setShowConfirm(false)}
         />
       )}
-      {state.phase === 'over' && (
+      {showGameOver && (
         <GameOverModal
           result={getGameOverResult()}
           resultType={getResultType()}
           note={getNote()}
           stats={<StatsRow stats={[{ label: 'Moves', value: state.moveCount }]} />}
+          onDismiss={() => setGameOverDismissed(true)}
           onPlayAgain={onPlayAgain}
           onHome={onClose}
         />

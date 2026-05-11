@@ -11,11 +11,12 @@ interface Props {
   stats?: ReactNode
   onPlayAgain: () => void
   onHome: () => void
+  onDismiss?: () => void
 }
 
-export default function GameOverModal({ result, resultType = 'win', note, stats, onPlayAgain, onHome }: Props) {
+export default function GameOverModal({ result, resultType = 'win', note, stats, onPlayAgain, onHome, onDismiss }: Props) {
   return (
-    <Modal onClose={onHome}>
+    <Modal onClose={onDismiss ?? onHome}>
       <p className={`game-over-result game-over-result-${resultType}`}>{result}</p>
       {note && <p className="game-over-note">{note}</p>}
       {stats && <div className="game-over-stats">{stats}</div>}

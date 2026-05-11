@@ -9,11 +9,12 @@ interface Props {
   note?: string
   onPlayAgain: () => void
   onHome: () => void
+  onDismiss?: () => void
 }
 
-export default function GameOverModal({ result, resultType = 'win', note, onPlayAgain, onHome }: Props) {
+export default function GameOverModal({ result, resultType = 'win', note, onPlayAgain, onHome, onDismiss }: Props) {
   return (
-    <Modal onClose={onHome}>
+    <Modal onClose={onDismiss ?? onHome}>
       <p className={`game-over-result game-over-result-${resultType}`}>{result}</p>
       {note && <p className="game-over-note">{note}</p>}
       <div className="game-over-stats">
