@@ -1,0 +1,8 @@
+site: reversi
+build:
+  output: .
+deploy:
+  preview: true
+  ignore:
+    - "DEPLOY.md"
+    - ".git/**"

@@ -168,8 +168,7 @@ const state = {
   aiThinking: false,
   animating: false,
   passMessage: null,
-  difficulty: 'normal',
-  wins: { normal: 0, hard: 0 },
+  wins: 0,
 };
 
 // ─── Persistence ─────────────────────────────────────────────────────────────
@@ -186,7 +185,10 @@ function saveState() {
 function loadState() {
   const winsRaw = localStorage.getItem('reversi_wins');
   if (winsRaw) {
-    try { Object.assign(state.wins, JSON.parse(winsRaw)); } catch (_) {}
+    try {
+      const parsed = JSON.parse(winsRaw);
+      state.wins = typeof parsed === 'number' ? parsed : (parsed.normal || 0) + (parsed.hard || 0);
+    } catch (_) {}
   }
 
   const raw = localStorage.getItem('reversi_state');
@@ -210,10 +212,8 @@ function loadState() {
   applyTheme(theme);
   const mode = localStorage.getItem('reversi_mode') || 'hvc';
   const color = parseInt(localStorage.getItem('reversi_color') || '1', 10);
-  const difficulty = localStorage.getItem('reversi_difficulty') || 'normal';
   state.mode = mode;
   state.playerColor = color;
-  state.difficulty = difficulty;
   state.status = 'idle';
 }
 
@@ -314,7 +314,7 @@ function triggerAI() {
   state.aiThinking = true;
   render();
   const aiColor = state.mode === 'hvc' ? (state.playerColor === 1 ? 2 : 1) : state.currentPlayer;
-  const depth = state.difficulty === 'hard' ? 5 : 3;
+  const depth = 3;
   const aiStartTime = Date.now();
   const move = getBestMove(state.board, aiColor, depth);
   const elapsed = Date.now() - aiStartTime;
@@ -341,7 +341,7 @@ function endGame(board) {
     state.winner = null;
   }
   if (state.mode === 'hvc' && state.winner === state.playerColor) {
-    state.wins[state.difficulty]++;
+    state.wins++;
     localStorage.setItem('reversi_wins', JSON.stringify(state.wins));
   }
 }
@@ -476,23 +476,13 @@ function renderHome() {
         </div>
 
         ${isHvc ? `
-          <div class="wins-display">
-            <span class="wins-label">WINS</span>
-            <div class="wins-rows">
-              <div class="wins-row"><span class="wins-row-label">Normal</span><span class="wins-num">${state.wins.normal}</span></div>
-              <div class="wins-row"><span class="wins-row-label">Hard</span><span class="wins-num">${state.wins.hard}</span></div>
-            </div>
-          </div>
+          <div class="wins-row"><span class="wins-row-label">Wins</span><span class="wins-num">${state.wins}</span></div>
 
           <div class="option-row">
             <div class="pill-toggle">
-              <button class="pill-btn ${state.playerColor === 1 ? 'active' : ''}" data-color="1">Dark <span class="goes-first">(goes first)</span></button>
-              <button class="pill-btn ${state.playerColor === 2 ? 'active' : ''}" data-color="2">Light</button>
+              <button class="pill-btn ${state.playerColor === 1 ? 'active' : ''}" data-color="1">Go First</button>
+              <button class="pill-btn ${state.playerColor === 2 ? 'active' : ''}" data-color="2">Go Second</button>
             </div>
-            <label class="hard-mode-label">
-              <input type="checkbox" class="hard-mode-check" id="hard-mode-check" ${state.difficulty === 'hard' ? 'checked' : ''} />
-              <span class="hard-mode-text">Hard mode</span>
-            </label>
           </div>
         ` : ''}
 
@@ -754,11 +744,6 @@ function attachEvents() {
       localStorage.setItem('reversi_color', state.playerColor);
       render();
     });
-  });
-
-  document.getElementById('hard-mode-check')?.addEventListener('change', e => {
-    state.difficulty = e.target.checked ? 'hard' : 'normal';
-    localStorage.setItem('reversi_difficulty', state.difficulty);
   });
 
   document.getElementById('new-game-btn')?.addEventListener('click', resetGame);
