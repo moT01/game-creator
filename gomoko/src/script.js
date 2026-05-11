@@ -331,7 +331,7 @@ function triggerAI() {
 function runAI() {
   const start = Date.now();
   const aiPlayer = state.humanPlayer === 1 ? 2 : 1;
-  const depth = 2;
+  const depth = 4;
   const move = getBestMove(state.board, aiPlayer, depth);
   const elapsed = Date.now() - start;
   const delay = Math.max(0, MIN_AI_MS - elapsed);
