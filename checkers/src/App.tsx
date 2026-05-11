@@ -320,7 +320,11 @@ function App() {
           theme={theme}
           onThemeToggle={toggleTheme}
           onHelp={() => setShowHelp(true)}
-          statusText={phase === 'playing' ? `${currentTurn}'s turn` : undefined}
+          statusText={phase === 'playing'
+            ? mode === 'vs-computer'
+              ? currentTurn === playerSide ? 'Your turn' : 'Thinking...'
+              : currentTurn === 'Light' ? "Player 1's turn" : "Player 2's turn"
+            : undefined}
           statusClass={phase === 'playing' ? `game-status__turn--${currentTurn.toLowerCase()}` : undefined}
         />
         <div className="game-card__body">
@@ -348,6 +352,7 @@ function App() {
                 currentTurn={currentTurn}
                 onSquareClick={handleSquareClick}
                 disabled={isDisabled}
+                flipped={mode === 'vs-computer' && playerSide === 'Dark'}
               />
             </>
           )}

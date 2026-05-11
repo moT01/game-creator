@@ -192,7 +192,7 @@ function minimax(
 
 export function getComputerMove(board: Board, aiPlayer: Player): Move {
   const moves = getValidMoves(board, aiPlayer)
-  const depth = 1
+  const depth = 3
   let bestScore = -Infinity
   let bestMove = moves[0]
   for (const move of moves) {

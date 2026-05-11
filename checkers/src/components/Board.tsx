@@ -10,19 +10,24 @@ interface Props {
   currentTurn: Player
   onSquareClick: (index: number) => void
   disabled: boolean
+  flipped?: boolean
 }
 
-export function Board({ board, selectedIndex, validMoveDestinations, jumpDestinations, currentTurn, onSquareClick, disabled }: Props) {
+export function Board({ board, selectedIndex, validMoveDestinations, jumpDestinations, currentTurn, onSquareClick, disabled, flipped }: Props) {
+  const indices = flipped
+    ? Array.from({ length: 64 }, (_, i) => 63 - i)
+    : Array.from({ length: 64 }, (_, i) => i)
+
   return (
     <div className={`board${disabled ? ' board--disabled' : ''} board--turn-${currentTurn.toLowerCase()}`}>
-      {board.map((piece, index) => {
+      {indices.map(index => {
         const row = Math.floor(index / 8)
         const col = index % 8
         const isDark = (row + col) % 2 === 1
         return (
           <Square
             key={index}
-            piece={piece}
+            piece={board[index]}
             isDark={isDark}
             isSelected={index === selectedIndex}
             isValidDestination={validMoveDestinations.includes(index)}
