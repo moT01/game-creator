@@ -211,10 +211,9 @@ const STORAGE_KEY = 'gomoko_state';
 const THEME_KEY = 'gomoko_theme';
 const MODE_KEY = 'gomoko_mode';
 const COLOR_KEY = 'gomoko_color';
-const DIFF_KEY = 'gomoko_diff';
 const STATS_KEY = 'gomoko_stats';
 
-function makeInitialState(mode = 'hvc', humanPlayer = 1, difficulty = 'hard') {
+function makeInitialState(mode = 'hvc', humanPlayer = 1) {
   return {
     board: createBoard(),
     currentPlayer: 1,
@@ -224,7 +223,6 @@ function makeInitialState(mode = 'hvc', humanPlayer = 1, difficulty = 'hard') {
     lastMove: null,
     mode,
     humanPlayer,
-    difficulty,
     aiThinking: false,
   };
 }
@@ -239,18 +237,18 @@ function saveState() {
 
 function loadStats() {
   try {
-    return JSON.parse(localStorage.getItem(STATS_KEY)) || { normal: 0, hard: 0 };
+    const raw = JSON.parse(localStorage.getItem(STATS_KEY));
+    if (typeof raw === 'number') return raw;
+    if (raw && typeof raw === 'object') return (raw.normal || 0) + (raw.hard || 0);
+    return 0;
   } catch (_) {
-    return { normal: 0, hard: 0 };
+    return 0;
   }
 }
 
 function recordWin() {
   if (state.mode !== 'hvc') return;
-  const diff = state.difficulty === 'hard' ? 'hard' : 'normal';
-  const stats = loadStats();
-  stats[diff]++;
-  try { localStorage.setItem(STATS_KEY, JSON.stringify(stats)); } catch (_) {}
+  try { localStorage.setItem(STATS_KEY, JSON.stringify(loadStats() + 1)); } catch (_) {}
 }
 
 function loadState() {
@@ -268,9 +266,8 @@ function loadState() {
 
 function startGame(mode, humanPlayer) {
   const hp = humanPlayer ?? parseInt(localStorage.getItem(COLOR_KEY) || '1');
-  const diff = localStorage.getItem(DIFF_KEY) || 'hard';
   localStorage.removeItem(STORAGE_KEY);
-  state = makeInitialState(mode, hp, diff);
+  state = makeInitialState(mode, hp);
   state.status = 'playing';
   saveState();
   render();
@@ -334,7 +331,7 @@ function triggerAI() {
 function runAI() {
   const start = Date.now();
   const aiPlayer = state.humanPlayer === 1 ? 2 : 1;
-  const depth = state.difficulty === 'easy' ? 2 : 6;
+  const depth = 2;
   const move = getBestMove(state.board, aiPlayer, depth);
   const elapsed = Date.now() - start;
   const delay = Math.max(0, MIN_AI_MS - elapsed);
@@ -637,20 +634,12 @@ function onNewGame() {
 // ── Home Screen ──────────────────────────────────────────────────────────────
 
 function renderStats() {
-  const s = loadStats();
-  return `
-    <div class="stats-block">
-      <span class="stats-heading">Wins</span>
-      <div class="stats-row"><span class="stats-label">Normal</span>${s.normal}</div>
-      <div class="stats-row"><span class="stats-label">Hard</span>${s.hard}</div>
-    </div>
-  `;
+  return `<div class="stats-row"><span class="stats-label">Wins</span><span class="stats-value">${loadStats()}</span></div>`;
 }
 
 function renderHome() {
   const savedMode = localStorage.getItem(MODE_KEY) || 'hvc';
   const savedColor = parseInt(localStorage.getItem(COLOR_KEY) || '1');
-  const savedDiff = localStorage.getItem(DIFF_KEY) || 'hard';
   const hasSavedGame = loadState()?.status === 'playing';
   state.mode = savedMode;
 
@@ -677,15 +666,9 @@ function renderHome() {
       </div>
       <div class="hvc-settings${savedMode === 'hvh' ? ' color-picker-hidden' : ''}">
         ${renderStats()}
-        <div class="hvc-row">
-          <div class="mode-toggle mode-toggle-sm" role="group" aria-label="Play as">
-            <button class="mode-btn${savedColor === 1 ? ' mode-active' : ''}" data-color="1" aria-pressed="${savedColor === 1}">Dark (goes first)</button>
-            <button class="mode-btn${savedColor === 2 ? ' mode-active' : ''}" data-color="2" aria-pressed="${savedColor === 2}">Light</button>
-          </div>
-          <label class="hard-label" aria-label="Hard difficulty">
-            <input type="checkbox" class="hard-checkbox" ${savedDiff === 'hard' ? 'checked' : ''}>
-            Hard mode
-          </label>
+        <div class="mode-toggle mode-toggle-sm" role="group" aria-label="Play as">
+          <button class="mode-btn${savedColor === 1 ? ' mode-active' : ''}" data-color="1" aria-pressed="${savedColor === 1}">Go First</button>
+          <button class="mode-btn${savedColor === 2 ? ' mode-active' : ''}" data-color="2" aria-pressed="${savedColor === 2}">Go Second</button>
         </div>
       </div>
       <button class="btn btn-primary btn-lg" id="start-btn" aria-label="${hasSavedGame ? 'Start new game' : 'Start game'}">${hasSavedGame ? 'New Game' : 'Start Game'}</button>
@@ -730,11 +713,6 @@ function renderHome() {
         b.setAttribute('aria-pressed', parseInt(b.dataset.color) === color);
       });
     });
-  });
-
-  // Difficulty checkbox
-  screen.querySelector('.hard-checkbox').addEventListener('change', e => {
-    localStorage.setItem(DIFF_KEY, e.target.checked ? 'hard' : 'easy');
   });
 
   screen.querySelector('#start-btn').addEventListener('click', () => {
