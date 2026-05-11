@@ -1,0 +1,10 @@
+site: picaria
+build:
+  output: dist
+deploy:
+  preview: true
+  ignore:
+    - "*.map"
+    - "node_modules/**"
+    - ".git/**"
+    - ".env*"
