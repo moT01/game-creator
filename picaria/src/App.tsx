@@ -6,24 +6,29 @@ import GameScreen from './GameScreen'
 import HelpModal from './components/HelpModal'
 import type { GameOptions } from './HomeOptions'
 import { DEFAULT_OPTIONS } from './HomeOptions'
+import { buildInitialState } from './hooks/useGame'
+import type { GameState } from './hooks/useGame'
 import './App.css'
 
-const gameStorage = createStorage('<game-name>_state')
-const optsStorage = createStorage<GameOptions>('<game-name>_opts')
+const gameStorage = createStorage<GameState>('picaria_state')
+const optsStorage = createStorage<GameOptions>('picaria_opts')
 
 type Phase = 'home' | 'game'
 
 function App() {
   const [phase, setPhase] = useState<Phase>('home')
-  const [theme, toggleTheme] = useTheme('<game-name>')
-  const [hasGame, setHasGame] = useState(() => gameStorage.load() !== null)
+  const [theme, toggleTheme] = useTheme('picaria')
+  const [hasGame, setHasGame] = useState(() => {
+    const s = gameStorage.load()
+    return s !== null && s.phase !== 'over'
+  })
   const [gameOptions, setGameOptions] = useState<GameOptions | null>(null)
   const [gameKey, setGameKey] = useState(0)
   const [showHelp, setShowHelp] = useState(false)
 
   function startGame(options: GameOptions) {
-    // REPLACE: build initial game state from options, then save
-    gameStorage.save({})
+    const initial = buildInitialState()
+    gameStorage.save(initial)
     optsStorage.save(options)
     setHasGame(true)
     setGameOptions(options)
@@ -45,7 +50,9 @@ function App() {
   }
 
   function handlePlayAgain() {
-    // REPLACE: save a fresh initial state before incrementing gameKey
+    const fresh = buildInitialState()
+    gameStorage.save(fresh)
+    setHasGame(true)
     setGameKey(k => k + 1)
   }
 

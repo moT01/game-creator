@@ -88,8 +88,6 @@ _(result strings per outcome; note strings)_
 - `<game-name>_state` — full `GameState`; saved after every move; cleared on game over or quit; Resume shown only when this exists and `phase === 'playing'`
 - _(add win/record keys as applicable)_
 
-**Confirm modal message:** _(shown when user clicks close during a game)_
-
 ---
 
 ## Game Logic

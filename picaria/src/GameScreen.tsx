@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Header from './components/Header'
 import GameBoard from './GameBoard'
 import ConfirmModal from './components/ConfirmModal'
 import GameOverModal from './components/GameOverModal'
+import StatsRow from './components/StatsRow'
 import { useGame } from './hooks/useGame'
 import type { GameOptions } from './HomeOptions'
 import './GameScreen.css'
@@ -18,13 +19,53 @@ interface Props {
 }
 
 export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, options, onGameOver, onPlayAgain }: Props) {
-  // REPLACE: const { ... } = useGame(options)
-  void useGame(options)
+  const { state, humanPlayer, handlePointClick, hasNoMoves } = useGame(options)
   const [showConfirm, setShowConfirm] = useState(false)
   const [gameOverDismissed, setGameOverDismissed] = useState(false)
-  // REPLACE: const isGameOver = state.phase === 'over'
-  const isGameOver = false
+
+  const isComputerTurn = options.opponent === 'computer' && state.currentPlayer !== humanPlayer
+  const isHumanTurn = options.opponent === '2player' || state.currentPlayer === humanPlayer
+  const isGameOver = state.phase === 'over'
   const showGameOver = isGameOver && !gameOverDismissed
+
+  useEffect(() => {
+    if (isGameOver) onGameOver()
+  }, [isGameOver]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function getGameOverResult(): string {
+    if (state.winner === null) return 'Draw'
+    if (options.opponent === 'computer') {
+      return state.winner === humanPlayer ? 'You Win!' : 'Computer Wins'
+    }
+    return state.winner === 1 ? 'Player 1 Wins' : 'Player 2 Wins'
+  }
+
+  function getStatusText(): string {
+    if (isGameOver) return getGameOverResult()
+    if (hasNoMoves) return 'No moves - turn skipped'
+    if (isComputerTurn) return 'Computer thinking...'
+    if (state.phase === 'placing') {
+      if (options.opponent === '2player') {
+        return state.currentPlayer === 1 ? 'Player 1: place a piece' : 'Player 2: place a piece'
+      }
+      return 'Your turn: place a piece'
+    }
+    if (options.opponent === '2player') {
+      return state.currentPlayer === 1 ? "Player 1's turn" : "Player 2's turn"
+    }
+    return 'Your turn'
+  }
+
+  function getResultType(): 'win' | 'loss' | 'draw' {
+    if (state.winner === null) return 'draw'
+    if (options.opponent === 'computer' && state.winner !== humanPlayer) return 'loss'
+    return 'win'
+  }
+
+  function getNote(): string {
+    if (state.winner === null) return 'Same position repeated 3 times.'
+    return '3 in a row'
+  }
 
   return (
     <div className="card">
@@ -34,10 +75,22 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
         onThemeToggle={onThemeToggle}
         onHelp={onHelp}
         onClose={() => isGameOver ? setGameOverDismissed(false) : setShowConfirm(true)}
-        center="Your turn"
+        center={
+          <span aria-live="polite" className={hasNoMoves ? 'status-no-moves' : undefined}>
+            {getStatusText()}
+          </span>
+        }
       />
       <div className="game-content">
-        <GameBoard />
+        <GameBoard
+          board={state.board}
+          selectedPoint={state.selectedPoint}
+          validMoves={state.validMoves}
+          currentPlayer={state.currentPlayer}
+          phase={state.phase}
+          isHumanTurn={isHumanTurn}
+          onPointClick={handlePointClick}
+        />
       </div>
       {showConfirm && (
         <ConfirmModal
@@ -50,9 +103,10 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
       )}
       {showGameOver && (
         <GameOverModal
-          result="You Win!"
-          resultType="win"
-          note="Optional note about what happened"
+          result={getGameOverResult()}
+          resultType={getResultType()}
+          note={getNote()}
+          stats={<StatsRow stats={[{ label: 'Moves', value: state.moveCount }]} />}
           onDismiss={() => setGameOverDismissed(true)}
           onPlayAgain={onPlayAgain}
           onHome={onClose}
