@@ -7,7 +7,6 @@ import {
   getValidMovesForPiece,
   getComputerMove,
   type Board,
-  type Difficulty,
   type Mode,
   type Move,
   type Player,
@@ -27,7 +26,6 @@ type SavedState = {
   board: Board
   currentTurn: Player
   mode: Mode
-  difficulty: Difficulty
   playerSide: Player
 }
 
@@ -112,7 +110,6 @@ function App() {
   const [board, setBoard] = useState<Board>(createInitialBoard())
   const [currentTurn, setCurrentTurn] = useState<Player>('Light')
   const [mode, setMode] = useState<Mode>('vs-player')
-  const [difficulty, setDifficulty] = useState<Difficulty>('easy')
   const [playerSide, setPlayerSide] = useState<Player>('Light')
   const [winner, setWinner] = useState<Player | null>(null)
   const [gameOverReason, setGameOverReason] = useState<GameOverReason>(null)
@@ -124,12 +121,11 @@ function App() {
   const [showHelp, setShowHelp] = useState(false)
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const [hasSavedGame, setHasSavedGame] = useState(() => loadSavedGame() !== null)
-  const [winsNormal, setWinsNormal] = useState(
-    () => parseInt(localStorage.getItem('checkers_wins_normal') || '0')
-  )
-  const [winsHard, setWinsHard] = useState(
-    () => parseInt(localStorage.getItem('checkers_wins_hard') || '0')
-  )
+  const [wins, setWins] = useState(() => {
+    const legacy = parseInt(localStorage.getItem('checkers_wins_normal') || '0')
+      + parseInt(localStorage.getItem('checkers_wins_hard') || '0')
+    return parseInt(localStorage.getItem('checkers_wins') || '0') + legacy
+  })
 
   useEffect(() => {
     document.body.classList.remove('dark-palette', 'light-palette')
@@ -141,8 +137,8 @@ function App() {
     setTheme(t => (t === 'dark' ? 'light' : 'dark'))
   }
 
-  const saveGame = useCallback((b: Board, turn: Player, m: Mode, diff: Difficulty, side: Player) => {
-    const state: SavedState = { board: b, currentTurn: turn, mode: m, difficulty: diff, playerSide: side }
+  const saveGame = useCallback((b: Board, turn: Player, m: Mode, side: Player) => {
+    const state: SavedState = { board: b, currentTurn: turn, mode: m, playerSide: side }
     localStorage.setItem(SAVE_KEY, JSON.stringify(state))
     setHasSavedGame(true)
   }, [])
@@ -152,10 +148,9 @@ function App() {
     setHasSavedGame(false)
   }, [])
 
-  function startGame(selectedMode: Mode, selectedDifficulty: Difficulty, selectedSide: Player) {
+  function startGame(selectedMode: Mode, selectedSide: Player) {
     clearSavedGame()
     setMode(selectedMode)
-    setDifficulty(selectedDifficulty)
     setPlayerSide(selectedSide)
     setBoard(createInitialBoard())
     setCurrentTurn('Light')
@@ -172,7 +167,6 @@ function App() {
     setBoard(saved.board)
     setCurrentTurn(saved.currentTurn)
     setMode(saved.mode)
-    setDifficulty(saved.difficulty)
     setPlayerSide(saved.playerSide)
     setWinner(null)
     setGameOverReason(null)
@@ -215,22 +209,16 @@ function App() {
       setPhase('over')
       clearSavedGame()
       if (mode === 'vs-computer' && win === playerSide) {
-        if (difficulty === 'hard') {
-          const next = winsHard + 1
-          setWinsHard(next)
-          localStorage.setItem('checkers_wins_hard', String(next))
-        } else {
-          const next = winsNormal + 1
-          setWinsNormal(next)
-          localStorage.setItem('checkers_wins_normal', String(next))
-        }
+        const next = wins + 1
+        setWins(next)
+        localStorage.setItem('checkers_wins', String(next))
       }
     } else {
       setGameOverReason(null)
       setCurrentTurn(nextPlayer)
-      saveGame(newBoard, nextPlayer, mode, difficulty, playerSide)
+      saveGame(newBoard, nextPlayer, mode, playerSide)
     }
-  }, [clearSavedGame, difficulty, mode, playerSide, saveGame, winsHard, winsNormal])
+  }, [clearSavedGame, mode, playerSide, saveGame, wins])
 
   function handleSquareClick(index: number) {
     if (phase !== 'playing') return
@@ -268,12 +256,12 @@ function App() {
     if (currentTurn === playerSide) return
 
     const timer = setTimeout(() => {
-      const move = getComputerMove(board, difficulty, currentTurn)
+      const move = getComputerMove(board, currentTurn)
       executeMove(board, move, currentTurn)
     }, 400)
 
     return () => clearTimeout(timer)
-  }, [board, currentTurn, difficulty, executeMove, mode, phase, playerSide])
+  }, [board, currentTurn, executeMove, mode, phase, playerSide])
 
   const isDisabled =
     phase !== 'playing' || (mode === 'vs-computer' && currentTurn !== playerSide)
@@ -346,8 +334,7 @@ function App() {
                 onStart={startGame}
                 onResume={resumeGame}
                 hasSavedGame={hasSavedGame}
-                winsNormal={winsNormal}
-                winsHard={winsHard}
+                wins={wins}
               />
             </>
           )}

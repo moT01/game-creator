@@ -3,7 +3,6 @@ export type PieceType = 'man' | 'king'
 export type Piece = { player: Player; type: PieceType }
 export type Board = (Piece | null)[]
 export type Move = { from: number; to: number; captures: number[] }
-export type Difficulty = 'easy' | 'hard'
 export type Mode = 'vs-player' | 'vs-computer'
 
 function inBounds(row: number, col: number): boolean {
@@ -191,9 +190,9 @@ function minimax(
   }
 }
 
-export function getComputerMove(board: Board, difficulty: Difficulty, aiPlayer: Player): Move {
+export function getComputerMove(board: Board, aiPlayer: Player): Move {
   const moves = getValidMoves(board, aiPlayer)
-  const depth = difficulty === 'easy' ? 1 : 5
+  const depth = 1
   let bestScore = -Infinity
   let bestMove = moves[0]
   for (const move of moves) {

@@ -1,21 +1,17 @@
 import { useState } from 'react'
-import type { Difficulty, Mode, Player } from '../gameLogic'
+import type { Mode, Player } from '../gameLogic'
 import './ModeSelector.css'
 
 interface Props {
-  onStart: (mode: Mode, difficulty: Difficulty, playerSide: Player) => void
+  onStart: (mode: Mode, playerSide: Player) => void
   onResume: () => void
   hasSavedGame: boolean
-  winsNormal: number
-  winsHard: number
+  wins: number
 }
 
-export function ModeSelector({ onStart, onResume, hasSavedGame, winsNormal, winsHard }: Props) {
+export function ModeSelector({ onStart, onResume, hasSavedGame, wins }: Props) {
   const [mode, setMode] = useState<Mode>('vs-computer')
-  const [hardMode, setHardMode] = useState(false)
   const [playerSide, setPlayerSide] = useState<Player>('Light')
-
-  const difficulty: Difficulty = hardMode ? 'hard' : 'easy'
 
   return (
     <div className="home-body">
@@ -35,51 +31,31 @@ export function ModeSelector({ onStart, onResume, hasSavedGame, winsNormal, wins
       </div>
 
       {mode === 'vs-computer' && (
-        <div className="wins-display">
-          <span className="wins-label">WINS</span>
-          <div className="wins-rows">
-            <div className="wins-row">
-              <span className="wins-row-label">Normal</span>
-              <span className="wins-num">{winsNormal}</span>
-            </div>
-            <div className="wins-row">
-              <span className="wins-row-label">Hard</span>
-              <span className="wins-num">{winsHard}</span>
-            </div>
-          </div>
+        <div className="wins-row">
+          <span className="wins-row-label">Wins</span>
+          <span className="wins-num">{wins}</span>
         </div>
       )}
 
       {mode === 'vs-computer' && (
-        <div className="option-row">
-          <div className="pill-toggle">
-            <button
-              className={`pill-btn${playerSide === 'Light' ? ' pill-btn--active' : ''}`}
-              onClick={() => setPlayerSide('Light')}
-            >
-              Light <span className="goes-first">(goes first)</span>
-            </button>
-            <button
-              className={`pill-btn${playerSide === 'Dark' ? ' pill-btn--active' : ''}`}
-              onClick={() => setPlayerSide('Dark')}
-            >
-              Dark
-            </button>
-          </div>
-          <label className="hard-mode-label">
-            <input
-              type="checkbox"
-              className="hard-mode-check"
-              checked={hardMode}
-              onChange={e => setHardMode(e.target.checked)}
-            />
-            <span className="hard-mode-text">Hard mode</span>
-          </label>
+        <div className="pill-toggle">
+          <button
+            className={`pill-btn${playerSide === 'Light' ? ' pill-btn--active' : ''}`}
+            onClick={() => setPlayerSide('Light')}
+          >
+            Go First
+          </button>
+          <button
+            className={`pill-btn${playerSide === 'Dark' ? ' pill-btn--active' : ''}`}
+            onClick={() => setPlayerSide('Dark')}
+          >
+            Go Second
+          </button>
         </div>
       )}
 
       <div className="home-actions">
-        <button className="primary-btn" onClick={() => onStart(mode, difficulty, playerSide)}>
+        <button className="primary-btn" onClick={() => onStart(mode, playerSide)}>
           New Game
         </button>
         {hasSavedGame && (
