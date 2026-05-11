@@ -6,24 +6,25 @@ import GameScreen from './GameScreen'
 import HelpModal from './components/HelpModal'
 import type { GameOptions } from './HomeOptions'
 import { DEFAULT_OPTIONS } from './HomeOptions'
+import { INITIAL_STATE } from './hooks/useGame'
+import type { GameState } from './hooks/useGame'
 import './App.css'
 
-const gameStorage = createStorage('<game-name>_state')
-const optsStorage = createStorage<GameOptions>('<game-name>_opts')
+const gameStorage = createStorage<GameState>('achi_state')
+const optsStorage = createStorage<GameOptions>('achi_opts')
 
 type Phase = 'home' | 'game'
 
 function App() {
   const [phase, setPhase] = useState<Phase>('home')
-  const [theme, toggleTheme] = useTheme('<game-name>')
+  const [theme, toggleTheme] = useTheme('achi')
   const [hasGame, setHasGame] = useState(() => gameStorage.load() !== null)
   const [gameOptions, setGameOptions] = useState<GameOptions | null>(null)
   const [gameKey, setGameKey] = useState(0)
   const [showHelp, setShowHelp] = useState(false)
 
   function startGame(options: GameOptions) {
-    // REPLACE: build initial game state from options, then save
-    gameStorage.save({})
+    gameStorage.save({ ...INITIAL_STATE })
     optsStorage.save(options)
     setHasGame(true)
     setGameOptions(options)
@@ -45,7 +46,7 @@ function App() {
   }
 
   function handlePlayAgain() {
-    // REPLACE: save a fresh initial state before incrementing gameKey
+    gameStorage.save({ ...INITIAL_STATE })
     setGameKey(k => k + 1)
   }
 

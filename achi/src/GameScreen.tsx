@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Header from './components/Header'
 import GameBoard from './GameBoard'
 import ConfirmModal from './components/ConfirmModal'
@@ -18,13 +18,62 @@ interface Props {
 }
 
 export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, options, onGameOver, onPlayAgain }: Props) {
-  // REPLACE: const { ... } = useGame(options)
-  void useGame(options)
+  const { board, phase, currentPlayer, selected, winner, winningLine, noMovesPlayer, moveCount, gameOver, computerPlayer, handleCellClick } = useGame(options)
   const [showConfirm, setShowConfirm] = useState(false)
   const [gameOverDismissed, setGameOverDismissed] = useState(false)
-  // REPLACE: const isGameOver = state.phase === 'over'
-  const isGameOver = false
-  const showGameOver = isGameOver && !gameOverDismissed
+  const showGameOver = gameOver && !gameOverDismissed
+
+  const onGameOverRef = useRef(onGameOver)
+  onGameOverRef.current = onGameOver
+  useEffect(() => {
+    if (gameOver) onGameOverRef.current()
+  }, [gameOver])
+
+  const isComputerTurn = computerPlayer !== null && currentPlayer === computerPlayer
+  let statusText = ''
+  if (!gameOver) {
+    if (isComputerTurn) {
+      statusText = 'Computer is thinking...'
+    } else {
+      const label = options.opponent === 'computer' ? 'Your turn' : `Player ${currentPlayer === 'P1' ? '1' : '2'}`
+      if (phase === 'placement') statusText = `${label}: place a piece`
+      else if (selected === null) statusText = `${label}: pick a piece`
+      else statusText = `${label}: pick a destination`
+    }
+  }
+
+  let result = ''
+  let resultType: 'win' | 'loss' | 'draw' = 'draw'
+  let note = ''
+  if (gameOver) {
+    if (moveCount >= 50) {
+      result = 'Draw!'
+      resultType = 'draw'
+      note = '50 moves: no winner'
+    } else if (winner) {
+      if (options.opponent === 'computer') {
+        const humanWon = winner !== computerPlayer
+        result = humanWon ? 'You win!' : 'Computer wins'
+        resultType = humanWon ? 'win' : 'loss'
+        note = '3 in a row'
+      } else {
+        result = `P${winner === 'P1' ? '1' : '2'} wins!`
+        resultType = 'win'
+        note = '3 in a row'
+      }
+    } else if (noMovesPlayer) {
+      if (options.opponent === 'computer') {
+        const humanStuck = noMovesPlayer !== computerPlayer
+        result = humanStuck ? 'Computer wins' : 'You win!'
+        resultType = humanStuck ? 'loss' : 'win'
+        note = humanStuck ? 'No moves left' : 'Computer is stuck'
+      } else {
+        result = `P${noMovesPlayer === 'P1' ? '1' : '2'} is stuck!`
+        resultType = 'win'
+        note = 'No moves left'
+      }
+    }
+  }
 
   return (
     <div className="card">
@@ -33,11 +82,21 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
         theme={theme}
         onThemeToggle={onThemeToggle}
         onHelp={onHelp}
-        onClose={() => isGameOver ? setGameOverDismissed(false) : setShowConfirm(true)}
-        center="Your turn"
+        onClose={() => gameOver ? setGameOverDismissed(false) : setShowConfirm(true)}
+        center={statusText}
       />
       <div className="game-content">
-        <GameBoard />
+        <GameBoard
+          board={board}
+          phase={phase}
+          currentPlayer={currentPlayer}
+          selected={selected}
+          winner={winner}
+          winningLine={winningLine}
+          computerPlayer={computerPlayer}
+          gameOver={gameOver}
+          handleCellClick={handleCellClick}
+        />
       </div>
       {showConfirm && (
         <ConfirmModal
@@ -50,9 +109,9 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
       )}
       {showGameOver && (
         <GameOverModal
-          result="You Win!"
-          resultType="win"
-          note="Optional note about what happened"
+          result={result}
+          resultType={resultType}
+          note={note}
           onDismiss={() => setGameOverDismissed(true)}
           onPlayAgain={onPlayAgain}
           onHome={onClose}

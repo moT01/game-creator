@@ -1,31 +1,33 @@
-import SegmentedControl from './components/SegmentedControl'
-import StatsRow from './components/StatsRow'
-import './HomeOptions.css'
+import { createStorage } from './hooks/useStorage';
+import SegmentedControl from './components/SegmentedControl';
+import StatsRow from './components/StatsRow';
+import './HomeOptions.css';
 
 export interface GameOptions {
-  opponent: 'computer' | '2player'
-  mode: '3x3' | '5x5' | '7x7'
+  opponent: 'computer' | '2player';
+  side: 'P1' | 'P2';
 }
 
 export const DEFAULT_OPTIONS: GameOptions = {
   opponent: 'computer',
-  mode: '3x3',
-}
+  side: 'P1',
+};
+
+const winsStorage = createStorage<{ player: number; computer: number }>('achi_wins');
 
 interface Props {
-  value: GameOptions
-  onChange: (value: GameOptions) => void
+  value: GameOptions;
+  onChange: (value: GameOptions) => void;
 }
 
 export default function HomeOptions({ value, onChange }: Props) {
-  const wins = 0 // load from storage
+  const wins = winsStorage.load() ?? { player: 0, computer: 0 };
   return (
     <div className="home-options">
       <div className="game-heading">
-        <h1 className="game-title">Game Name</h1>
-        <p className="game-subtitle">A short description</p>
+        <h1 className="game-title">Achi</h1>
+        <p className="game-subtitle">The classic Ghanaian strategy game</p>
       </div>
-      {/* Opponent select - delete for solo games */}
       <SegmentedControl
         className="opponent-select"
         options={[
@@ -33,25 +35,22 @@ export default function HomeOptions({ value, onChange }: Props) {
           { label: '2 Player', value: '2player' },
         ]}
         value={value.opponent}
-        onChange={opponent => onChange({ ...value, opponent })}
+        onChange={(opponent) => onChange({ ...value, opponent })}
       />
-      {/* Mode select - delete if no modes */}
       {value.opponent === 'computer' && (
-        <SegmentedControl
-          small
-          options={[
-            { label: '3x3', value: '3x3' },
-            { label: '5x5', value: '5x5' },
-            { label: '7x7', value: '7x7' },
-          ]}
-          value={value.mode}
-          onChange={mode => onChange({ ...value, mode })}
-        />
-      )}
-      {/* Records - modify as needed */}
-      {value.opponent === 'computer' && (
-        <StatsRow stats={[{ label: 'Wins', value: wins }]} />
+        <>
+          <StatsRow stats={[{ label: 'Wins', value: wins.player }]} />
+          <SegmentedControl
+            small
+            options={[
+              { label: 'Go first', value: 'P1' },
+              { label: 'Go second', value: 'P2' },
+            ]}
+            value={value.side}
+            onChange={(side) => onChange({ ...value, side })}
+          />
+        </>
       )}
     </div>
-  )
+  );
 }
