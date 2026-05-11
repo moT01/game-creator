@@ -42,7 +42,7 @@
 
 ## AI / Computer Player
 
-_(Include only if the game has a computer player)_
+_(Include only if the game has a computer player. Computer should be quite good but beatable.)_
 
 **Strategy approach:** ...
 

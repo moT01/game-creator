@@ -1,24 +1,24 @@
-import SegmentedControl from './components/SegmentedControl'
-import StatsRow from './components/StatsRow'
-import './HomeOptions.css'
+import SegmentedControl from './components/SegmentedControl';
+import StatsRow from './components/StatsRow';
+import './HomeOptions.css';
 
 export interface GameOptions {
-  opponent: 'computer' | '2player'
-  mode: '3x3' | '5x5' | '7x7'
+  opponent: 'computer' | '2player';
+  mode: '3x3' | '5x5' | '7x7';
 }
 
 export const DEFAULT_OPTIONS: GameOptions = {
   opponent: 'computer',
   mode: '3x3',
-}
+};
 
 interface Props {
-  value: GameOptions
-  onChange: (value: GameOptions) => void
+  value: GameOptions;
+  onChange: (value: GameOptions) => void;
 }
 
 export default function HomeOptions({ value, onChange }: Props) {
-  const wins = 0 // load from storage
+  const wins = 0; // load from storage
   return (
     <div className="home-options">
       <div className="game-heading">
@@ -33,25 +33,25 @@ export default function HomeOptions({ value, onChange }: Props) {
           { label: '2 Player', value: '2player' },
         ]}
         value={value.opponent}
-        onChange={opponent => onChange({ ...value, opponent })}
+        onChange={(opponent) => onChange({ ...value, opponent })}
       />
-      {/* Mode select - delete if no modes */}
       {value.opponent === 'computer' && (
-        <SegmentedControl
-          small
-          options={[
-            { label: '3x3', value: '3x3' },
-            { label: '5x5', value: '5x5' },
-            { label: '7x7', value: '7x7' },
-          ]}
-          value={value.mode}
-          onChange={mode => onChange({ ...value, mode })}
-        />
-      )}
-      {/* Records - modify as needed */}
-      {value.opponent === 'computer' && (
-        <StatsRow stats={[{ label: 'Wins', value: wins }]} />
+        <>
+          {/* Records - modify as needed */}
+          <StatsRow stats={[{ label: 'Wins', value: wins }]} />
+          {/* Mode select - delete if no modes */}
+          <SegmentedControl
+            small
+            options={[
+              { label: '3x3', value: '3x3' },
+              { label: '5x5', value: '5x5' },
+              { label: '7x7', value: '7x7' },
+            ]}
+            value={value.mode}
+            onChange={(mode) => onChange({ ...value, mode })}
+          />
+        </>
       )}
     </div>
-  )
+  );
 }

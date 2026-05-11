@@ -5,10 +5,6 @@
   width: 100%;
 }
 
-.opponent-select {
-  margin-bottom: var(--space-2);
-}
-
 .game-heading {
   display: flex;
   flex-direction: column;
