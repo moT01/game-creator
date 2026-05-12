@@ -46,14 +46,24 @@ body.light-palette {
 /* ─── Header ─────────────────────────────────────────────────────────────── */
 
 .game-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--space-5);
+}
+
+.header-status {
+  text-align: center;
+  font-size: var(--text-md);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-secondary);
 }
 
 .header-actions {
   display: flex;
   gap: var(--space-2);
+  justify-content: flex-end;
 }
 
 .icon-btn {
@@ -94,11 +104,6 @@ body.light-palette {
   box-shadow: 0 0 0 2px var(--color-focus-ring);
 }
 
-.header-divider {
-  border: none;
-  border-top: 1px solid var(--color-border);
-  margin: 0;
-}
 
 /* ─── Title ──────────────────────────────────────────────────────────────── */
 
@@ -107,6 +112,15 @@ body.light-palette {
   font-weight: var(--weight-bold);
   letter-spacing: -0.02em;
   color: var(--color-text-primary);
+  text-align: center;
+}
+
+.game-subtitle {
+  font-size: var(--text-md);
+  color: var(--color-text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: var(--space-1);
   text-align: center;
 }
 
@@ -119,7 +133,7 @@ body.light-palette {
 }
 
 .selector-label {
-  font-size: var(--text-xs);
+  font-size: var(--text-md);
   font-weight: var(--weight-bold);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -141,7 +155,7 @@ body.light-palette {
   border: none;
   color: var(--color-text-secondary);
   font-family: var(--font-body);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   font-weight: var(--weight-bold);
   cursor: pointer;
   transition: background var(--transition-default), color var(--transition-default);
@@ -175,7 +189,7 @@ body.light-palette {
 }
 
 .records-title {
-  font-size: var(--text-xs);
+  font-size: var(--text-md);
   font-weight: var(--weight-bold);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -184,27 +198,18 @@ body.light-palette {
 
 .records-grid {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: 1fr auto;
   gap: var(--space-1) var(--space-4);
 }
 
-.records-col-header {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-bold);
-  letter-spacing: 0.04em;
-  color: var(--color-text-muted);
-  text-align: right;
-}
-
 .records-label {
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   color: var(--color-text-secondary);
 }
 
 .records-value {
   font-family: var(--font-mono);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   color: var(--color-text-primary);
   text-align: right;
 }
@@ -295,24 +300,6 @@ body.light-palette {
   flex: 1;
 }
 
-/* ─── Turn Indicator ─────────────────────────────────────────────────────── */
-
-.turn-indicator {
-  text-align: center;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
-  letter-spacing: 0.04em;
-  color: var(--color-text-secondary);
-  min-height: 1.4em;
-  transition: color var(--transition-default);
-  animation: turnFade var(--transition-default) ease;
-}
-
-@keyframes turnFade {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
 .thinking-dots::after {
   content: '';
   animation: thinkingDots 1.2s steps(3, end) infinite;
@@ -329,7 +316,7 @@ body.light-palette {
 
 .capture-count {
   text-align: center;
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   color: var(--color-text-secondary);
 }
 
@@ -342,16 +329,12 @@ body.light-palette {
 .board-wrapper {
   position: relative;
   align-self: center;
-  background-color: var(--color-surface-raised);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-  box-shadow: inset 0 0 0 1px var(--color-border);
 }
 
 .board-lines {
   position: absolute;
-  top: var(--space-4);
-  left: var(--space-4);
+  top: 0;
+  left: 0;
   width: calc(7 * 64px);
   height: calc(7 * 64px);
   pointer-events: none;
@@ -594,7 +577,7 @@ body.light-palette {
 }
 
 .modal-body h3 {
-  font-size: var(--text-xs);
+  font-size: var(--text-md);
   font-weight: var(--weight-bold);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -604,7 +587,7 @@ body.light-palette {
 
 .modal-body p,
 .modal-body li {
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   color: var(--color-text-secondary);
   line-height: var(--line-height-normal);
 }

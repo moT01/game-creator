@@ -176,7 +176,7 @@ function evaluateBoard(board, foxPos) {
   const [fr, fc] = foxPos;
   const captured = 13 - geeseCount;
 
-  let score = captured * 10 + foxMoves.length * 3;
+  let score = captured * 10 + foxMoves.length * 4;
 
   // Collect goose data in one pass
   let isolated = 0;
@@ -199,20 +199,20 @@ function evaluateBoard(board, foxPos) {
     }
   }
 
-  // Proximity to fox: geese close to fox are surrounding it
-  score += totalDist * 0.5;
+  // Proximity to fox: less important than formation quality
+  score += totalDist * 0.2;
 
   // Isolated geese are easy captures
-  score += isolated * 5;
+  score += isolated * 6;
 
   // Tight row spread = good coordinated formation
-  score += (maxRow - minRow) * 3;
+  score += (maxRow - minRow) * 4;
 
   // Back pieces lagging: reward when the most backward goose is advancing
-  score -= minRow * 2;
+  score -= minRow * 3;
 
   // Column coverage: spread across columns = no escape lanes
-  score -= columns.size * 2;
+  score -= columns.size * 3;
 
   // Front line gaps: holes in the most advanced row let fox through
   const frontGeeseCols = geesePositions.filter(([r]) => r === maxRow).map(([, c]) => c);
@@ -223,11 +223,11 @@ function evaluateBoard(board, foxPos) {
     for (let c = left + 1; c < right; c++) {
       if (isValid(maxRow, c) && board[maxRow][c] !== 'goose') gaps++;
     }
-    score += gaps * 3;
+    score += gaps * 5;
   }
 
   // Immediate capture threats
-  score += getFoxJumps(board, fr, fc).length * 15;
+  score += getFoxJumps(board, fr, fc).length * 20;
 
   // Fork setup: squares fox can reach where it would have 2+ jumps
   const dirs8 = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
@@ -239,7 +239,7 @@ function evaluateBoard(board, foxPos) {
       if (jumpsFromThere.length >= 2) forkThreat += jumpsFromThere.length;
     }
   }
-  score += forkThreat * 8;
+  score += forkThreat * 12;
 
   // Encirclement: the main objective — block all fox escapes
   let blocked = 0;
@@ -247,7 +247,7 @@ function evaluateBoard(board, foxPos) {
     const nr = fr + dr, nc = fc + dc;
     if (!isValid(nr, nc) || board[nr][nc] === 'goose') blocked++;
   }
-  score -= blocked * 12;
+  score -= blocked * 15;
 
   return score;
 }
@@ -356,8 +356,12 @@ function getGeeseCandidateMoves(board, foxPos) {
     const byRow = unselected().sort((a, b) => a.r - b.r);
     for (let i = 0; i < Math.min(2, byRow.length); i++) sel.set(byRow[i].key, byRow[i]);
 
-    // fill to 8 with geese closest to fox
-    const byDist = unselected().sort((a, b) => a.dist - b.dist);
+    // fill to 8 with geese whose moves land closest to fox
+    const byDist = unselected().sort((a, b) => {
+      const aMin = Math.min(...a.gooseMoves.map(([nr, nc]) => Math.abs(nr - fr) + Math.abs(nc - fc)));
+      const bMin = Math.min(...b.gooseMoves.map(([nr, nc]) => Math.abs(nr - fr) + Math.abs(nc - fc)));
+      return aMin - bMin;
+    });
     for (const g of byDist) {
       if (sel.size >= 8) break;
       sel.set(g.key, g);
@@ -388,8 +392,8 @@ function getGeeseCandidateMoves(board, foxPos) {
   return moves;
 }
 
-function getBestMove(board, foxPos, side, difficulty) {
-  const depth = difficulty === 'hard' ? 7 : 5;
+function getBestMove(board, foxPos, side) {
+  const depth = 5;
   const isMaximizing = side === 'fox';
   const moves = side === 'fox'
     ? getAllMoves(board, foxPos, 'fox').sort((a, b) => (isFoxJump(b.from, b.to) ? 1 : 0) - (isFoxJump(a.from, a.to) ? 1 : 0))
@@ -444,10 +448,14 @@ function saveRecords(records) {
 function loadRecords() {
   try {
     const raw = localStorage.getItem('fox-and-geese-records');
-    if (!raw) return { foxNormal: 0, foxHard: 0, geeseNormal: 0, geeseHard: 0 };
-    return JSON.parse(raw);
+    if (!raw) return { fox: 0, geese: 0 };
+    const parsed = JSON.parse(raw);
+    if ('foxNormal' in parsed) {
+      return { fox: (parsed.foxNormal || 0) + (parsed.foxHard || 0), geese: (parsed.geeseNormal || 0) + (parsed.geeseHard || 0) };
+    }
+    return parsed;
   } catch (_) {
-    return { foxNormal: 0, foxHard: 0, geeseNormal: 0, geeseHard: 0 };
+    return { fox: 0, geese: 0 };
   }
 }
 
@@ -460,10 +468,10 @@ function savePrefs(prefs) {
 function loadPrefs() {
   try {
     const raw = localStorage.getItem('fox-and-geese-prefs');
-    if (!raw) return { mode: 'vs-computer', difficulty: 'normal', playerSide: 'geese', theme: 'dark' };
+    if (!raw) return { mode: 'vs-computer', playerSide: 'geese', theme: 'dark' };
     return JSON.parse(raw);
   } catch (_) {
-    return { mode: 'vs-computer', difficulty: 'normal', playerSide: 'geese', theme: 'dark' };
+    return { mode: 'vs-computer', playerSide: 'geese', theme: 'dark' };
   }
 }
 
@@ -471,7 +479,7 @@ function loadPrefs() {
 
 let state = null;
 
-function newGame(mode, playerSide, difficulty) {
+function newGame(mode, playerSide) {
   const board = initBoard();
   state = {
     board,
@@ -483,7 +491,6 @@ function newGame(mode, playerSide, difficulty) {
     capturedGeese: 0,
     mode,
     playerSide,
-    difficulty,
     computerThinking: false,
   };
   clearState();
@@ -588,7 +595,7 @@ function scheduleComputerMove() {
   setTimeout(() => {
     if (!state || state.status !== 'playing') return;
     const side = state.currentTurn;
-    const move = getBestMove(state.board, state.foxPos, side, state.difficulty);
+    const move = getBestMove(state.board, state.foxPos, side);
     if (!move) {
       state.computerThinking = false;
       render();
@@ -618,17 +625,11 @@ function scheduleComputerMove() {
 function updateRecordsOnGameOver() {
   if (!state || state.mode !== 'vs-computer') return;
   const records = loadRecords();
-  const diff = state.difficulty;
   const playerWon = (state.status === 'fox-wins' && state.playerSide === 'fox') ||
                     (state.status === 'geese-win' && state.playerSide === 'geese');
   if (playerWon) {
-    if (state.playerSide === 'fox') {
-      if (diff === 'normal') records.foxNormal++;
-      else records.foxHard++;
-    } else {
-      if (diff === 'normal') records.geeseNormal++;
-      else records.geeseHard++;
-    }
+    if (state.playerSide === 'fox') records.fox++;
+    else records.geese++;
     saveRecords(records);
   }
 }
@@ -694,12 +695,13 @@ function iconBtn(icon, label, onclick, extraClass) {
   return `<button class="icon-btn${extraClass ? ' ' + extraClass : ''}" aria-label="${label}" onclick="${onclick}">${icon}</button>`;
 }
 
-function renderHeader(closeAction) {
+function renderHeader(closeAction, statusText = '') {
   const themeIcon = currentTheme === 'dark' ? ICON_SUN : ICON_MOON;
   const themeLabel = currentTheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
   return `
     <div class="game-header">
       ${closeAction ? iconBtn(ICON_X, 'Close', closeAction) : '<span></span>'}
+      <div class="header-status" aria-live="polite">${statusText}</div>
       <div class="header-actions">
         ${iconBtn(ICON_QUESTION, 'Help', 'openHelp()')}
         ${iconBtn(themeIcon, themeLabel, 'toggleTheme()')}
@@ -764,10 +766,12 @@ function renderBoard() {
       else if (isGooseCell) ariaLabel = `Row ${r}, Col ${c} - Goose`;
       else ariaLabel = `Row ${r}, Col ${c} - empty`;
 
+      const isMyPiece = (currentTurn === 'fox' && isFoxCell) || (currentTurn === 'geese' && isGooseCell);
+
       let classes = 'board-cell';
       if (isSelected) classes += ' board-cell--selected';
       if (isValidMove && cell === 'empty') classes += ' board-cell--valid-move';
-      if (isPlayerTurn && !isSelected) classes += ' board-cell--hoverable';
+      if (isPlayerTurn && !isSelected && (isMyPiece || isValidMove)) classes += ' board-cell--hoverable';
       if (computerThinking || status !== 'playing') classes += ' board-cell--disabled';
 
       const ariaPressedAttr = isSelected ? 'aria-pressed="true"' : '';
@@ -799,15 +803,14 @@ function renderBoard() {
     </div>`;
 }
 
-function renderTurnIndicator() {
-  if (!state) return '';
-  const { currentTurn, status, computerThinking } = state;
-  if (status !== 'playing') return '';
-  if (computerThinking) {
-    return `<div class="turn-indicator" aria-live="polite">Computer is thinking<span class="thinking-dots"></span></div>`;
+function getPlayStatusText() {
+  if (!state || state.status !== 'playing') return '';
+  const { currentTurn, computerThinking, mode, playerSide } = state;
+  if (mode === 'vs-computer') {
+    if (computerThinking || currentTurn !== playerSide) return `Thinking<span class="thinking-dots"></span>`;
+    return 'Your turn';
   }
-  const label = currentTurn === 'fox' ? "Fox's Turn" : "Geese's Turn";
-  return `<div class="turn-indicator" aria-live="polite">${label}</div>`;
+  return currentTurn === 'geese' ? "Player 1's turn" : "Player 2's turn";
 }
 
 function renderRecords() {
@@ -816,14 +819,11 @@ function renderRecords() {
     <div class="records">
       <div class="records-grid">
         <span class="records-title">Wins</span>
-        <span class="records-col-header">Normal</span>
-        <span class="records-col-header">Hard</span>
+        <span></span>
         <span class="records-label">Fox</span>
-        <span class="records-value">${r.foxNormal}</span>
-        <span class="records-value">${r.foxHard}</span>
+        <span class="records-value">${r.fox}</span>
         <span class="records-label">Geese</span>
-        <span class="records-value">${r.geeseNormal}</span>
-        <span class="records-value">${r.geeseHard}</span>
+        <span class="records-value">${r.geese}</span>
       </div>
     </div>`;
 }
@@ -837,6 +837,7 @@ function renderHomeScreen() {
     <div class="game-container home-screen" id="home-screen">
       ${renderHeader(null)}
       <h1 class="game-title">Fox and Geese</h1>
+      <p class="game-subtitle">Hunt or be hunted</p>
 
       <div class="selector-group">
         <div class="selector-label">Mode</div>
@@ -849,16 +850,6 @@ function renderHomeScreen() {
       </div>
 
       ${isVsComputer ? `
-      <div class="selector-group">
-        <div class="selector-label">Difficulty</div>
-        <div class="toggle-group">
-          <button class="toggle-btn${prefs.difficulty === 'normal' ? ' active' : ''}"
-            onclick="setDifficulty('normal')">Normal</button>
-          <button class="toggle-btn${prefs.difficulty === 'hard' ? ' active' : ''}"
-            onclick="setDifficulty('hard')">Hard</button>
-        </div>
-      </div>
-
       <div class="selector-group">
         <div class="selector-label">Play as</div>
         <div class="toggle-group">
@@ -884,9 +875,7 @@ function renderPlayScreen() {
 
   return `
     <div class="game-container play-screen" id="play-screen">
-      ${renderHeader('onClosePlay()')}
-      <hr class="header-divider" />
-      ${renderTurnIndicator()}
+      ${renderHeader('onClosePlay()', getPlayStatusText())}
       ${renderBoard()}
       <div class="capture-count" aria-live="polite">
         Captured: <span class="mono">${capturedGeese} / 13</span>
@@ -1057,13 +1046,6 @@ function setMode(mode) {
   render();
 }
 
-function setDifficulty(diff) {
-  const prefs = loadPrefs();
-  prefs.difficulty = diff;
-  savePrefs(prefs);
-  render();
-}
-
 function setPlayerSide(side) {
   const prefs = loadPrefs();
   prefs.playerSide = side;
@@ -1075,7 +1057,7 @@ function startNewGame() {
   const prefs = loadPrefs();
   clearState();
   currentScreen = 'play';
-  newGame(prefs.mode, prefs.playerSide, prefs.difficulty);
+  newGame(prefs.mode, prefs.playerSide);
 }
 
 function resumeGame() {
