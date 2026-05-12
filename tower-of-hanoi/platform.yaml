@@ -1,0 +1,8 @@
+site: tower-of-hanoi
+build:
+  output: .
+deploy:
+  preview: true
+  ignore:
+    - "README.md"
+    - ".git/**"

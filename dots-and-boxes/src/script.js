@@ -478,8 +478,8 @@ function renderHomeScreen() {
 
       <div class="color-diff-row" role="group" aria-label="Player options">
         <div class="segmented-control" role="radiogroup" aria-label="Player color">
-          <button class="segment${settings.playerColor === 'dark' ? ' selected' : ''}" role="radio" aria-checked="${settings.playerColor === 'dark'}" data-color="dark">Dark (goes first)</button>
-          <button class="segment${settings.playerColor === 'light' ? ' selected' : ''}" role="radio" aria-checked="${settings.playerColor === 'light'}" data-color="light">Light</button>
+          <button class="segment${settings.playerColor === 'dark' ? ' selected' : ''}" role="radio" aria-checked="${settings.playerColor === 'dark'}" data-color="dark">Go First</button>
+          <button class="segment${settings.playerColor === 'light' ? ' selected' : ''}" role="radio" aria-checked="${settings.playerColor === 'light'}" data-color="light">Go Second</button>
         </div>
       </div>` : ''}
 
@@ -580,7 +580,7 @@ function renderStatus() {
 
   const isComputerTurn = state.mode === 'vs-computer' && state.currentSide !== state.playerColor;
   if (isAnimating || isComputerTurn) {
-    el.textContent = 'Computer thinking...';
+    el.textContent = 'Thinking...';
     el.className = 'top-bar-center status-text muted';
     return;
   }
