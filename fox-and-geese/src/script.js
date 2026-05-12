@@ -713,8 +713,8 @@ function renderHeader(closeAction, statusText = '') {
 // Board rendering
 
 function buildBoardLines() {
-  // SVG lines between adjacent valid squares at 64px cell size
-  const CELL = 64;
+  // SVG lines between adjacent valid squares at 72px cell size
+  const CELL = 90;
   const OFFSET = CELL / 2;
   const dirs = [[0,1],[1,0],[1,1],[1,-1]]; // right, down, diag-r, diag-l
   let lines = '';
@@ -743,7 +743,7 @@ function renderBoard() {
   const isPlayerTurn = status === 'playing' && !computerThinking &&
     (state.mode === 'vs-player' || currentTurn === state.playerSide);
 
-  const CELL = 64;
+  const CELL = 90;
   const SIZE = 7 * CELL;
 
   let cells = '';

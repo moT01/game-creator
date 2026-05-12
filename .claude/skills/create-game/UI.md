@@ -27,24 +27,9 @@ Every game should look polished and intentional — not like a default browser U
 
 ---
 
-## Buttons
-
-- Secondary buttons use surface colors with a border
-
----
-
-## Surfaces
-
-- Game boards and panels sit on `--color-surface`, not directly on `--color-bg`
-- Add a faint inner border via `box-shadow` to give surfaces a glass-like edge
-- Use `--shadow-md` or `--shadow-lg` on the main game container so it lifts off the page
-
----
-
 ## Interactive States
 
 - Replace browser focus outlines with a custom `box-shadow` focus ring
-- Hoverable game squares get an inset border on hover, not just a color change
 - Selected/active pieces glow with `--shadow-accent` — don't just recolor them
 
 ---
@@ -62,9 +47,7 @@ Every game should look polished and intentional — not like a default browser U
 
 ## Layout
 
-- Center game content both vertically and horizontally
 - Games must be usable on mobile — use `max-width` on the game container
-- Always include `box-sizing: border-box` reset
 
 ---
 
@@ -77,8 +60,6 @@ Every game should look polished and intentional — not like a default browser U
 
 ## Checklist Before Submitting Any UI
 
-- [ ] All modals should have a full screen overlay behind them
-- [ ] All modals should have a `min-width: 420px;`
 - [ ] All colors use semantic variables
 - [ ] All spacing uses scale variables
 - [ ] Numbers/scores use `--font-mono`

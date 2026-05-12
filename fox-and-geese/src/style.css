@@ -335,8 +335,8 @@ body.light-palette {
   position: absolute;
   top: 0;
   left: 0;
-  width: calc(7 * 64px);
-  height: calc(7 * 64px);
+  width: calc(7 * 90px);
+  height: calc(7 * 90px);
   pointer-events: none;
   z-index: 0;
 }
@@ -344,16 +344,16 @@ body.light-palette {
 .board-grid {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(7, 64px);
-  grid-template-rows: repeat(7, 64px);
+  grid-template-columns: repeat(7, 90px);
+  grid-template-rows: repeat(7, 90px);
   z-index: 1;
 }
 
 /* ─── Board Cells ────────────────────────────────────────────────────────── */
 
 .board-cell {
-  width: 64px;
-  height: 64px;
+  width: 90px;
+  height: 90px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -409,8 +409,8 @@ body.light-palette {
 /* ─── Pieces ─────────────────────────────────────────────────────────────── */
 
 .piece {
-  width: 40px;
-  height: 40px;
+  width: 58px;
+  height: 58px;
   border-radius: var(--radius-full);
   position: relative;
   transition: box-shadow var(--transition-default), transform var(--transition-fast);
@@ -606,7 +606,7 @@ body.light-palette {
 }
 
 .play-screen {
-  max-width: 580px;
+  max-width: 700px;
 }
 
 /* ─── Responsive ─────────────────────────────────────────────────────────── */
