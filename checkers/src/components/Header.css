@@ -7,7 +7,7 @@
 }
 
 .light-palette .game-header {
-  background: var(--gray-10);
+  background: var(--color-bg);
 }
 
 .game-header__center {

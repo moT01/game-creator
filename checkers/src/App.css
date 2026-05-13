@@ -20,7 +20,7 @@
 }
 
 .light-palette .game-card__body {
-  background: var(--gray-10);
+  background: var(--color-bg);
 }
 
 /* ── Background pieces ───────────────────────────────────────────────────────── */
