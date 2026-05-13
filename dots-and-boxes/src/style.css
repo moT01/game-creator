@@ -4,13 +4,24 @@ body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background-image: radial-gradient(circle, var(--color-text-muted) 1px, transparent 1px);
-  background-size: 28px 28px;
+  /* background-image: radial-gradient(circle, var(--color-text-muted) 1px, transparent 1px);
+  background-size: 28px 28px; */
   opacity: 0.25;
   mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 10%, transparent 100%);
   -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 10%, transparent 100%);
   pointer-events: none;
   z-index: 0;
+
+  background-size: 100% 100%, 28px 28px;
+  background-image:
+    radial-gradient(ellipse 65% 65% at 50% 50%, transparent 20%, var(--color-bg) 80%),
+    radial-gradient(circle, var(--gray-15) 1px, transparent 1px);
+}
+
+body.light-palette::before {
+  background-image:
+    radial-gradient(ellipse 65% 65% at 50% 50%, transparent 20%, var(--color-bg) 80%),
+    radial-gradient(circle, var(--gray-75) 1px, transparent 1px);
 }
 
 /* ─── Layout ──────────────────────────────────────────────────────────────── */

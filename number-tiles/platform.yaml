@@ -1,5 +1,6 @@
 site: number-tiles
 build:
+  command: npm run build
   output: dist
 deploy:
   preview: true

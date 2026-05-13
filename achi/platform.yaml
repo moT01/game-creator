@@ -1,5 +1,6 @@
 site: achi
 build:
+  command: npm run build
   output: dist
 deploy:
   preview: true

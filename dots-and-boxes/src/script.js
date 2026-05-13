@@ -841,9 +841,9 @@ function showHelpModal() {
 
         <h3>Key Strategies</h3>
         <ul>
-          <li>Avoid being the first to touch a box that already has 2 sides -- you will likely hand it to your opponent.</li>
+          <li>Avoid being the first to touch a box that already has 2 sides - you will likely hand it to your opponent.</li>
           <li>Control chains: a chain is a sequence of nearly-complete boxes. The player who opens a chain gives it all to the opponent.</li>
-          <li>Doublecross: when forced to open a long chain, claim all but the last 2 boxes -- your opponent must then open the next chain.</li>
+          <li>Doublecross: when forced to open a long chain, claim all but the last 2 boxes - your opponent must then open the next chain.</li>
           <li>In the early game, avoid creating 3-sided boxes for your opponent.</li>
         </ul>
 
@@ -851,7 +851,7 @@ function showHelpModal() {
         <ul>
           <li>Look for lines that do not touch any box with 2 sides already drawn.</li>
           <li>When no such line exists, pick the one touching the fewest 2-sided boxes.</li>
-          <li>Watch the score -- if you are behind, opening a chain may be necessary.</li>
+          <li>Watch the score - if you are behind, opening a chain may be necessary.</li>
         </ul>
       </div>
     </div>
