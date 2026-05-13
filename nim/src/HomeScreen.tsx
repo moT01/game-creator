@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Header from './components/Header'
 import HelpModal from './components/HelpModal'
-import type { GameState, Mode, Difficulty } from './gameLogic'
+import type { GameState, Mode } from './gameLogic'
 import './HomeScreen.css'
 
 interface Props {
@@ -10,12 +10,12 @@ interface Props {
   onStart: (state: GameState) => void
   onResume: () => void
   canResume: boolean
-  records: { wins_normal: number; wins_hard: number }
-  prefs: { mode: Mode; difficulty: Difficulty; humanPlayer: 0 | 1 }
-  onSavePrefs: (p: { mode: Mode; difficulty: Difficulty; humanPlayer: 0 | 1 }) => void
+  records: number
+  prefs: { mode: Mode; humanPlayer: 0 | 1 }
+  onSavePrefs: (p: { mode: Mode; humanPlayer: 0 | 1 }) => void
 }
 
-function makeInitialState(mode: Mode, difficulty: Difficulty, humanPlayer: 0 | 1): GameState {
+function makeInitialState(mode: Mode, humanPlayer: 0 | 1): GameState {
   return {
     heaps: [1, 3, 5, 7],
     currentPlayer: 0,
@@ -24,7 +24,6 @@ function makeInitialState(mode: Mode, difficulty: Difficulty, humanPlayer: 0 | 1
     phase: 'playing',
     winner: null,
     mode,
-    difficulty,
     humanPlayer,
   }
 }
@@ -41,26 +40,20 @@ export default function HomeScreen({
 }: Props) {
   const [showHelp, setShowHelp] = useState(false)
   const [mode, setMode] = useState<Mode>(prefs.mode)
-  const [difficulty, setDifficulty] = useState<Difficulty>(prefs.difficulty)
   const [humanPlayer, setHumanPlayer] = useState<0 | 1>(prefs.humanPlayer)
 
   function handleModeChange(m: Mode) {
     setMode(m)
-    onSavePrefs({ mode: m, difficulty, humanPlayer })
-  }
-
-  function handleDifficultyChange(d: Difficulty) {
-    setDifficulty(d)
-    onSavePrefs({ mode, difficulty: d, humanPlayer })
+    onSavePrefs({ mode: m, humanPlayer })
   }
 
   function handleHumanPlayerChange(h: 0 | 1) {
     setHumanPlayer(h)
-    onSavePrefs({ mode, difficulty, humanPlayer: h })
+    onSavePrefs({ mode, humanPlayer: h })
   }
 
   function handleNewGame() {
-    const state = makeInitialState(mode, difficulty, humanPlayer)
+    const state = makeInitialState(mode, humanPlayer)
     onStart(state)
   }
 
@@ -96,45 +89,24 @@ export default function HomeScreen({
 
           {mode === 'vs-computer' && (
             <div className="vs-computer-options">
-              <div className="options-row">
-                <div className="segment-group" role="group" aria-label="Turn order">
-                  <button
-                    className={`segment-btn${humanPlayer === 0 ? ' segment-btn--active' : ''}`}
-                    onClick={() => handleHumanPlayerChange(0)}
-                  >
-                    Go First
-                  </button>
-                  <button
-                    className={`segment-btn${humanPlayer === 1 ? ' segment-btn--active' : ''}`}
-                    onClick={() => handleHumanPlayerChange(1)}
-                  >
-                    Go Second
-                  </button>
-                </div>
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    className="checkbox-input"
-                    checked={difficulty === 'hard'}
-                    onChange={e => handleDifficultyChange(e.target.checked ? 'hard' : 'normal')}
-                  />
-                  <span className="checkbox-custom" />
-                  Hard mode
-                </label>
+              <div className="segment-group" role="group" aria-label="Turn order">
+                <button
+                  className={`segment-btn${humanPlayer === 0 ? ' segment-btn--active' : ''}`}
+                  onClick={() => handleHumanPlayerChange(0)}
+                >
+                  Go First
+                </button>
+                <button
+                  className={`segment-btn${humanPlayer === 1 ? ' segment-btn--active' : ''}`}
+                  onClick={() => handleHumanPlayerChange(1)}
+                >
+                  Go Second
+                </button>
               </div>
 
               <div className="records-section">
-                <p className="records-label">WINS</p>
-                <div className="records-rows">
-                  <div className="records-row">
-                    <span className="records-name">Normal</span>
-                    <span className="records-count">{records.wins_normal}</span>
-                  </div>
-                  <div className="records-row">
-                    <span className="records-name">Hard</span>
-                    <span className="records-count">{records.wins_hard}</span>
-                  </div>
-                </div>
+                <span className="records-label">Wins</span>
+                <span className="records-count">{records}</span>
               </div>
             </div>
           )}

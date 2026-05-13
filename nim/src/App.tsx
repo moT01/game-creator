@@ -3,12 +3,12 @@ import { useTheme } from './hooks/useTheme'
 import { createStorage } from './hooks/useStorage'
 import HomeScreen from './HomeScreen'
 import GameScreen from './GameScreen'
-import type { GameState, Mode, Difficulty } from './gameLogic'
+import type { GameState, Mode } from './gameLogic'
 import './App.css'
 
 const storage = createStorage<GameState>('nim-state')
-const recordsStorage = createStorage<{ wins_normal: number; wins_hard: number }>('nim-records')
-const prefsStorage = createStorage<{ mode: Mode; difficulty: Difficulty; humanPlayer: 0 | 1 }>('nim-prefs')
+const recordsStorage = createStorage<number>('nim-wins')
+const prefsStorage = createStorage<{ mode: Mode; humanPlayer: 0 | 1 }>('nim-prefs')
 
 type Phase = 'home' | 'game'
 
@@ -24,8 +24,9 @@ function App() {
     savedState.heaps.some(h => h > 0)
   )
 
-  const records = recordsStorage.load() ?? { wins_normal: 0, wins_hard: 0 }
-  const prefs = prefsStorage.load() ?? { mode: 'vs-computer' as Mode, difficulty: 'normal' as Difficulty, humanPlayer: 0 as 0 | 1 }
+  const legacyRecords = createStorage<{ wins_normal?: number; wins_hard?: number }>('nim-records').load()
+  const records = recordsStorage.load() ?? ((legacyRecords?.wins_normal ?? 0) + (legacyRecords?.wins_hard ?? 0))
+  const prefs = prefsStorage.load() ?? { mode: 'vs-computer' as Mode, humanPlayer: 0 as 0 | 1 }
 
   const handleStart = useCallback((state: GameState) => {
     storage.save(state)
@@ -46,19 +47,19 @@ function App() {
     setPhase('home')
   }, [])
 
-  const handleGameOver = useCallback((winner: 0 | 1, mode: Mode, difficulty: Difficulty) => {
+  const handleGameOver = useCallback((winner: 0 | 1, mode: Mode) => {
     storage.clear()
     if (mode === 'vs-computer') {
-      const current = recordsStorage.load() ?? { wins_normal: 0, wins_hard: 0 }
       const humanPlayer = gameState?.humanPlayer ?? 0
       if (winner === humanPlayer) {
-        const key = difficulty === 'hard' ? 'wins_hard' : 'wins_normal'
-        recordsStorage.save({ ...current, [key]: current[key] + 1 })
+        const legacyRecords = createStorage<{ wins_normal?: number; wins_hard?: number }>('nim-records').load()
+        const current = recordsStorage.load() ?? ((legacyRecords?.wins_normal ?? 0) + (legacyRecords?.wins_hard ?? 0))
+        recordsStorage.save(current + 1)
       }
     }
   }, [gameState])
 
-  const handleSavePrefs = useCallback((p: { mode: Mode; difficulty: Difficulty; humanPlayer: 0 | 1 }) => {
+  const handleSavePrefs = useCallback((p: { mode: Mode; humanPlayer: 0 | 1 }) => {
     prefsStorage.save(p)
   }, [])
 

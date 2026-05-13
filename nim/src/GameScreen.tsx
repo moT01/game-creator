@@ -4,7 +4,7 @@ import HelpModal from './components/HelpModal'
 import ConfirmModal from './components/ConfirmModal'
 import HeapRow from './components/HeapRow'
 import Modal from './components/Modal'
-import type { GameState, Mode, Difficulty } from './gameLogic'
+import type { GameState, Mode } from './gameLogic'
 import { applyMove, isGameOver, getAIMove } from './gameLogic'
 import './GameScreen.css'
 
@@ -14,7 +14,7 @@ interface Props {
   onQuit: () => void
   initialState: GameState
   onSave: (state: GameState) => void
-  onGameOver: (winner: 0 | 1, mode: Mode, difficulty: Difficulty) => void
+  onGameOver: (winner: 0 | 1, mode: Mode) => void
 }
 
 export default function GameScreen({
@@ -43,9 +43,9 @@ export default function GameScreen({
   useEffect(() => {
     if (gs.phase === 'game-over' && gs.winner !== null && !gameOverHandled) {
       setGameOverHandled(true)
-      onGameOver(gs.winner, gs.mode, gs.difficulty)
+      onGameOver(gs.winner, gs.mode)
     }
-  }, [gs.phase, gs.winner, gs.mode, gs.difficulty, gameOverHandled, onGameOver])
+  }, [gs.phase, gs.winner, gs.mode, gameOverHandled, onGameOver])
 
   // Schedule AI move
   useEffect(() => {
@@ -55,7 +55,7 @@ export default function GameScreen({
         if (prev.phase !== 'playing') return prev
         if (prev.mode !== 'vs-computer') return prev
         if (prev.currentPlayer === prev.humanPlayer) return prev
-        const move = getAIMove(prev.heaps, prev.difficulty)
+        const move = getAIMove(prev.heaps)
         const newHeaps = applyMove(prev.heaps, move.heap, move.count)
         const over = isGameOver(newHeaps)
         return {
@@ -161,7 +161,6 @@ export default function GameScreen({
       phase: 'playing',
       winner: null,
       mode: gs.mode,
-      difficulty: gs.difficulty,
       humanPlayer: gs.humanPlayer,
     }
     setGameOverHandled(false)

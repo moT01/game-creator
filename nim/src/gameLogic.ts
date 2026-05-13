@@ -1,6 +1,5 @@
 export type GamePhase = 'playing' | 'game-over'
 export type Mode = 'vs-computer' | '2-player'
-export type Difficulty = 'normal' | 'hard'
 
 export interface GameState {
   heaps: number[]
@@ -10,7 +9,6 @@ export interface GameState {
   phase: GamePhase
   winner: 0 | 1 | null
   mode: Mode
-  difficulty: Difficulty
   humanPlayer: 0 | 1
 }
 
@@ -59,7 +57,6 @@ export function findRandomMove(heaps: number[]): { heap: number; count: number }
   return { heap: pick.i, count }
 }
 
-export function getAIMove(heaps: number[], difficulty: Difficulty): { heap: number; count: number } {
-  if (difficulty === 'hard') return findOptimalMove(heaps)
+export function getAIMove(heaps: number[]): { heap: number; count: number } {
   return Math.random() < 0.6 ? findOptimalMove(heaps) : findRandomMove(heaps)
 }
