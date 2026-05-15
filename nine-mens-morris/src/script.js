@@ -201,6 +201,16 @@ function switchPlayer(state) {
   if (!state.gameOver) checkDraw(state);
 }
 
+function getLiveLines(board, color) {
+  const opp = opponent(color);
+  let count = 0;
+  for (const [a, b, c] of MILLS) {
+    const cells = [board[a], board[b], board[c]];
+    if (cells.some(p => p === color) && !cells.some(p => p === opp)) count++;
+  }
+  return count;
+}
+
 function getAlmostMills(board, color) {
   let count = 0;
   for (const [a, b, c] of MILLS) {
@@ -222,15 +232,37 @@ function evaluateBoard(state, computerColor) {
   const opp = opponent(computerColor);
   const board = state.board;
 
+  const isPlacement = state.phase === 'placement';
+  const ownAlmostWeight = isPlacement ? 1 : 22;
+  const oppAlmostWeight = isPlacement ? 20 : 22;
+
   let score = 0;
   score += getMills(board, computerColor).length * 200;
   score -= getMills(board, opp).length * 200;
   score += state.piecesOnBoard[computerColor] * 10;
   score -= state.piecesOnBoard[opp] * 10;
-  score += getAlmostMills(board, computerColor) * 5;
-  score -= getAlmostMills(board, opp) * 5;
+  const ownAlmost = getAlmostMills(board, computerColor);
+  const oppAlmost = getAlmostMills(board, opp);
+  score += ownAlmost * ownAlmostWeight;
+  score -= oppAlmost * oppAlmostWeight;
+  if (isPlacement && oppAlmost >= 2) score -= 150;
   score += getMobility(state, computerColor);
   score -= getMobility(state, opp);
+
+  for (const [i, value] of NODE_VALUE) {
+    if (board[i] === computerColor) score += value;
+    else if (board[i] === opp) score -= value;
+  }
+
+  if (isPlacement) {
+    score += getLiveLines(board, computerColor) * 4;
+    score -= getLiveLines(board, opp) * 4;
+  }
+
+  const key = serializeBoard(state);
+  const repetitions = state.boardHistory.filter(k => k === key).length;
+  if (repetitions > 0) score -= repetitions * 25;
+
   return score;
 }
 
@@ -268,12 +300,19 @@ function applyAction(state, action) {
 }
 
 function orderMoves(state, moves, computerColor) {
+  const opp = opponent(computerColor);
   return moves.slice().sort((a, b) => {
     const scoreMove = (m) => {
       if (m.type === 'remove') return 10;
       const s = cloneState(state);
       applyAction(s, m);
-      if (getMills(s.board, computerColor).length > getMills(state.board, computerColor).length) return 5;
+      if (getMills(s.board, computerColor).length > getMills(state.board, computerColor).length) return 8;
+      const node = m.type === 'place' ? m.node : m.to;
+      for (const mill of MILLS) {
+        if (!mill.includes(node)) continue;
+        const cells = mill.map(i => state.board[i]);
+        if (cells.filter(p => p === opp).length === 2 && cells.filter(p => p === null).length === 1) return 6;
+      }
       return 0;
     };
     return scoreMove(b) - scoreMove(a);
@@ -315,29 +354,73 @@ function minimax(state, depth, alpha, beta, maximizing, computerColor) {
   }
 }
 
-const STRATEGIC_NODES = new Set([1, 3, 4, 6, 9, 11, 12, 14]);
+const NODE_VALUE = new Map([
+  [9, 12], [11, 12], [12, 12], [14, 12],
+  [1, 8],  [3, 8],  [4, 8],  [6, 8],
+  [17, 8], [19, 8], [20, 8], [22, 8],
+  [0, 0], [2, 0], [5, 0], [7, 0],
+  [8, 0], [10, 0],[13, 0],[15, 0],
+  [16, 0],[18, 0],[21, 0],[23, 0],
+]);
 
 function getBestMove(state) {
   const computerColor = opponent(state.playerColor);
-  const depth = 3;
+  const opp = opponent(computerColor);
+  const depth = state.phase === 'placement' ? 5 : state.phase === 'flying' ? 3 : 4;
   const moves = getValidMoves(state);
   if (moves.length === 0) return null;
 
-  let bestScore = -Infinity;
-  let bestMove = moves[0];
+  // First move: pick randomly from top junction nodes
+  if (state.piecesToPlace[computerColor] === 9) {
+    const junctions = [9, 11, 12, 14].filter(n => state.board[n] === null);
+    const node = junctions[Math.floor(Math.random() * junctions.length)];
+    return { type: 'place', node };
+  }
 
+  // Greedy: form own mill immediately
+  const millsBefore = getMills(state.board, computerColor).length;
   for (const move of moves) {
     const next = cloneState(state);
     applyAction(next, move);
-    let score = minimax(next, depth - 1, -Infinity, Infinity, next.currentPlayer === computerColor, computerColor);
+    if (getMills(next.board, computerColor).length > millsBefore) return move;
+  }
 
-    if (score > bestScore) {
-      bestScore = score;
-      bestMove = move;
+  // Greedy: block opponent mill
+  for (const [a, b, c] of MILLS) {
+    const cells = [state.board[a], state.board[b], state.board[c]];
+    if (cells.filter(p => p === opp).length === 2 && cells.filter(p => p === null).length === 1) {
+      const blockNode = [a, b, c][cells.indexOf(null)];
+      const blockMove = moves.find(m =>
+        (m.type === 'place' && m.node === blockNode) ||
+        (m.type === 'move' && m.to === blockNode)
+      );
+      if (blockMove) return blockMove;
     }
   }
 
-  return bestMove;
+  // Greedy: block opponent fork (placement only)
+  if (state.phase === 'placement') {
+    for (const move of moves) {
+      const simBoard = [...state.board];
+      simBoard[move.node] = opp;
+      if (getAlmostMills(simBoard, opp) >= 2) return move;
+    }
+  }
+
+  let bestScore = -Infinity;
+  const candidates = [];
+
+  for (const move of orderMoves(state, moves, computerColor)) {
+    const next = cloneState(state);
+    applyAction(next, move);
+    const score = minimax(next, depth - 1, -Infinity, Infinity, next.currentPlayer === computerColor, computerColor);
+
+    if (score > bestScore) bestScore = score;
+    candidates.push({ move, score });
+  }
+
+  const top = candidates.filter(c => c.score === bestScore);
+  return top[Math.floor(Math.random() * top.length)].move;
 }
 
 function getBestRemoval(state) {
@@ -350,9 +433,8 @@ function getBestRemoval(state) {
 
   for (const node of removable) {
     const next = cloneState(state);
-    next.board[node] = null;
-    next.piecesOnBoard[opp]--;
-    const score = evaluateBoard(next, computerColor);
+    applyRemoval(next, node);
+    const score = minimax(next, 3, -Infinity, Infinity, next.currentPlayer === computerColor, computerColor);
     if (score > bestScore) {
       bestScore = score;
       bestNode = node;
@@ -408,7 +490,7 @@ let animLastPlaced = null;   // node index of last placed piece
 let animLastRemoved = null;  // node index of last removed piece
 let animLastFrom = null;     // source node of last slide
 let animLastTo = null;       // destination node of last slide
-let animNewMillNodes = null; // Set of node indices in newly formed mills
+let lastComputerTo = null;   // destination of last computer move
 
 function getTheme() {
   return localStorage.getItem('nmm_theme') || 'dark';
@@ -494,20 +576,18 @@ function renderHomeScreen() {
       <h1 class="game-title">Nine Men's Morris</h1>
       <p class="game-subtitle">A classic strategy game for two</p>
       <div class="setup-group">
-        <label class="setup-label">Mode</label>
         <div class="pill-group" id="mode-group">
           <button class="pill ${prefs.mode === 'pvc' ? 'active' : ''}" data-value="pvc">vs Computer</button>
           <button class="pill ${prefs.mode === 'pvp' ? 'active' : ''}" data-value="pvp">2 Player</button>
         </div>
       </div>
+      <div id="records-wrap" style="width:100%;${prefs.mode !== 'pvc' ? 'display:none' : ''}">${renderRecords()}</div>
       <div class="setup-group pvc-only" id="color-group-wrap" style="${prefs.mode !== 'pvc' ? 'display:none' : ''}">
-        <label class="setup-label">Play as</label>
-        <div class="pill-group" id="color-group">
-          <button class="pill ${prefs.playerColor === 'black' ? 'active' : ''}" data-value="black">Blue (goes first)</button>
-          <button class="pill ${prefs.playerColor === 'white' ? 'active' : ''}" data-value="white">Gold</button>
+        <div class="pill-group pill-group--sm" id="color-group">
+          <button class="pill ${prefs.playerColor === 'black' ? 'active' : ''}" data-value="black">Go First</button>
+          <button class="pill ${prefs.playerColor === 'white' ? 'active' : ''}" data-value="white">Go Second</button>
         </div>
       </div>
-      <div id="records-wrap" style="width:100%;${prefs.mode !== 'pvc' ? 'display:none' : ''}">${renderRecords()}</div>
       <div class="home-actions">
         <button class="btn-primary" id="btn-new-game">New Game</button>
         ${saved ? `<button class="btn-secondary" id="btn-resume">Resume</button>` : ''}
@@ -563,57 +643,58 @@ function renderSVGBoard(state) {
     const piece = board[i];
     const isSelected = i === selectedNode;
     const isTarget = validTargets.has(i);
-    const isRemovable = mustRemove && board[i] === opp;
+    const isRemovable = mustRemove && board[i] === opp && validTargets.has(i);
+    const isProtected = mustRemove && board[i] === opp && !validTargets.has(i);
     const inMill = millNodes.has(i) && piece !== null;
     const label = piece
       ? `Position ${i + 1}, ${piece === currentPlayer ? 'your piece' : "opponent's piece"}`
       : `Position ${i + 1}, empty`;
 
     let pieceCircle = '';
+    let selectedRing = '';
+    let lastMoveDot = '';
     if (piece) {
       const colorClass = piece === 'black' ? 'piece-blue' : 'piece-gold';
       const millClass = inMill ? ' piece-in-mill' : '';
-      const selectedClass = isSelected ? ' piece-selected' : '';
-      pieceCircle = `<circle cx="${cx}" cy="${cy}" r="14" class="piece ${colorClass}${millClass}${selectedClass}" />`;
+      const protectedClass = isProtected ? ' piece-protected' : '';
+      pieceCircle = `<circle cx="${cx}" cy="${cy}" r="13" class="piece ${colorClass}${millClass}${protectedClass}" />`;
+      if (isSelected) selectedRing = `<circle cx="${cx}" cy="${cy}" r="17" class="piece-selected-ring piece-selected-ring--${piece === 'black' ? 'blue' : 'gold'}" />`;
+      if (isRemovable) selectedRing = `<circle cx="${cx}" cy="${cy}" r="17" class="piece-removable-ring" />`;
     } else {
-      pieceCircle = `<circle cx="${cx}" cy="${cy}" r="4" class="node-dot" />`;
+      pieceCircle = `<circle cx="${cx}" cy="${cy}" r="11" class="node-dot" />`;
     }
 
-    let targetRing = '';
-    if (isTarget && !isRemovable) {
-      targetRing = `<circle cx="${cx}" cy="${cy}" r="19" class="target-ring" />`;
-    }
-    if (isRemovable) {
-      targetRing = `<circle cx="${cx}" cy="${cy}" r="19" class="removable-ring" />`;
+    let validDot = '';
+    if (!piece && isTarget) {
+      if (state.phase === 'movement') {
+        const dotClass = currentPlayer === 'black' ? 'valid-dot valid-dot-blue' : 'valid-dot valid-dot-gold';
+        validDot = `<circle cx="${cx}" cy="${cy}" r="6" class="${dotClass}" />`;
+      } else if (state.phase === 'flying') {
+        validDot = `<circle cx="${cx}" cy="${cy}" r="17" class="node-ring-target" />`;
+      }
     }
 
     const tabindex = (isTarget || isSelected || (piece === currentPlayer && !mustRemove && state.phase !== 'placement')) ? '0' : '-1';
 
     return `<g class="board-node" data-node="${i}" role="button" tabindex="${tabindex}" aria-label="${label}">
-      ${targetRing}
+      ${selectedRing}
       ${pieceCircle}
-      <circle cx="${cx}" cy="${cy}" r="20" class="node-hit" />
+      ${validDot}
+      ${lastMoveDot}
+      <circle cx="${cx}" cy="${cy}" r="24" class="node-hit" />
     </g>`;
   }).join('');
 
   return `<svg class="board-svg" viewBox="0 0 480 480" role="img" aria-label="Nine Men's Morris board">
     <defs>
       <radialGradient id="grad-blue" cx="35%" cy="30%" r="65%">
-        <stop offset="0%" stop-color="var(--piece-highlight)" />
+        <stop offset="0%" stop-color="var(--piece-blue)" />
         <stop offset="100%" stop-color="var(--piece-blue)" />
       </radialGradient>
       <radialGradient id="grad-gold" cx="35%" cy="30%" r="65%">
-        <stop offset="0%" stop-color="var(--piece-highlight)" />
+        <stop offset="0%" stop-color="var(--piece-gold)" />
         <stop offset="100%" stop-color="var(--piece-gold)" />
       </radialGradient>
-      <filter id="glow-blue" x="-50%" y="-50%" width="200%" height="200%">
-        <feGaussianBlur stdDeviation="4" result="blur" />
-        <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-      </filter>
-      <filter id="glow-gold" x="-50%" y="-50%" width="200%" height="200%">
-        <feGaussianBlur stdDeviation="4" result="blur" />
-        <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-      </filter>
     </defs>
     ${linesSVG}
     ${nodesSVG}
@@ -638,30 +719,33 @@ function getStatusText(state) {
   const cp = state.currentPlayer;
   const cpName = state.mode === 'pvc'
     ? (cp === state.playerColor ? 'Your' : "Computer's")
-    : (cp === 'black' ? "Blue's" : "Gold's");
-  const phaseLabel = state.phase === 'placement' ? 'Placement' : state.phase === 'flying' ? 'Flying' : 'Movement';
+    : (cp === 'black' ? "Player 1's" : "Player 2's");
 
   if (state.mustRemove) {
-    return { text: `${cpName} turn — remove an opponent piece`, cls: 'status-neutral' };
+    return { text: `${cpName} turn: Remove an opponent piece`, cls: 'status-neutral' };
   }
-  return { text: `${cpName} turn — ${phaseLabel}`, cls: 'status-neutral' };
+  if (state.phase === 'placement') {
+    return { text: `${cpName} turn: Place a piece`, cls: 'status-neutral' };
+  }
+  return { text: `${cpName} turn: Move a piece`, cls: 'status-neutral' };
 }
 
 function renderPiecesInHand(state) {
-  if (state.phase !== 'placement') return '';
-  const bCount = state.piecesToPlace.black;
-  const wCount = state.piecesToPlace.white;
+  const total = 9;
+  const bLeft = state.piecesToPlace.black;
+  const wLeft = state.piecesToPlace.white;
+  const bothDone = bLeft === 0 && wLeft === 0;
+  const bActive = !bothDone ? bLeft : state.piecesOnBoard.black;
+  const wActive = !bothDone ? wLeft : state.piecesOnBoard.white;
+  const bDots = Array(total).fill(0).map((_, i) =>
+    `<span class="hand-dot ${i < bActive ? 'blue' : 'played'}"></span>`
+  ).join('');
+  const wDots = Array(total).fill(0).map((_, i) =>
+    `<span class="hand-dot ${i < wActive ? 'gold' : 'played'}"></span>`
+  ).join('');
   return `<div class="pieces-in-hand" aria-label="Pieces remaining to place">
-    <div class="hand-row">
-      <span class="hand-label" aria-label="Blue pieces remaining: ${bCount}">Blue</span>
-      <div class="hand-dots">${Array(bCount).fill('<span class="hand-dot blue"></span>').join('')}</div>
-      <span class="hand-count mono">${bCount}</span>
-    </div>
-    <div class="hand-row">
-      <span class="hand-label" aria-label="Gold pieces remaining: ${wCount}">Gold</span>
-      <div class="hand-dots">${Array(wCount).fill('<span class="hand-dot gold"></span>').join('')}</div>
-      <span class="hand-count mono">${wCount}</span>
-    </div>
+    <div class="hand-row"><div class="hand-dots">${bDots}</div></div>
+    <div class="hand-row"><div class="hand-dots">${wDots}</div></div>
   </div>`;
 }
 
@@ -723,30 +807,30 @@ function renderHelpModal() {
         <h3>Rules</h3>
         <ul>
           <li>Place all 9 pieces on the board, one per turn, on any empty intersection.</li>
-          <li>Each time you get 3 in a row (a "mill"), remove one of your opponent's pieces — but not one in a mill unless that is all they have left.</li>
+          <li>Each time you get 3 in a row (a "mill"), remove one of your opponent's pieces - but not one in a mill unless that is all they have left.</li>
           <li>Once all pieces are placed, slide pieces one step at a time along the lines.</li>
-          <li>If you are down to 3 pieces, you may "fly" — jump to any open spot.</li>
+          <li>If you are down to 3 pieces, you may "fly" - jump to any open spot.</li>
           <li>You lose if you are reduced to 2 pieces or have no legal moves.</li>
         </ul>
         <h3>Key Strategies</h3>
         <ul>
-          <li><strong>Build mills early</strong> — corners and midpoints of the outer ring participate in more mills.</li>
-          <li><strong>Double mill trap</strong> — set up two overlapping mills sharing one piece; slide it back and forth to remove a piece every turn.</li>
-          <li><strong>Block before you build</strong> — if your opponent has 2 in a mill, block the third spot immediately.</li>
-          <li><strong>Keep pieces mobile</strong> — spread pieces so you always have moves in the movement phase.</li>
-          <li><strong>Force no-move situations</strong> — winning by blocking is just as valid as reducing them to 2 pieces.</li>
+          <li><strong>Build mills early</strong> - corners and midpoints of the outer ring participate in more mills.</li>
+          <li><strong>Double mill trap</strong> - set up two overlapping mills sharing one piece; slide it back and forth to remove a piece every turn.</li>
+          <li><strong>Block before you build</strong> - if your opponent has 2 in a mill, block the third spot immediately.</li>
+          <li><strong>Keep pieces mobile</strong> - spread pieces so you always have moves in the movement phase.</li>
+          <li><strong>Force no-move situations</strong> - winning by blocking is just as valid as reducing them to 2 pieces.</li>
         </ul>
         <h3>Common Mistakes</h3>
         <ul>
           <li>Focusing only on placement without watching the opponent build a mill.</li>
           <li>Removing opponent pieces from far corners when you should target pieces in forming mills.</li>
-          <li>Leaving a double mill setup uncontested — once established it is almost unbeatable.</li>
+          <li>Leaving a double mill setup uncontested - once established it is almost unbeatable.</li>
           <li>Moving into the movement phase with poor piece distribution and getting blocked immediately.</li>
           <li>Forgetting that flying players cannot be blocked, only eliminated by piece count.</li>
         </ul>
         <h3>Tips for Beginners</h3>
         <ul>
-          <li>Focus on the outer and middle rings first — the inner square is cramped.</li>
+          <li>Focus on the outer and middle rings first - the inner square is cramped.</li>
           <li>Count how many mills each empty spot belongs to before you place.</li>
           <li>Removing from an active mill is allowed when that is all the opponent has.</li>
         </ul>
@@ -755,18 +839,18 @@ function renderHelpModal() {
   </div>`;
 }
 
-function renderConfirmModal(message) {
+function renderConfirmModal() {
   return `<div class="modal-backdrop" id="confirm-modal" role="dialog" aria-modal="true" aria-label="Confirm action">
     <div class="modal-panel modal-panel-sm">
       <div class="modal-header">
-        <h2 class="modal-title">Are you sure?</h2>
+        <h2 class="modal-title">Quit Game</h2>
       </div>
       <div class="modal-body">
-        <p>${message}</p>
+        <p>Return to the main menu? You can resume your game from there.</p>
       </div>
       <div class="modal-footer">
-        <button class="btn-primary" id="btn-confirm-yes">Confirm</button>
         <button class="btn-secondary" id="btn-confirm-no">Cancel</button>
+        <button class="btn-primary" id="btn-confirm-yes">Confirm</button>
       </div>
     </div>
   </div>`;
@@ -800,8 +884,8 @@ function closeHelp() {
   if (modal) modal.remove();
 }
 
-function showConfirm(message, onConfirm) {
-  document.body.insertAdjacentHTML('beforeend', renderConfirmModal(message));
+function showConfirm(onConfirm) {
+  document.body.insertAdjacentHTML('beforeend', renderConfirmModal());
   const modal = document.getElementById('confirm-modal');
   trapFocus(modal);
   document.getElementById('btn-confirm-yes').addEventListener('click', () => {
@@ -810,6 +894,9 @@ function showConfirm(message, onConfirm) {
   });
   document.getElementById('btn-confirm-no').addEventListener('click', () => {
     modal.remove();
+  });
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.remove();
   });
 }
 
@@ -899,7 +986,7 @@ function bindPlayEvents() {
   if (btnClose) {
     btnClose.addEventListener('click', () => {
       if (!gameState.gameOver) {
-        showConfirm('Your progress will be saved.', () => {
+        showConfirm(() => {
           gameState = null;
           currentScreen = 'home';
           render();
@@ -978,24 +1065,14 @@ function doAiMove() {
   }
 
   if (action.type === 'move') {
+    lastComputerTo = action.to;
     animateMoveThenApply(action.from, action.to);
     return;
   }
 
   // placement
-  const boardBefore = [...gameState.board];
-  const playerBefore = gameState.currentPlayer;
-  const millsBefore = getMills(boardBefore, playerBefore).map(m => m.join(','));
-
   applyAction(gameState, action);
-
   animLastPlaced = action.node;
-  const millsAfter = getMills(gameState.board, playerBefore).map(m => m.join(','));
-  const newMills = millsAfter.filter(m => !millsBefore.includes(m));
-  if (newMills.length > 0) {
-    animNewMillNodes = new Set(newMills.flatMap(m => m.split(',').map(Number)));
-  }
-
   finalizeAfterAction();
 }
 
@@ -1017,18 +1094,7 @@ function animateMoveThenApply(fromNode, toNode) {
   animLastFrom = fromNode;
   animLastTo = toNode;
 
-  const boardBefore = [...gameState.board];
-  const playerBefore = gameState.currentPlayer;
-  const millsBefore = getMills(boardBefore, playerBefore).map(m => m.join(','));
-
   applyMove(gameState, fromNode, toNode);
-
-  const millsAfter = getMills(gameState.board, playerBefore).map(m => m.join(','));
-  const newMills = millsAfter.filter(m => !millsBefore.includes(m));
-  if (newMills.length > 0) {
-    animNewMillNodes = new Set(newMills.flatMap(m => m.split(',').map(Number)));
-  }
-
   finalizeAfterAction();
 }
 
@@ -1064,7 +1130,7 @@ function finalizeAfterAction() {
   animLastRemoved = null;
   animLastFrom = null;
   animLastTo = null;
-  animNewMillNodes = null;
+
 
   if (!gameState.gameOver && isComputerTurn(gameState)) {
     scheduleAiIfNeeded();
@@ -1097,16 +1163,6 @@ function applyPostRenderAnimations() {
     }
   }
 
-  // Mill flash: pulse newly formed mill pieces
-  if (animNewMillNodes) {
-    animNewMillNodes.forEach(nodeIndex => {
-      const el = document.querySelector(`.board-node[data-node="${nodeIndex}"] .piece`);
-      if (el) {
-        el.classList.add('piece-mill-flash');
-        el.addEventListener('animationend', () => el.classList.remove('piece-mill-flash'), { once: true });
-      }
-    });
-  }
 }
 
 function updateStatusBar() {
@@ -1158,9 +1214,7 @@ function onNodeClick(nodeIndex) {
   }
 
   // Placement or selection change
-  const boardBefore = [...gameState.board];
   const playerBefore = gameState.currentPlayer;
-  const millsBefore = getMills(boardBefore, playerBefore).map(m => m.join(','));
 
   handleClick(gameState, nodeIndex);
 
@@ -1170,14 +1224,8 @@ function onNodeClick(nodeIndex) {
     return;
   }
 
-  // Track placement animation
   if (phase === 'placement' && gameState.board[nodeIndex] === playerBefore) {
     animLastPlaced = nodeIndex;
-    const millsAfter = getMills(gameState.board, playerBefore).map(m => m.join(','));
-    const newMills = millsAfter.filter(m => !millsBefore.includes(m));
-    if (newMills.length > 0) {
-      animNewMillNodes = new Set(newMills.flatMap(m => m.split(',').map(Number)));
-    }
   }
 
   finalizeAfterAction();
@@ -1187,6 +1235,23 @@ function onNodeClick(nodeIndex) {
 
 (function init() {
   setTheme(getTheme());
+  const circles = NODE_POS.map(([cx, cy]) => `<circle cx="${cx}" cy="${cy}" r="8" fill="currentColor"/>`).join('');
+  const decoSVG = `<svg viewBox="-80 -80 640 640" aria-hidden="true" stroke="currentColor" stroke-width="3" fill="none">${
+    ['<rect x="40" y="40" width="400" height="400"/>',
+     '<rect x="120" y="120" width="240" height="240"/>',
+     '<rect x="200" y="200" width="80" height="80"/>',
+     '<line x1="240" y1="40" x2="240" y2="200"/>',
+     '<line x1="240" y1="280" x2="240" y2="440"/>',
+     '<line x1="40" y1="240" x2="200" y2="240"/>',
+     '<line x1="280" y1="240" x2="440" y2="240"/>',
+     circles].join('')
+  }</svg>`;
+  ['board-deco--tr', 'board-deco--bl'].forEach(cls => {
+    const el = document.createElement('div');
+    el.className = `board-deco ${cls}`;
+    el.innerHTML = decoSVG;
+    document.body.appendChild(el);
+  });
   render();
 })();
 

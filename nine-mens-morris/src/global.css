@@ -61,7 +61,7 @@
   /* Pieces */
   --piece-blue: var(--blue-mid);
   --piece-gold: var(--yellow-gold);
-  --piece-highlight: rgba(255, 255, 255, 0.55);
+  --piece-highlight: rgba(255, 255, 255, 0);
 
   /* Semantic */
   --color-bg: var(--gray-90);
@@ -164,11 +164,11 @@ body {
 
 .light-palette {
   /* Piece overrides */
-  --piece-highlight: rgba(255, 255, 255, 0.8);
+  --piece-highlight: rgba(255, 255, 255, 0);
 
   /* Semantic overrides */
-  --color-bg: var(--gray-00);
-  --color-surface: var(--gray-05);
+  --color-bg: var(--gray-05);
+  --color-surface: var(--gray-00);
   --color-surface-raised: var(--gray-10);
   --color-border: var(--gray-15);
   --color-text-primary: var(--gray-90);

@@ -32,7 +32,6 @@ export interface GameState {
   winner: 1 | 2 | 'draw' | null
   phase: 'playing' | 'over'
   positionCounts: Record<string, number>
-  moveCount: number
 }
 
 const gameStorage = createStorage<GameState>('shisima_state')
@@ -52,7 +51,6 @@ export function buildInitialState(): GameState {
     winner: null,
     phase: 'playing',
     positionCounts: { [boardKey(board, 1)]: 1 },
-    moveCount: 0,
   }
 }
 
@@ -182,7 +180,6 @@ export function useGame(options: GameOptions) {
     const s = stateRef.current
     const newBoard = applyMove(s.board, from, to)
     const nextPlayer = (s.currentPlayer === 1 ? 2 : 1) as 1 | 2
-    const newMoveCount = s.moveCount + 1
     const winner = checkWinner(newBoard)
     const key = boardKey(newBoard, nextPlayer)
     const newCounts = { ...s.positionCounts, [key]: (s.positionCounts[key] ?? 0) + 1 }
@@ -198,7 +195,6 @@ export function useGame(options: GameOptions) {
         selectedPoint: null,
         validMoves: [],
         positionCounts: newCounts,
-        moveCount: newMoveCount,
         currentPlayer: nextPlayer,
         winner,
         phase: 'over',
@@ -213,7 +209,6 @@ export function useGame(options: GameOptions) {
         selectedPoint: null,
         validMoves: [],
         positionCounts: newCounts,
-        moveCount: newMoveCount,
         currentPlayer: nextPlayer,
         winner: 'draw',
         phase: 'over',
@@ -227,7 +222,6 @@ export function useGame(options: GameOptions) {
       selectedPoint: null,
       validMoves: [],
       positionCounts: newCounts,
-      moveCount: newMoveCount,
       currentPlayer: nextPlayer,
       winner: null,
       phase: 'playing',

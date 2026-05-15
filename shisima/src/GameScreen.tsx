@@ -3,7 +3,6 @@ import Header from './components/Header'
 import GameBoard from './GameBoard'
 import ConfirmModal from './components/ConfirmModal'
 import GameOverModal from './components/GameOverModal'
-import StatsRow from './components/StatsRow'
 import { useGame } from './hooks/useGame'
 import type { GameOptions } from './HomeOptions'
 import './GameScreen.css'
@@ -101,8 +100,7 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
           result={getGameOverResult()}
           resultType={getResultType()}
           note={getNote()}
-          stats={<StatsRow stats={[{ label: 'Moves', value: state.moveCount }]} />}
-          onDismiss={() => setGameOverDismissed(true)}
+onDismiss={() => setGameOverDismissed(true)}
           onPlayAgain={onPlayAgain}
           onHome={onClose}
         />
