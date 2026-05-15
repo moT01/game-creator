@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { getAdjacentEmpties, getCapturableCells } from './hooks/useGame'
+import { getAdjacentEmpties, getCapturableCells, wouldFormExactRow } from './hooks/useGame'
 import type { GameState, Player } from './hooks/useGame'
 import './GameBoard.css'
 
@@ -28,6 +28,16 @@ export default function GameBoard({ state, onCellClick }: Props) {
     return s
   }, [phase, moveSubPhase, currentPlayer, board])
 
+  const invalidPlacementSet = useMemo(() => {
+    const s = new Set<string>()
+    if (phase === 'placement') {
+      for (let r = 0; r < 5; r++)
+        for (let c = 0; c < 6; c++)
+          if (!board[r][c] && wouldFormExactRow(board, r, c, currentPlayer)) s.add(`${r},${c}`)
+    }
+    return s
+  }, [phase, board, currentPlayer])
+
   const formedRowSet = useMemo(() => {
     const s = new Set<string>()
     formedRow?.forEach(([r, c]) => s.add(`${r},${c}`))
@@ -36,7 +46,7 @@ export default function GameBoard({ state, onCellClick }: Props) {
 
   return (
     <div className="board-container">
-      <div className="board-grid">
+      <div className="board-grid" data-player={currentPlayer}>
         {board.map((row, r) =>
           row.map((cell, c) => {
             const key = `${r},${c}`
@@ -45,11 +55,14 @@ export default function GameBoard({ state, onCellClick }: Props) {
             const isCapturable = capturableSet.has(key)
             const isFormedRow = formedRowSet.has(key)
 
+            const isInvalidPlacement = invalidPlacementSet.has(key)
+
             const classes = ['board-cell']
             if (isSelected) classes.push('cell-selected')
             if (isFormedRow) classes.push('cell-formed-row')
             if (isCapturable) classes.push('cell-capturable')
             if (isValidDest) classes.push('cell-valid-dest')
+            if (isInvalidPlacement) classes.push('cell-invalid-placement')
 
             return (
               <div

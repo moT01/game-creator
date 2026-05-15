@@ -1,7 +1,6 @@
 import { createStorage } from './hooks/useStorage'
 import SegmentedControl from './components/SegmentedControl'
 import StatsRow from './components/StatsRow'
-import type { Player } from './hooks/useGame'
 import './HomeOptions.css'
 
 export interface GameOptions {
@@ -24,11 +23,7 @@ interface Props {
 export default function HomeOptions({ value, onChange }: Props) {
   const wins = winsStorage.load() ?? { r: 0, b: 0 }
 
-  const statsVsHuman = [
-    { label: 'Red wins', value: wins.r },
-    { label: 'Black wins', value: wins.b },
-  ]
-  const statsVsComputer = [{ label: 'Your wins', value: value.side === 'r' ? wins.r : wins.b }]
+  const totalWins = wins.r + wins.b
 
   return (
     <div className="home-options">
@@ -50,18 +45,16 @@ export default function HomeOptions({ value, onChange }: Props) {
           <SegmentedControl
             small
             options={[
-              { label: 'Red', value: 'r' },
-              { label: 'Black', value: 'b' },
+              { label: 'Go First', value: 'r' },
+              { label: 'Go Second', value: 'b' },
             ]}
             value={value.side}
             onChange={(side) => onChange({ ...value, side })}
           />
-          <StatsRow stats={statsVsComputer} />
+          <StatsRow stats={[{ label: 'Wins', value: totalWins }]} />
         </>
       )}
-      {value.opponent === 'human' && (
-        <StatsRow stats={statsVsHuman} />
-      )}
+
     </div>
   )
 }

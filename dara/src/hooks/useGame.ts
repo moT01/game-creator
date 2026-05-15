@@ -221,7 +221,8 @@ export function handleClick(state: GameState, row: number, col: number): GameSta
   return handleMovementClick(state, row, col)
 }
 
-function createsNearRow(board: (Player | null)[][], row: number, col: number, player: Player): boolean {
+function countNearRows(board: (Player | null)[][], row: number, col: number, player: Player): number {
+  let count = 0
   for (const [dr, dc] of [[0, 1], [1, 0]] as [number, number][]) {
     const pos = countInDir(board, row, col, dr, dc, player)
     const neg = countInDir(board, row, col, -dr, -dc, player)
@@ -229,10 +230,10 @@ function createsNearRow(board: (Player | null)[][], row: number, col: number, pl
       const er = row + dr * (pos + 1), ec = col + dc * (pos + 1)
       const er2 = row - dr * (neg + 1), ec2 = col - dc * (neg + 1)
       if ((er >= 0 && er < 5 && ec >= 0 && ec < 6 && board[er][ec] === null) ||
-          (er2 >= 0 && er2 < 5 && ec2 >= 0 && ec2 < 6 && board[er2][ec2] === null)) return true
+          (er2 >= 0 && er2 < 5 && ec2 >= 0 && ec2 < 6 && board[er2][ec2] === null)) count++
     }
   }
-  return false
+  return count
 }
 
 export function aiPlacement(board: (Player | null)[][], player: Player): [number, number] {
@@ -243,9 +244,23 @@ export function aiPlacement(board: (Player | null)[][], player: Player): [number
     for (let c = 0; c < 6; c++) {
       if (board[r][c] !== null || wouldFormExactRow(board, r, c, player)) continue
       let score = 0
-      if (createsNearRow(board, r, c, player)) score += 20
-      if (createsNearRow(board, r, c, opp)) score += 10
+
+      const selfThreats = countNearRows(board, r, c, player)
+      const oppThreats = countNearRows(board, r, c, opp)
+      if (selfThreats >= 2) score += 45   // double threat — two rows set up at once
+      else if (selfThreats === 1) score += 20
+      if (oppThreats >= 2) score += 40    // block opponent double threat
+      else if (oppThreats === 1) score += 18
+
       if (r >= 1 && r <= 3 && c >= 2 && c <= 3) score += 2
+
+      // mobility: reward open neighbours, penalise opponent neighbours
+      for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]] as [number,number][]) {
+        const nr = r + dr, nc = c + dc
+        if (nr < 0 || nr >= 5 || nc < 0 || nc >= 6) continue
+        if (board[nr][nc] === null) score += 3
+        if (board[nr][nc] === opp) score -= 6
+      }
       candidates.push({ cell: [r, c], score })
     }
   }
@@ -267,10 +282,38 @@ export function aiMovement(
   player: Player
 ): { from: [number, number]; to: [number, number] } {
   const opp: Player = player === 'r' ? 'b' : 'r'
-  const threats = new Set<string>()
-  for (let r = 0; r < 5; r++)
-    for (let c = 0; c < 6; c++)
-      if (!state.board[r][c] && findFormedRow(state.board, r, c, opp)) threats.add(`${r},${c}`)
+
+  // Simulate actual opponent moves to find real capture threats
+  const oppCaptureDests = new Set<string>()
+  for (let r = 0; r < 5; r++) {
+    for (let c = 0; c < 6; c++) {
+      if (state.board[r][c] !== opp) continue
+      for (const [tr, tc] of getAdjacentEmpties(state.board, r, c)) {
+        const tmp = state.board.map(row => [...row])
+        tmp[r][c] = null
+        tmp[tr][tc] = opp
+        if (findFormedRow(tmp, tr, tc, opp)) oppCaptureDests.add(`${tr},${tc}`)
+      }
+    }
+  }
+
+  // All empty cells that would complete an opponent near-row if occupied
+  const oppExtensions = new Set<string>()
+  for (let r = 0; r < 5; r++) {
+    for (let c = 0; c < 6; c++) {
+      if (state.board[r][c] !== opp) continue
+      for (const [dr, dc] of [[0, 1], [1, 0]] as [number, number][]) {
+        const pos = countInDir(state.board, r, c, dr, dc, opp)
+        const neg = countInDir(state.board, r, c, -dr, -dc, opp)
+        if (pos + neg + 1 === 2) {
+          const er = r + dr * (pos + 1), ec = c + dc * (pos + 1)
+          const er2 = r - dr * (neg + 1), ec2 = c - dc * (neg + 1)
+          if (er >= 0 && er < 5 && ec >= 0 && ec < 6 && state.board[er][ec] === null) oppExtensions.add(`${er},${ec}`)
+          if (er2 >= 0 && er2 < 5 && ec2 >= 0 && ec2 < 6 && state.board[er2][ec2] === null) oppExtensions.add(`${er2},${ec2}`)
+        }
+      }
+    }
+  }
 
   const candidates: { from: [number, number]; to: [number, number]; score: number }[] = []
 
@@ -282,12 +325,27 @@ export function aiMovement(
         const tmp = state.board.map(row => [...row])
         tmp[r][c] = null
         tmp[tr][tc] = player
+
+        // Take a capture
         if (findFormedRow(tmp, tr, tc, player)) score += 100
-        if (threats.has(`${tr},${tc}`)) score += 50
-        if (([[-1,0],[1,0],[0,-1],[0,1]] as [number,number][]).some(([dr, dc]) => {
+
+        // Block an opponent capture destination
+        if (oppCaptureDests.has(`${tr},${tc}`)) score += 65
+
+        // Build near-rows for future captures
+        score += countNearRows(tmp, tr, tc, player) * 15
+
+        // Block a future opponent near-row extension
+        if (oppExtensions.has(`${tr},${tc}`)) score += 25
+        // Penalize moving off a cell that was blocking an opponent near-row
+        if (oppExtensions.has(`${r},${c}`)) score -= 20
+
+        // Mobility of destination
+        for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]] as [number,number][]) {
           const nr = tr + dr, nc = tc + dc
-          return nr >= 0 && nr < 5 && nc >= 0 && nc < 6 && tmp[nr][nc] === opp
-        })) score += 5
+          if (nr >= 0 && nr < 5 && nc >= 0 && nc < 6 && tmp[nr][nc] === null) score += 2
+        }
+
         candidates.push({ from: [r, c], to: [tr, tc], score })
       }
     }
@@ -304,18 +362,20 @@ export function aiChooseCapture(board: (Player | null)[][], opp: Player): [numbe
   const capturable = getCapturableCells(board, opp)
   let best = capturable[0], bestScore = -1
   for (const [r, c] of capturable) {
-    let score = 0
+    const nearRows = countNearRows(board, r, c, opp)
+    let connectScore = 0
     for (const [dr, dc] of [[0,1],[1,0]] as [number,number][]) {
-      score += countInDir(board, r, c, dr, dc, opp)
-      score += countInDir(board, r, c, -dr, -dc, opp)
+      connectScore += countInDir(board, r, c, dr, dc, opp)
+      connectScore += countInDir(board, r, c, -dr, -dc, opp)
     }
+    const score = nearRows * 10 + connectScore
     if (score > bestScore) { bestScore = score; best = [r, c] }
   }
   return best
 }
 
 export function useGame(options: GameOptions) {
-  const computerSide: Player | null = options.opponent === 'computer' ? options.side : null
+  const computerSide: Player | null = options.opponent === 'computer' ? (options.side === 'r' ? 'b' : 'r') : null
   const winsUpdated = useRef(false)
 
   const [state, setState] = useState<GameState>(() => gameStateStorage.load() ?? initGameState(options))
@@ -325,7 +385,7 @@ export function useGame(options: GameOptions) {
       if (!winsUpdated.current) {
         winsUpdated.current = true
         gameStateStorage.clear()
-        if (state.winner) {
+        if (state.winner && computerSide && state.winner !== computerSide) {
           const wins = winsStorage.load() ?? { r: 0, b: 0 }
           winsStorage.save({ ...wins, [state.winner]: (wins[state.winner] ?? 0) + 1 })
         }
@@ -337,23 +397,26 @@ export function useGame(options: GameOptions) {
 
   useEffect(() => {
     if (state.gameOver || !computerSide || state.currentPlayer !== computerSide) return
+    const delay = state.moveSubPhase === 'select-capture' ? 750 : 400
     const timer = setTimeout(() => {
       setState(prev => {
         if (prev.phase === 'placement') {
           const [r, c] = aiPlacement(prev.board, computerSide)
           return handlePlacementClick(prev, r, c)
         }
-        if (prev.moveSubPhase !== 'select-piece') return prev
-        const move = aiMovement(prev, computerSide)
-        let s = handleMovementClick(prev, move.from[0], move.from[1])
-        s = handleMovementClick(s, move.to[0], move.to[1])
-        if (s.moveSubPhase === 'select-capture') {
-          const [cr, cc] = aiChooseCapture(s.board, computerSide === 'r' ? 'b' : 'r')
-          s = handleMovementClick(s, cr, cc)
+        if (prev.moveSubPhase === 'select-piece') {
+          const move = aiMovement(prev, computerSide)
+          let s = handleMovementClick(prev, move.from[0], move.from[1])
+          s = handleMovementClick(s, move.to[0], move.to[1])
+          return s
         }
-        return s
+        if (prev.moveSubPhase === 'select-capture') {
+          const [cr, cc] = aiChooseCapture(prev.board, computerSide === 'r' ? 'b' : 'r')
+          return handleMovementClick(prev, cr, cc)
+        }
+        return prev
       })
-    }, 300)
+    }, delay)
     return () => clearTimeout(timer)
   }, [state.currentPlayer, state.phase, state.moveSubPhase, state.gameOver])
 
@@ -363,7 +426,7 @@ export function useGame(options: GameOptions) {
   }
 
   function quit() {
-    gameStateStorage.clear()
+    // keep storage intact so the game can be resumed
   }
 
   return { state, handleClick: click, quit }
