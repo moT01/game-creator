@@ -1,0 +1,94 @@
+.board-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1px;
+  background-color: var(--color-border);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  width: min(360px, 100%);
+}
+
+.board-cell {
+  aspect-ratio: 1;
+  background-color: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: background-color var(--transition-fast);
+}
+
+.board-cell:hover {
+  background-color: var(--color-surface-raised);
+}
+
+.board-cell:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--blue-mid);
+}
+
+.board-cell.cell-formed-row {
+  background-color: rgba(172, 209, 87, 0.12);
+}
+
+.board-cell.cell-valid-dest {
+  cursor: pointer;
+}
+
+.piece {
+  width: 72%;
+  height: 72%;
+  border-radius: var(--radius-full);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.piece-r {
+  background-color: var(--piece-blue);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 1px 0 var(--piece-highlight);
+}
+
+.piece-b {
+  background-color: var(--piece-gold);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 1px 0 var(--piece-highlight);
+}
+
+.board-cell.cell-selected .piece {
+  box-shadow: 0 0 0 3px var(--color-surface), var(--shadow-accent);
+  transform: scale(1.08);
+}
+
+.board-cell.cell-capturable .piece {
+  animation: capturable-pulse 1s ease-in-out infinite;
+}
+
+@keyframes capturable-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 2px var(--color-danger);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(255, 173, 173, 0.35);
+  }
+}
+
+.valid-dot {
+  width: 30%;
+  height: 30%;
+  border-radius: var(--radius-full);
+  background-color: rgba(255, 255, 255, 0.3);
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
+}
+
+.board-cell.cell-valid-dest:hover .valid-dot {
+  transform: scale(1.25);
+  background-color: rgba(255, 255, 255, 0.5);
+}

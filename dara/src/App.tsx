@@ -6,24 +6,24 @@ import GameScreen from './GameScreen'
 import HelpModal from './components/HelpModal'
 import type { GameOptions } from './HomeOptions'
 import { DEFAULT_OPTIONS } from './HomeOptions'
+import { initGameState } from './hooks/useGame'
 import './App.css'
 
-const gameStorage = createStorage('<game-name>_state')
-const optsStorage = createStorage<GameOptions>('<game-name>_opts')
+const gameStorage = createStorage('dara_state')
+const optsStorage = createStorage<GameOptions>('dara_opts')
 
 type Phase = 'home' | 'game'
 
 function App() {
   const [phase, setPhase] = useState<Phase>('home')
-  const [theme, toggleTheme] = useTheme('<game-name>')
+  const [theme, toggleTheme] = useTheme('dara')
   const [hasGame, setHasGame] = useState(() => gameStorage.load() !== null)
   const [gameOptions, setGameOptions] = useState<GameOptions | null>(null)
   const [gameKey, setGameKey] = useState(0)
   const [showHelp, setShowHelp] = useState(false)
 
   function startGame(options: GameOptions) {
-    // REPLACE: build initial game state from options, then save
-    gameStorage.save({})
+    gameStorage.save(initGameState(options))
     optsStorage.save(options)
     setHasGame(true)
     setGameOptions(options)
@@ -45,7 +45,8 @@ function App() {
   }
 
   function handlePlayAgain() {
-    // REPLACE: save a fresh initial state before incrementing gameKey
+    if (gameOptions) gameStorage.save(initGameState(gameOptions))
+    setHasGame(true)
     setGameKey(k => k + 1)
   }
 
