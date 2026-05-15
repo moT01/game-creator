@@ -1,9 +1,9 @@
 // ─── Game Logic ───────────────────────────────────────────────────────────────
 
-function generateTiles() {
+function generateTiles(maxVal = 6) {
   const tiles = [];
-  for (let a = 0; a <= 6; a++) {
-    for (let b = a; b <= 6; b++) {
+  for (let a = 0; a <= maxVal; a++) {
+    for (let b = a; b <= maxVal; b++) {
       tiles.push({ a, b });
     }
   }
@@ -19,8 +19,8 @@ function shuffle(arr) {
   return a;
 }
 
-function dealTiles() {
-  const tiles = shuffle(generateTiles());
+function dealTiles(setSize = 6) {
+  const tiles = shuffle(generateTiles(setSize));
   return {
     playerHand: tiles.slice(0, 7),
     computerHand: tiles.slice(7, 14),
@@ -150,7 +150,7 @@ function computeComputerMove(state) {
   if (moves.length === 0) return null;
 
   // Count tiles that have been played (visible to all)
-  const playedCounts = Array(7).fill(0);
+  const playedCounts = Array(state.setSize + 1).fill(0);
   chain.forEach(ct => { playedCounts[ct.a]++; playedCounts[ct.b]++; });
 
   function scoreMove(move) {
@@ -215,6 +215,8 @@ function saveGame(state) {
     turn: state.turn,
     consecutivePasses: state.consecutivePasses,
     zoom: state.zoom,
+    setSize: state.setSize,
+    rules: state.rules,
   };
   localStorage.setItem('dominoes-saved-game', JSON.stringify(toSave));
 }
@@ -255,6 +257,23 @@ function loadGoFirst() {
   return raw === null ? true : raw === 'true';
 }
 
+function saveSetSize(val) {
+  localStorage.setItem('dominoes-set-size', String(val));
+}
+
+function loadSetSize() {
+  const raw = localStorage.getItem('dominoes-set-size');
+  return raw ? parseInt(raw, 10) : 6;
+}
+
+function saveRules(val) {
+  localStorage.setItem('dominoes-rules', val);
+}
+
+function loadRules() {
+  return localStorage.getItem('dominoes-rules') || 'draw';
+}
+
 // ─── State ────────────────────────────────────────────────────────────────────
 
 let state = {
@@ -273,6 +292,9 @@ let state = {
   result: null,
   wins: loadWins(),
   goFirst: loadGoFirst(),
+  setSize: loadSetSize(),
+  rules: loadRules(),
+  passingMsg: null,
   panX: 0,
   panY: 0,
   boneyardPositions: [],
@@ -299,32 +321,39 @@ function startTurn() {
   }
 
   // No valid moves
-  if (state.boneyard.length > 0) {
+  if (state.rules !== 'block' && state.boneyard.length > 0) {
     drawFromBoneyard();
     return;
   }
 
-  // Pass
-  state.consecutivePasses++;
-  if (state.consecutivePasses >= 2) {
-    const res = resolveBlockedGame(state.playerHand, state.computerHand);
-    state.result = { winner: res.winner, reason: 'blocked', playerPips: res.playerPips, computerPips: res.computerPips };
-    if (res.winner === 'player') {
-      state.wins++;
-      saveWins(state.wins);
-    }
-    state.phase = 'gameover';
-    clearSavedGame();
+  // Pass needed
+  if (state.turn === 'player') {
+    state.isAnimating = false;
     render();
     return;
   }
 
-  const passer = state.turn;
-  state.turn = state.turn === 'player' ? 'computer' : 'player';
-  showPassMessage(passer, () => {
+  // Computer pass — show message, wait, then proceed
+  state.isAnimating = true;
+  state.passingMsg = 'Computer passes';
+  render();
+  setTimeout(() => {
+    state.passingMsg = null;
+    state.isAnimating = false;
+    state.consecutivePasses++;
+    if (state.consecutivePasses >= 2) {
+      const res = resolveBlockedGame(state.playerHand, state.computerHand);
+      state.result = { winner: res.winner, reason: 'blocked', playerPips: res.playerPips, computerPips: res.computerPips };
+      if (res.winner === 'player') { state.wins++; saveWins(state.wins); }
+      state.phase = 'gameover';
+      clearSavedGame();
+      render();
+      return;
+    }
+    state.turn = 'player';
     saveGame(state);
     startTurn();
-  });
+  }, 1500);
 }
 
 function drawFromBoneyard() {
@@ -366,27 +395,34 @@ function drawFromBoneyard() {
     return;
   }
 
-  // Boneyard exhausted — pass
-  state.consecutivePasses++;
-  if (state.consecutivePasses >= 2) {
-    const res = resolveBlockedGame(state.playerHand, state.computerHand);
-    state.result = { winner: res.winner, reason: 'blocked', playerPips: res.playerPips, computerPips: res.computerPips };
-    if (res.winner === 'player') {
-      state.wins++;
-      saveWins(state.wins);
-    }
-    state.phase = 'gameover';
-    clearSavedGame();
+  // Boneyard exhausted — pass needed
+  if (state.turn === 'player') {
+    state.isAnimating = false;
     render();
     return;
   }
 
-  const passer = state.turn;
-  state.turn = state.turn === 'player' ? 'computer' : 'player';
-  showPassMessage(passer, () => {
+  // Computer pass
+  state.isAnimating = true;
+  state.passingMsg = 'Computer passes';
+  render();
+  setTimeout(() => {
+    state.passingMsg = null;
+    state.isAnimating = false;
+    state.consecutivePasses++;
+    if (state.consecutivePasses >= 2) {
+      const res = resolveBlockedGame(state.playerHand, state.computerHand);
+      state.result = { winner: res.winner, reason: 'blocked', playerPips: res.playerPips, computerPips: res.computerPips };
+      if (res.winner === 'player') { state.wins++; saveWins(state.wins); }
+      state.phase = 'gameover';
+      clearSavedGame();
+      render();
+      return;
+    }
+    state.turn = 'player';
     saveGame(state);
     startTurn();
-  });
+  }, 1500);
 }
 
 function doComputerTurn() {
@@ -455,7 +491,7 @@ function clearSavedGame() {
 // ─── New Game ─────────────────────────────────────────────────────────────────
 
 function newGame() {
-  const dealt = dealTiles();
+  const dealt = dealTiles(state.setSize);
   const firstPlayer = state.goFirst ? 'player' : 'computer';
 
   state = {
@@ -474,6 +510,9 @@ function newGame() {
     result: null,
     wins: state.wins,
     goFirst: state.goFirst,
+    setSize: state.setSize,
+    rules: state.rules,
+    passingMsg: null,
     panX: 0,
     panY: 0,
     boneyardPositions: generateBoneyardPositions(dealt.boneyard.length),
@@ -531,14 +570,21 @@ const PIP_POSITIONS = {
   4: [[0, 0], [0, 2], [2, 0], [2, 2]],
   5: [[0, 0], [0, 2], [1, 1], [2, 0], [2, 2]],
   6: [[0, 0], [0, 2], [1, 0], [1, 2], [2, 0], [2, 2]],
+  7: [[0, 0], [0, 1], [0, 2], [1, 1], [2, 0], [2, 1], [2, 2]],
+  8: [[0, 0], [0, 1], [0, 2], [1, 0], [1, 2], [2, 0], [2, 1], [2, 2]],
+  9: [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]],
+  10: [[0, 0], [0, 1], [0, 2], [1, 0], [1, 2], [2, 0], [2, 2], [3, 0], [3, 1], [3, 2]],
+  11: [[0, 0], [0, 1], [0, 2], [1, 0], [1, 2], [2, 0], [2, 1], [2, 2], [3, 0], [3, 1], [3, 2]],
+  12: [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2], [3, 0], [3, 1], [3, 2]],
 };
 
 function renderPips(n) {
+  const rows = n > 9 ? 4 : 3;
   const grid = document.createElement('div');
-  grid.className = 'pip-grid';
+  grid.className = 'pip-grid' + (rows === 4 ? ' pip-grid--4row' : '');
   const positions = PIP_POSITIONS[n] || [];
   const posSet = new Set(positions.map(([r, c]) => `${r},${c}`));
-  for (let r = 0; r < 3; r++) {
+  for (let r = 0; r < rows; r++) {
     for (let c = 0; c < 3; c++) {
       const cell = document.createElement('div');
       cell.className = 'pip-cell';
@@ -742,41 +788,28 @@ function renderComputerHand() {
 function renderStatus() {
   const bar = document.querySelector('.status-bar');
   if (!bar) return;
-  const { turn, isAnimating, boneyard } = state;
+  const { turn, isAnimating, boneyard, playerHand, leftEnd, rightEnd, passingMsg } = state;
 
   let msg = '';
-  if (turn === 'player' && !isAnimating) msg = 'Your turn';
-  else if (turn === 'computer' || isAnimating) msg = 'Computer is thinking...';
+  let isPlayerTurn = false;
+  if (passingMsg) {
+    msg = passingMsg;
+  } else if (turn === 'player' && !isAnimating) {
+    const moves = getValidMoves(playerHand, leftEnd, rightEnd);
+    const needsPass = moves.length === 0 && (boneyard.length === 0 || state.rules === 'block');
+    msg = needsPass ? 'No moves - pass your turn' : 'Your turn';
+    isPlayerTurn = true;
+  } else if (turn === 'computer' || isAnimating) {
+    msg = 'Computer is thinking...';
+  }
 
   const turnEl = bar.querySelector('.status-turn');
   if (turnEl) {
     turnEl.textContent = msg;
     turnEl.className = 'status-turn';
-    if (turn === 'player' && !isAnimating) turnEl.classList.add('status-turn--player');
+    if (isPlayerTurn) turnEl.classList.add('status-turn--player');
     else turnEl.classList.add('status-turn--computer');
   }
-}
-
-// ─── Pass Toast ───────────────────────────────────────────────────────────────
-
-let passToastTimeout = null;
-
-function showPassMessage(passer, callback) {
-  const msg = passer === 'player' ? 'You pass' : 'Computer passes';
-  let toast = document.querySelector('.pass-toast');
-  if (!toast) {
-    toast = document.createElement('div');
-    toast.className = 'pass-toast';
-    document.querySelector('#app').appendChild(toast);
-  }
-  toast.textContent = msg;
-  toast.classList.add('pass-toast--visible');
-
-  clearTimeout(passToastTimeout);
-  passToastTimeout = setTimeout(() => {
-    toast.classList.remove('pass-toast--visible');
-    if (callback) callback();
-  }, 1500);
 }
 
 function pulseBoneyard() {
@@ -833,26 +866,83 @@ function renderHomeScreen() {
 
   const subtitle = document.createElement('p');
   subtitle.className = 'game-subtitle';
-  subtitle.textContent = 'Draw Dominoes - Double 6';
+  subtitle.textContent = 'The Classic Tile Game';
   container.appendChild(subtitle);
 
   // Wins
   const winsSection = document.createElement('div');
   winsSection.className = 'wins-section';
-  const winsLabel = document.createElement('div');
+  const winsLabel = document.createElement('span');
   winsLabel.className = 'wins-section__label';
-  winsLabel.textContent = 'WINS';
-  winsSection.appendChild(winsLabel);
-  const winsRow = document.createElement('div');
-  winsRow.className = 'wins-section__row';
+  winsLabel.textContent = 'Wins';
   const winsCount = document.createElement('span');
   winsCount.className = 'wins-count';
   winsCount.textContent = state.wins;
-  winsRow.appendChild(winsCount);
-  winsSection.appendChild(winsRow);
+  winsSection.appendChild(winsLabel);
+  winsSection.appendChild(winsCount);
   container.appendChild(winsSection);
 
-  // Go First / Go Second
+  // Variant selectors
+  const variantSection = document.createElement('div');
+  variantSection.className = 'variant-section';
+
+  const setLabel = document.createElement('div');
+  setLabel.className = 'variant-label';
+  setLabel.textContent = 'Set';
+  variantSection.appendChild(setLabel);
+
+  const setTabs = document.createElement('div');
+  setTabs.className = 'option-tabs';
+  [6, 9, 12].forEach(size => {
+    const tab = document.createElement('button');
+    tab.className = 'option-tab' + (state.setSize === size ? ' option-tab--active' : '');
+    tab.textContent = `Double ${size}`;
+    tab.addEventListener('click', () => {
+      if (state.setSize !== size) {
+        state.setSize = size;
+        saveSetSize(size);
+        clearSavedGame();
+        renderHomeScreen();
+      }
+    });
+    setTabs.appendChild(tab);
+  });
+  variantSection.appendChild(setTabs);
+
+  const rulesLabel = document.createElement('div');
+  rulesLabel.className = 'variant-label';
+  rulesLabel.textContent = 'Rules';
+  variantSection.appendChild(rulesLabel);
+
+  const rulesTabs = document.createElement('div');
+  rulesTabs.className = 'option-tabs';
+  [['draw', 'Draw'], ['block', 'Block']].forEach(([val, label]) => {
+    const tab = document.createElement('button');
+    tab.className = 'option-tab' + (state.rules === val ? ' option-tab--active' : '');
+    tab.textContent = label;
+    tab.addEventListener('click', () => {
+      if (state.rules !== val) {
+        state.rules = val;
+        saveRules(val);
+        clearSavedGame();
+        renderHomeScreen();
+      }
+    });
+    rulesTabs.appendChild(tab);
+  });
+  variantSection.appendChild(rulesTabs);
+
+  container.appendChild(variantSection);
+
+  // Turn
+  const turnSection = document.createElement('div');
+  turnSection.className = 'variant-section';
+
+  const turnLabel = document.createElement('div');
+  turnLabel.className = 'variant-label';
+  turnLabel.textContent = 'Turn';
+  turnSection.appendChild(turnLabel);
+
   const optionTabs = document.createElement('div');
   optionTabs.className = 'option-tabs';
 
@@ -875,7 +965,8 @@ function renderHomeScreen() {
     renderHomeScreen();
   });
   optionTabs.appendChild(goSecondTab);
-  container.appendChild(optionTabs);
+  turnSection.appendChild(optionTabs);
+  container.appendChild(turnSection);
 
   // Buttons
   const btnGroup = document.createElement('div');
@@ -898,6 +989,7 @@ function renderHomeScreen() {
 
   container.appendChild(btnGroup);
   app.appendChild(container);
+  renderBackground();
 }
 
 function renderPlayScreen() {
@@ -1040,24 +1132,21 @@ function renderPlayScreen() {
   passBtn.textContent = 'Pass';
   passBtn.setAttribute('aria-label', 'Pass your turn');
   passBtn.addEventListener('click', () => {
-    if (state.turn === 'player' && !state.isAnimating && state.boneyard.length === 0) {
-      state.consecutivePasses++;
-      if (state.consecutivePasses >= 2) {
-        const res = resolveBlockedGame(state.playerHand, state.computerHand);
-        state.result = { winner: res.winner, reason: 'blocked', playerPips: res.playerPips, computerPips: res.computerPips };
-        if (res.winner === 'player') { state.wins++; saveWins(state.wins); }
-        state.phase = 'gameover';
-        clearSavedGame();
-        render();
-        return;
-      }
-      const passer = 'player';
-      state.turn = 'computer';
-      showPassMessage(passer, () => {
-        saveGame(state);
-        startTurn();
-      });
+    const canPass = state.turn === 'player' && !state.isAnimating && (state.boneyard.length === 0 || state.rules === 'block');
+    if (!canPass) return;
+    state.consecutivePasses++;
+    if (state.consecutivePasses >= 2) {
+      const res = resolveBlockedGame(state.playerHand, state.computerHand);
+      state.result = { winner: res.winner, reason: 'blocked', playerPips: res.playerPips, computerPips: res.computerPips };
+      if (res.winner === 'player') { state.wins++; saveWins(state.wins); }
+      state.phase = 'gameover';
+      clearSavedGame();
+      render();
+      return;
     }
+    state.turn = 'computer';
+    saveGame(state);
+    startTurn();
   });
   actionRow.appendChild(passBtn);
   container.appendChild(actionRow);
@@ -1068,6 +1157,7 @@ function renderPlayScreen() {
   container.appendChild(playerHand);
 
   app.appendChild(container);
+  renderBackground();
 
   renderComputerHand();
   renderChain();
@@ -1082,6 +1172,8 @@ function renderBoneyard() {
   if (!boardContent) return;
 
   boardContent.querySelectorAll('.boneyard-row').forEach(el => el.remove());
+
+  if (state.rules === 'block') return;
 
   const { boneyard, boneyardPositions, turn, isAnimating, playerHand, leftEnd, rightEnd } = state;
 
@@ -1125,7 +1217,7 @@ function updateActionButtons() {
     ? getValidMoves(playerHand, leftEnd, rightEnd)
     : [];
   const noMoves = moves.length === 0 && turn === 'player' && !isAnimating;
-  const showPass = noMoves && boneyard.length === 0;
+  const showPass = noMoves && (boneyard.length === 0 || state.rules === 'block');
 
   if (passBtn) passBtn.style.display = showPass ? 'inline-flex' : 'none';
   const actionRow = document.querySelector('.action-row');
@@ -1239,9 +1331,14 @@ function openHelp() {
   title.textContent = 'How to Play';
   modal.appendChild(title);
 
+  const totalTiles = (state.setSize + 1) * (state.setSize + 2) / 2;
+  const boneyardSize = totalTiles - 14;
+  const drawRule = state.rules === 'draw'
+    ? `Cannot play? Draw from the boneyard until you can, or pass if it is empty.`
+    : `Cannot play? Pass your turn. There is no drawing.`;
   const content = [
     { heading: 'Objective', body: 'Be the first to play all tiles from your hand, or have the lowest pip count when the game is blocked.' },
-    { heading: 'Rules', body: '28 tiles (0|0 through 6|6). Each player gets 7, 14 go to the boneyard. Match one of your tile halves to an open end of the chain. Cannot play? Draw from the boneyard until you can, or pass if it is empty. First to empty their hand wins; if blocked, lowest pips remaining wins.' },
+    { heading: 'Rules', body: `${totalTiles} tiles (0|0 through ${state.setSize}|${state.setSize}). Each player gets 7, ${boneyardSize} go to the boneyard. Match one of your tile halves to an open end of the chain. ${drawRule} First to empty their hand wins; if blocked, lowest pips remaining wins.` },
     { heading: 'Key Strategies', body: 'Play doubles early - they are the hardest to place. Control the open ends: keep ends that match tiles you still hold. Track which numbers have been heavily played. When behind, unload high-pip tiles aggressively.' },
     { heading: 'Tips', body: 'Click a tile in your hand to select it, then click the highlighted left or right end of the chain to place it. Use +/- or scroll to zoom the board. The boneyard count is in the status bar.' },
   ];
@@ -1350,6 +1447,51 @@ function applyTheme(theme) {
     document.body.classList.add('dark-palette');
     document.body.classList.remove('light-palette');
   }
+}
+
+// ─── Background ───────────────────────────────────────────────────────────────
+
+function renderBackground() {
+  const app = document.getElementById('app');
+
+  const bg = document.createElement('div');
+  bg.className = 'bg-dominoes';
+
+  function bgTile(a, b) {
+    return makeDominoEl(a, b, a === b, 'bg-tile');
+  }
+
+  function bgGroup(tiles, left, top, rot) {
+    const group = document.createElement('div');
+    group.className = 'bg-tile-group';
+    group.style.left = left;
+    group.style.top = top;
+    group.style.transform = `rotate(${rot}deg) scale(1.2)`;
+    tiles.forEach(([a, b]) => group.appendChild(bgTile(a, b)));
+    bg.appendChild(group);
+  }
+
+  // Singles
+  bgGroup([[5, 3]], '3%',  '12%', -35);  // far left top
+  bgGroup([[0, 4]], '4%',  '35%',  20);  // far left mid
+  bgGroup([[6, 1]], '62%', '14%',  30);  // top center-right
+  bgGroup([[4, 6]], '27%', '27%', -44);  // bottom center-left
+  bgGroup([[3, 0]], '53%', '90%', -42);  // bottom center-right
+  bgGroup([[1, 4]], '86%', '14%', -45);  // far right upper
+  bgGroup([[0, 5]], '88%', '42%',  38);  // far right mid
+  bgGroup([[6, 6]], '74%', '66%',  38);  // far right lower
+  bgGroup([[2, 5]], '86%', '86%',  55);  // far right bottom
+
+  // Chain of 2 — upper: 4|2 → 2|6 (above container)
+  bgGroup([[4, 2], [2, 6]], '38%', '3%', -18);
+
+  // Chain of 3 — left: 6|4 → 4|4 (double) → 4|1
+  bgGroup([[6, 4], [4, 4], [4, 1]], '17%', '58%', -8);
+
+  // Chain of 2 — lower: 3|3 (double) → 3|5
+  bgGroup([[3, 3], [3, 5]], '6%', '77%', 39);
+
+  app.appendChild(bg);
 }
 
 // ─── Main Render ──────────────────────────────────────────────────────────────
