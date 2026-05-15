@@ -1,4 +1,5 @@
 import { createStorage } from './hooks/useStorage'
+import type { Player } from './hooks/useGame'
 import SegmentedControl from './components/SegmentedControl'
 import StatsRow from './components/StatsRow'
 import './HomeOptions.css'
