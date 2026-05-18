@@ -551,9 +551,9 @@ function renderPlayScreen() {
         </div>
       </div>
       <div class="score-row" aria-live="polite">
-        <span class="score-label score-dark-label">Dark:</span><span class="mono score-val" id="score-dark-val">${state.score.dark}</span>
+        <span class="score-label score-dark-label">${state.mode === 'vs-computer' ? (state.playerColor === 'dark' ? 'You:' : 'Computer:') : 'Player 1:'}</span><span class="mono score-val" id="score-dark-val">${state.score.dark}</span>
         <span class="score-sep">--</span>
-        <span class="score-label score-light-label">Light:</span><span class="mono score-val" id="score-light-val">${state.score.light}</span>
+        <span class="score-label score-light-label">${state.mode === 'vs-computer' ? (state.playerColor === 'light' ? 'You:' : 'Computer:') : 'Player 2:'}</span><span class="mono score-val" id="score-light-val">${state.score.light}</span>
       </div>
       <div class="board-container" id="board-container"></div>
     </div>

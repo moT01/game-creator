@@ -26,6 +26,8 @@ Standardize status text shown in the game screen header across all games. Check 
 | 2 player | Win | "Dark wins!" / "Light wins!" | "Player 1 wins!" / "Player 2 wins!" |
 | 2 player | Draw | "Draw!" | |
 | 2 player | Extra turn | "Go again!" | "Player 1: Go again" / "Player 2: Go again" |
+| vs computer | In-game score labels | "Dark:" / "Light:" | "You:" / "Computer:" |
+| 2 player | In-game score labels | "Dark:" / "Light:" | "Player 1:" / "Player 2:" |
 | vs computer | Game over score | "Dark: X \| Light: X" | "You: X \| Computer: X" |
 | 2 player | Game over score | "Dark: X \| Light: X" | "Player 1: X \| Player 2: X" |
 | menu | Mode toggle | "vs Computer" / "2 Player" | |
