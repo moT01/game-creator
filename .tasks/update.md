@@ -84,7 +84,7 @@ Standardize status text shown in the game screen header across all games. Check 
 | menu | Go first toggle | "Go First" / "Go Second" | |
 | menu | Start button | "New Game" | |
 
-### [ ] dominoes
+### [x] dominoes
 | Mode | State | Current | New |
 |---|---|---|---|
 | vs computer | Player's turn | "Your turn" | |
@@ -100,7 +100,7 @@ Standardize status text shown in the game screen header across all games. Check 
 | menu | Start button | "New Game" | |
 | menu | Go first toggle | "Go First" / "Go Second" | |
 
-### [ ] fox-and-geese
+### [x] fox-and-geese
 | Mode | State | Current | New |
 |---|---|---|---|
 | vs computer | Player's turn | "Your turn" | |

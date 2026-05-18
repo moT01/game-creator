@@ -800,7 +800,7 @@ function renderStatus() {
     msg = needsPass ? 'No moves - pass your turn' : 'Your turn';
     isPlayerTurn = true;
   } else if (turn === 'computer' || isAnimating) {
-    msg = 'Computer is thinking...';
+    msg = 'Thinking...';
   }
 
   const turnEl = bar.querySelector('.status-turn');

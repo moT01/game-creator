@@ -887,22 +887,21 @@ function renderPlayScreen() {
 function renderGameOver() {
   if (!state) return '';
   const { status } = state;
-  const records = loadRecords();
 
   let resultText, resultClass;
-  if (status === 'fox-wins') {
-    resultText = 'Fox Wins!';
-    resultClass = state.mode === 'vs-computer' && state.playerSide === 'fox' ? 'result--win' : 'result--lose';
-  } else if (status === 'geese-win') {
-    resultText = 'Geese Win!';
-    resultClass = state.mode === 'vs-computer' && state.playerSide === 'geese' ? 'result--win' : 'result--lose';
+  if (status === 'fox-wins' || status === 'geese-win') {
+    if (state.mode === 'vs-computer') {
+      const playerWon = (status === 'fox-wins' && state.playerSide === 'fox') ||
+                        (status === 'geese-win' && state.playerSide === 'geese');
+      resultText = playerWon ? 'You win!' : 'Computer wins';
+      resultClass = playerWon ? 'result--win' : 'result--lose';
+    } else {
+      resultText = status === 'fox-wins' ? 'Fox Wins!' : 'Geese Win!';
+      resultClass = 'result--win';
+    }
   } else {
     resultText = 'No moves - Draw';
     resultClass = 'result--draw';
-  }
-
-  if (state.mode === 'vs-player') {
-    resultClass = status === 'draw' ? 'result--draw' : 'result--win';
   }
 
   return `
