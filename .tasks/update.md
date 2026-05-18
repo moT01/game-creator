@@ -34,14 +34,14 @@ Standardize status text shown in the game screen header across all games. Check 
 | menu | Go first toggle | "Go First" / "Go Second" | |
 | menu | Start button | "New Game" | |
 
-### [ ] shut-the-box
+### [x] shut-the-box
 | Location | State | Current | New |
 |---|---|---|---|
 | gameplay | Waiting to roll | "Roll the dice" | |
 | gameplay | Tiles phase | "Select tiles that add up to X" | |
 | gameplay | Round complete | "Round X complete. Running total: X" | |
 | gameplay | Win | "Match complete. Final total: X" | |
-| gameplay | Lose | "Run over. Final total: X" | "No moves. Final total: X" |
+| gameplay | Lose | "Run over. Final total: X" | "No moves left. Final total: X" |
 | between-rounds overlay | Heading | "Round X Complete" | |
 | between-rounds overlay | Button | "Continue" | |
 | game over overlay | Heading (win) | "Match Complete" | |

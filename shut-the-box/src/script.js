@@ -442,7 +442,7 @@ function renderStatus() {
   const finalScore = state.finalScore !== null ? state.finalScore : state.totalScore;
   statusLine.textContent = state.result === 'won'
     ? `Match complete. Final total: ${finalScore}`
-    : `Run over. Final total: ${finalScore}`;
+    : `No moves left. Final total: ${finalScore}`;
 }
 
 function renderScore() {
