@@ -215,80 +215,206 @@ Skip
 ## React Games
 
 ### [ ] chess
-| State | Current | Desired |
-|---|---|---|
+| Mode | State | Current | New |
+|---|---|---|---|
+| vs computer | Player's turn | "White's turn" / "Black's turn" | "Your turn" |
+| vs computer | Computer's turn | "Thinking..." | |
+| vs computer | Check | "White is in check!" / "Black is in check!" | "You are in check!" |
+| vs computer | Win | "White wins by checkmate!" | "You win!" |
+| vs computer | Lose | "Black wins by checkmate!" | "Computer wins" |
+| vs computer | Draw | "Stalemate — Draw" / "Draw" | |
+| 2 player | Player's turn | "White's turn" / "Black's turn" | "Player 1's turn" / "Player 2's turn" |
+| 2 player | Check | "White is in check!" / "Black is in check!" | "Player 1 is in check!" / "Player 2 is in check!" |
+| 2 player | Win | "White wins by checkmate!" / "Black wins by checkmate!" | "Player 1 wins!" / "Player 2 wins!" |
+| 2 player | Draw | "Stalemate — Draw" / "Draw" | |
+| menu | Mode toggle | "vs Computer" / "2 Players" | "2 Player" |
+| menu | Color picker | "Light (goes first)" / "Dark" | "Go First" / "Go Second" |
+| menu | Start button | "New Game" / "Resume Game" | |
 
 ### [ ] checkers
-| State | Current | Desired |
-|---|---|---|
+| Mode | State | Current | New |
+|---|---|---|---|
+| vs computer | Player's turn | "Your turn" | |
+| vs computer | Computer's turn | "Thinking..." | |
+| vs computer | Win | "You win!" | |
+| vs computer | Lose | "Computer wins" | |
+| 2 player | Player's turn | "Player 1's turn" / "Player 2's turn" | |
+| 2 player | Win | "Light wins!" / "Dark wins!" | "Player 1 wins!" / "Player 2 wins!" |
+| 2 player | Win reason | "All Light pieces captured" / "No valid moves for Dark" | "All Player 1 pieces captured" / etc. |
+| menu | Mode toggle | "vs Computer" / "2 Players" | "2 Player" |
+| menu | Go first toggle | "Go First" / "Go Second" | |
+| menu | Start button | "New Game" / "Resume Game" | |
+| help modal | Color reference | "Light moves first." | remove or rephrase |
 
 ### [ ] backgammon
-| State | Current | Desired |
-|---|---|---|
+| Mode | State | Current | New |
+|---|---|---|---|
+| vs computer | Player's turn | "White's turn" | "Your turn" |
+| vs computer | Computer's turn | "Black's turn" | "Thinking..." |
+| vs computer | No moves | "White — No legal moves" | |
+| vs computer | Win | "Light wins!" | "You win!" |
+| vs computer | Lose | "Dark wins!" | "Computer wins" |
+| 2 player | Player's turn | "White's turn" / "Black's turn" | "Player 1's turn" / "Player 2's turn" |
+| 2 player | No moves | "— No legal moves" | |
+| 2 player | Win | "Light wins!" / "Dark wins!" | "Player 1 wins!" / "Player 2 wins!" |
+| menu | Mode toggle | "vs AI" / "2 Players" | "vs Computer" / "2 Player" |
+| menu | Start button | "New Game" / "Resume Game" | |
+| game over modal | Button | "Main Menu" | "Menu" |
 
 ### [ ] hearts
-| State | Current | Desired |
-|---|---|---|
+| Mode | State | Current | New |
+|---|---|---|---|
+| single player | Passing phase | "Pass Left" / "Pass Right" / "Pass Across" / "Keep All" | |
+| single player | Trick counter | "Trick X of 13" | |
+| single player | Win | "You Win!" | "You win!" |
+| single player | Lose | "{position} Wins" (e.g. "West Wins") | "{position} wins" |
+| single player | Tie | "Tie Game" | |
+| single player | In-game button | "New" | "New Game" |
+| menu | Start button | "Start Game" | "New Game" |
 
 ### [ ] cribbage
-| State | Current | Desired |
-|---|---|---|
+| Mode | State | Current | New |
+|---|---|---|---|
+| single player | Dealing | "Dealing..." | |
+| single player | Discard prompt | "Select 2 cards to discard" | |
+| single player | Opponent discard | "Opponent is discarding..." | |
+| single player | Cut prompt | "Cut the deck to reveal the starter card" | |
+| single player | Opponent cut | "Opponent is cutting the deck..." | |
+| single player | Win | "You Win!" | "You win!" |
+| single player | Lose | "Opponent Wins" | "Opponent wins" |
+| menu | Start button | "Play" | "New Game" |
 
 ### [ ] five-dice
-| State | Current | Desired |
-|---|---|---|
+| Mode | State | Current | New |
+|---|---|---|---|
+| single player | Start of turn | "Roll to start turn X / 13" | |
+| single player | Mid-turn | "Click dice to hold, then roll again or pick a category" | |
+| single player | Final roll | "Pick a category to score" | |
+| single player | Game over | "Game Over" | |
+| menu | Start button | "Play" | "New Game" |
+| menu | Resume button | "Resume Game" | |
 
 ### [ ] solitaire
-| State | Current | Desired |
-|---|---|---|
+| Mode | State | Current | New |
+|---|---|---|---|
+| single player | Win | "You Win!" | "You win!" |
+| menu | Start button | "New Game" | |
+| menu | Draw mode buttons | "Draw 1" / "Draw 3" | |
 
 ### [ ] block-stacker
-| State | Current | Desired |
-|---|---|---|
+Skip
 
 ### [ ] bomb-buster
-| State | Current | Desired |
-|---|---|---|
+Skip
 
 ### [ ] grid-connect
-| State | Current | Desired |
-|---|---|---|
+| Mode | State | Current | New |
+|---|---|---|---|
+| vs computer | Player's turn | "Red's turn" / "Yellow's turn" | "Your turn" |
+| vs computer | Computer's turn | "Red's turn" / "Yellow's turn" | "Thinking..." |
+| vs computer | Win | "Red wins!" / "Yellow wins!" | "You win!" |
+| vs computer | Lose | "Red wins!" / "Yellow wins!" | "Computer wins" |
+| vs computer | Draw | "It's a draw!" | "Draw!" |
+| 2 player | Player's turn | "Red's turn" / "Yellow's turn" | "Player 1's turn" / "Player 2's turn" |
+| 2 player | Win | "Red wins!" / "Yellow wins!" | "Player 1 wins!" / "Player 2 wins!" |
+| 2 player | Draw | "It's a draw!" | "Draw!" |
+| menu | Mode toggle | "vs Computer" / "vs Player" | "2 Player" |
+| menu | Play as toggle | "Play as Red" / "Play as Yellow" | |
+| menu | Start button | "Start Game" | "New Game" |
 
 ### [ ] number-tiles
-| State | Current | Desired |
-|---|---|---|
+| Location | State | Current | New |
+|---|---|---|---|
+| gameplay | Move counter | "Moves" | |
+| gameplay | Timer | "Time" | |
+| game over | Result | "Puzzle Solved!" | |
+| game over | Achievement | "New best!" | |
+| menu | Start button | "Play" | "New Game" |
+| menu | Resume button | "Resume {mode}" | |
 
 ### [ ] codetrivia
-| State | Current | Desired |
-|---|---|---|
+Skip
 
 ### [ ] variable-sorter
-| State | Current | Desired |
-|---|---|---|
+Skip
 
 ### [ ] rock-paper-scissors
-| State | Current | Desired |
-|---|---|---|
+Skip
 
 ### [ ] tic-tac-toe
-| State | Current | Desired |
-|---|---|---|
+Skip
 
 ### [ ] picaria
-| State | Current | Desired |
-|---|---|---|
+| Mode | State | Current | New |
+|---|---|---|---|
+| vs computer | Player's turn (place) | "Your turn: place a piece" | |
+| vs computer | Player's turn (move) | "Your turn" | |
+| vs computer | Computer's turn | "Computer thinking..." | "Thinking..." |
+| vs computer | No moves | "No moves - turn skipped" | |
+| vs computer | Win | "You Win!" | "You win!" |
+| vs computer | Lose | "Computer Wins" | "Computer wins" |
+| vs computer | Draw | "Draw" | "Draw!" |
+| 2 player | Player's turn (place) | "Player 1: place a piece" / "Player 2: place a piece" | |
+| 2 player | Player's turn (move) | "Player 1's turn" / "Player 2's turn" | |
+| 2 player | Win | "Player 1 Wins" / "Player 2 Wins" | "Player 1 wins!" / "Player 2 wins!" |
+| 2 player | Draw | "Draw" | "Draw!" |
+| menu | Mode toggle | "vs Computer" / "2 Player" | |
+| menu | Go first toggle | "Go First" / "Go Second" | |
+| menu | Start button | "New Game" / "Resume Game" | |
 
 ### [ ] achi
-| State | Current | Desired |
-|---|---|---|
+| Mode | State | Current | New |
+|---|---|---|---|
+| vs computer | Player's turn (place) | "Your turn: place a piece" | |
+| vs computer | Player's turn (pick) | "Your turn: pick a piece" | |
+| vs computer | Player's turn (dest) | "Your turn: pick a destination" | |
+| vs computer | Computer's turn | "Computer is thinking..." | "Thinking..." |
+| vs computer | Win | "You win!" | |
+| vs computer | Lose | "Computer wins" | |
+| vs computer | Draw | "Draw!" | |
+| 2 player | Player's turn (place) | "Player 1: place a piece" / "Player 2: place a piece" | |
+| 2 player | Player's turn (pick) | "Player 1: pick a piece" / "Player 2: pick a piece" | |
+| 2 player | Player's turn (dest) | "Player 1: pick a destination" / "Player 2: pick a destination" | |
+| 2 player | Win | "P1 wins!" / "P2 wins!" | "Player 1 wins!" / "Player 2 wins!" |
+| 2 player | Draw | "Draw!" | |
+| menu | Mode toggle | "vs Computer" / "2 Player" | |
+| menu | Go first toggle | "Go first" / "Go second" | "Go First" / "Go Second" |
+| menu | Start button | "New Game" / "Resume Game" | |
 
 ### [ ] dara
-| State | Current | Desired |
-|---|---|---|
+| Mode | State | Current | New |
+|---|---|---|---|
+| vs computer | Player's turn (place) | "Place a piece" | |
+| vs computer | Player's turn (move) | "Select a piece to move" | |
+| vs computer | Player's turn (dest) | "Select where to move" | |
+| vs computer | Player's turn (capture) | "Select a piece to capture" | |
+| vs computer | Computer placing | "Computer placing..." | |
+| vs computer | Computer thinking | "Computer thinking..." | "Thinking..." |
+| vs computer | Win | "You win!" | |
+| vs computer | Lose | "Computer wins" | |
+| 2 player | Player's turn (place) | "Player 1: place a piece" / "Player 2: place a piece" | |
+| 2 player | Player's turn (move) | "Player 1: select a piece to move" / "Player 2: select a piece to move" | |
+| 2 player | Player's turn (capture) | "Player 1: select a piece to capture" / "Player 2: select a piece to capture" | |
+| 2 player | Win | "Player 1 wins!" / "Player 2 wins!" | |
+| menu | Mode toggle | "vs Computer" / "2 Player" | |
+| menu | Go first toggle | "Go First" / "Go Second" | |
+| menu | Start button | "New Game" / "Resume Game" | |
 
 ### [ ] shisima
-| State | Current | Desired |
-|---|---|---|
+| Mode | State | Current | New |
+|---|---|---|---|
+| vs computer | Player's turn | "Your turn" | |
+| vs computer | Computer's turn | "Computer thinking..." | "Thinking..." |
+| vs computer | No moves | "No moves — turn skipped" | |
+| vs computer | Win | "You Win!" | "You win!" |
+| vs computer | Lose | "Computer Wins" | "Computer wins" |
+| vs computer | Draw | "Draw" | "Draw!" |
+| 2 player | Player's turn | "Player 1's turn" / "Player 2's turn" | |
+| 2 player | Win | "Player 1 Wins" / "Player 2 Wins" | "Player 1 wins!" / "Player 2 wins!" |
+| 2 player | Draw | "Draw" | "Draw!" |
+| menu | Mode toggle | "vs Computer" / "2 Player" | |
+| menu | Go first toggle | "Go First" / "Go Second" | |
+| menu | Start button | "New Game" / "Resume Game" | |
 
 ### [ ] fanorona
 | State | Current | Desired |
