@@ -33,12 +33,37 @@ Standardize status text shown in the game screen header across all games. Check 
 | menu | Start button | "New Game" | |
 
 ### [ ] shut-the-box
-| State | Current | Desired |
-|---|---|---|
+| Location | State | Current | New |
+|---|---|---|---|
+| gameplay | Waiting to roll | "Roll the dice" | |
+| gameplay | Tiles phase | "Select tiles that add up to X" | |
+| gameplay | Round complete | "Round X complete. Running total: X" | |
+| gameplay | Win | "Match complete. Final total: X" | |
+| gameplay | Lose | "Run over. Final total: X" | "No moves. Final total: X" |
+| between-rounds overlay | Heading | "Round X Complete" | |
+| between-rounds overlay | Button | "Continue" | |
+| game over overlay | Heading (win) | "Match Complete" | |
+| game over overlay | Heading (lose) | "Game Over" | |
+| game over overlay | Banner (win) | "Shut the Box!" | |
+| game over overlay | Button | "Play Again" | |
+| menu | Round mode buttons | "1 Round" / "5 Rounds" / "Endless" | |
+| menu | Start button | "New Game" | |
 
 ### [ ] gomoko
-| State | Current | Desired |
-|---|---|---|
+| Mode | State | Current | New |
+|---|---|---|---|
+| vs computer | Player's turn | "Dark's turn" / "Light's turn" | "Your turn" |
+| vs computer | Computer's turn | "Thinking..." | |
+| vs computer | Win | "You win!" | |
+| vs computer | Lose | "You lose" | "You lose!" |
+| vs computer | Draw | "Draw!" | |
+| 2 player | Player 1's turn | "Dark's turn" | "Player 1's turn" |
+| 2 player | Player 2's turn | "Light's turn" | "Player 2's turn" |
+| 2 player | Win | "Dark wins!" / "Light wins!" | "Player 1 wins!" / "Player 2 wins!" |
+| 2 player | Draw | "Draw!" | |
+| menu | Mode buttons | "vs Computer" / "2 Players" | "2 Player" |
+| menu | Go first toggle | "Go First" / "Go Second" | |
+| menu | Start button | "New Game" / "Start Game" | "New Game" |
 
 ### [ ] nim
 | State | Current | Desired |
