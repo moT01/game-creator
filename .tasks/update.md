@@ -19,12 +19,12 @@ Standardize status text shown in the game screen header across all games. Check 
 | vs computer | Computer's turn | "Thinking..." | |
 | vs computer | Win | "You win!" | |
 | vs computer | Lose | "You lose!" | "Computer wins" |
-| vs computer | Draw | "Draw!" | |
+| vs computer | Draw | "Draw!" | "Draw" |
 | vs computer | Extra turn | "Go again!" | |
 | 2 player | Player 1's turn | "Dark's turn" | "Player 1's turn" |
 | 2 player | Player 2's turn | "Light's turn" | "Player 2's turn" |
 | 2 player | Win | "Dark wins!" / "Light wins!" | "Player 1 wins!" / "Player 2 wins!" |
-| 2 player | Draw | "Draw!" | |
+| 2 player | Draw | "Draw!" | "Draw" |
 | 2 player | Extra turn | "Go again!" | "Player 1: Go again" / "Player 2: Go again" |
 | vs computer | In-game score labels | "Dark:" / "Light:" | "You:" / "Computer:" |
 | 2 player | In-game score labels | "Dark:" / "Light:" | "Player 1:" / "Player 2:" |
@@ -58,11 +58,11 @@ Standardize status text shown in the game screen header across all games. Check 
 | vs computer | Computer's turn | "Thinking..." | |
 | vs computer | Win | "You win!" | |
 | vs computer | Lose | "You lose" | "Computer wins" |
-| vs computer | Draw | "Draw!" | |
+| vs computer | Draw | "Draw!" | "Draw" |
 | 2 player | Player 1's turn | "Dark's turn" | "Player 1's turn" |
 | 2 player | Player 2's turn | "Light's turn" | "Player 2's turn" |
 | 2 player | Win | "Dark wins!" / "Light wins!" | "Player 1 wins!" / "Player 2 wins!" |
-| 2 player | Draw | "Draw!" | |
+| 2 player | Draw | "Draw!" | "Draw" |
 | menu | Mode buttons | "vs Computer" / "2 Players" | "2 Player" |
 | menu | Go first toggle | "Go First" / "Go Second" | |
 | menu | Start button | "New Game" / "Start Game" | "New Game" |
@@ -93,7 +93,7 @@ Standardize status text shown in the game screen header across all games. Check 
 | vs computer | Computer no moves | "Computer passes" | |
 | vs computer | Win | "You win!" | |
 | vs computer | Lose | "Computer wins" | |
-| vs computer | Draw | "Draw" | "Draw!" |
+| vs computer | Draw | "Draw" | |
 | vs computer | Win reason | "You cleared your hand!" | |
 | vs computer | Lose reason | "Computer cleared its hand." | |
 | vs computer | Draw reason | "Blocked - You: X pips, Computer: X pips" | |
@@ -117,19 +117,19 @@ Standardize status text shown in the game screen header across all games. Check 
 ### [ ] nine-mens-morris
 | Mode | State | Current | New |
 |---|---|---|---|
-| vs computer | Player's turn (place) | "Your turn: Place a piece" | |
-| vs computer | Player's turn (move) | "Your turn: Move a piece" | |
-| vs computer | Player's turn (remove) | "Your turn: Remove an opponent piece" | |
+| vs computer | Player's turn (place) | "Your turn: Place a piece" | "Place a piece" |
+| vs computer | Player's turn (move) | "Your turn: Move a piece" | "Move a piece" |
+| vs computer | Player's turn (remove) | "Your turn: Remove an opponent piece" | "Remove an opponent piece" |
 | vs computer | Computer's turn | "Computer is thinking..." | "Thinking..." |
 | vs computer | Win | "You Win!" | "You win!" |
 | vs computer | Lose | "Computer Wins" | "Computer wins" |
 | vs computer | Draw | "Draw by repetition" | |
-| 2 player | Player's turn (place) | "Player 1's turn: Place a piece" | |
-| 2 player | Player's turn (move) | "Player 1's turn: Move a piece" | |
-| 2 player | Player's turn (remove) | "Player 1's turn: Remove an opponent piece" | |
+| 2 player | Player's turn (place) | "Player 1's turn: Place a piece" | "Player 1: Place a piece" |
+| 2 player | Player's turn (move) | "Player 1's turn: Move a piece" | "Player 1: Move a piece" |
+| 2 player | Player's turn (remove) | "Player 1's turn: Remove an opponent piece" | "Player 1: Remove an opponent piece" |
 | 2 player | Win | "Blue Wins!" / "Gold Wins!" | "Player 1 wins!" / "Player 2 wins!" |
-| 2 player | Draw | "Draw" | "Draw!" |
-| game over overlay | Win | "You Win!" / "Computer Wins" / "Blue Wins!" / "Gold Wins!" | same as above |
+| 2 player | Draw | "Draw" | |
+| game over overlay | Win | "You Win!" / "Computer Wins" / "Blue Wins!" / "Gold Wins!" | "You win!" / "Computer wins" / "Player 1 wins!" / "Player 2 wins!" |
 | menu | Mode toggle | "vs Computer" / "2 Player" | |
 | menu | Go first toggle | "Go First" / "Go Second" | |
 | menu | Start button | "New Game" | |
@@ -143,12 +143,12 @@ Standardize status text shown in the game screen header across all games. Check 
 | vs computer | Computer thinking | "Thinking..." | |
 | vs computer | Win | "You win!" | |
 | vs computer | Lose | "You lose." | "Computer wins" |
-| vs computer | Draw | "Draw!" | |
+| vs computer | Draw | "Draw!" | "Draw" |
 | vs computer | In-game score labels | "You" / "Opp" | |
 | vs computer | Game over score | "You" / "Opp" | |
 | 2 player | Player's turn | "Player 1's turn" / "Player 2's turn" | |
 | 2 player | Win | "Player X wins!" | |
-| 2 player | Draw | "Draw!" | |
+| 2 player | Draw | "Draw!" | "Draw" |
 | 2 player | In-game score labels | "P1" / "P2" | |
 | menu | Mode toggle | "vs Computer" / "vs Player" | "2 Player" |
 | menu | Start button | "New Game" | |
@@ -161,14 +161,14 @@ Standardize status text shown in the game screen header across all games. Check 
 | vs computer | Computer thinking | "Thinking..." | |
 | vs computer | Win | "You win!" | |
 | vs computer | Lose | "You lose." | "Computer wins" |
-| vs computer | Draw | "Draw!" | |
+| vs computer | Draw | "Draw!" | "Draw" |
 | vs computer | In-game labels | "You" / "Opponent" | |
 | 2 player | Opening (P1) | "Player 1: choose your opening house" | |
 | 2 player | Pass prompt | "Pass to Player 2" | |
 | 2 player | Opening (P2) | "Player 2: choose your opening house" | |
 | 2 player | Player's turn | "Player 1's turn" / "Player 2's turn" | |
 | 2 player | Win | "Player X wins!" | |
-| 2 player | Draw | "Draw!" | |
+| 2 player | Draw | "Draw!" | "Draw" |
 | 2 player | Pass screen text | "Player 1 has chosen. Pass the device to Player 2." | |
 | 2 player | Pass screen button | "Continue" | |
 | menu | Mode toggle | "vs Computer" / "2 Players" | "2 Player" |
@@ -187,12 +187,12 @@ Skip
 | vs computer | Computer's turn | "Thinking..." | |
 | vs computer | Win | "Dark wins!" / "Light wins!" | "You win!" |
 | vs computer | Lose | "Dark wins!" / "Light wins!" | "Computer wins" |
-| vs computer | Draw | "Draw!" | |
+| vs computer | Draw | "Draw!" | "Draw" |
 | vs computer | In-game score labels | "Dark:" / "Light:" | "You:" / "Computer:" |
 | vs computer | Game over score | "Dark X - Light Y" | "You X - Computer Y" |
 | 2 player | Player's turn | "Dark's turn" / "Light's turn" | "Player 1's turn" / "Player 2's turn" |
 | 2 player | Win | "Dark wins!" / "Light wins!" | "Player 1 wins!" / "Player 2 wins!" |
-| 2 player | Draw | "Draw!" | |
+| 2 player | Draw | "Draw!" | "Draw" |
 | 2 player | In-game score labels | "Dark:" / "Light:" | "Player 1:" / "Player 2:" |
 | 2 player | Game over score | "Dark X - Light Y" | "Player 1 X - Player 2 Y" |
 | menu | Mode toggle | "vs Computer" / "2 Players" | "2 Player" |
@@ -314,10 +314,10 @@ Skip
 | vs computer | Computer's turn | "Red's turn" / "Yellow's turn" | "Thinking..." |
 | vs computer | Win | "Red wins!" / "Yellow wins!" | "You win!" |
 | vs computer | Lose | "Red wins!" / "Yellow wins!" | "Computer wins" |
-| vs computer | Draw | "It's a draw!" | "Draw!" |
+| vs computer | Draw | "It's a draw!" | "Draw" |
 | 2 player | Player's turn | "Red's turn" / "Yellow's turn" | "Player 1's turn" / "Player 2's turn" |
 | 2 player | Win | "Red wins!" / "Yellow wins!" | "Player 1 wins!" / "Player 2 wins!" |
-| 2 player | Draw | "It's a draw!" | "Draw!" |
+| 2 player | Draw | "It's a draw!" | "Draw" |
 | menu | Mode toggle | "vs Computer" / "vs Player" | "2 Player" |
 | menu | Play as toggle | "Play as Red" / "Play as Yellow" | |
 | menu | Start button | "Start Game" | "New Game" |
@@ -347,17 +347,17 @@ Skip
 ### [ ] picaria
 | Mode | State | Current | New |
 |---|---|---|---|
-| vs computer | Player's turn (place) | "Your turn: place a piece" | |
+| vs computer | Player's turn (place) | "Your turn: place a piece" | "Place a piece" |
 | vs computer | Player's turn (move) | "Your turn" | |
 | vs computer | Computer's turn | "Computer thinking..." | "Thinking..." |
 | vs computer | No moves | "No moves - turn skipped" | |
 | vs computer | Win | "You Win!" | "You win!" |
 | vs computer | Lose | "Computer Wins" | "Computer wins" |
-| vs computer | Draw | "Draw" | "Draw!" |
+| vs computer | Draw | "Draw" | |
 | 2 player | Player's turn (place) | "Player 1: place a piece" / "Player 2: place a piece" | |
 | 2 player | Player's turn (move) | "Player 1's turn" / "Player 2's turn" | |
 | 2 player | Win | "Player 1 Wins" / "Player 2 Wins" | "Player 1 wins!" / "Player 2 wins!" |
-| 2 player | Draw | "Draw" | "Draw!" |
+| 2 player | Draw | "Draw" | |
 | menu | Mode toggle | "vs Computer" / "2 Player" | |
 | menu | Go first toggle | "Go First" / "Go Second" | |
 | menu | Start button | "New Game" / "Resume Game" | |
@@ -365,18 +365,18 @@ Skip
 ### [ ] achi
 | Mode | State | Current | New |
 |---|---|---|---|
-| vs computer | Player's turn (place) | "Your turn: place a piece" | |
-| vs computer | Player's turn (pick) | "Your turn: pick a piece" | |
-| vs computer | Player's turn (dest) | "Your turn: pick a destination" | |
+| vs computer | Player's turn (place) | "Your turn: place a piece" | "Place a piece" |
+| vs computer | Player's turn (pick) | "Your turn: pick a piece" | "Pick a piece" |
+| vs computer | Player's turn (dest) | "Your turn: pick a destination" | "Pick a destination" |
 | vs computer | Computer's turn | "Computer is thinking..." | "Thinking..." |
 | vs computer | Win | "You win!" | |
 | vs computer | Lose | "Computer wins" | |
-| vs computer | Draw | "Draw!" | |
+| vs computer | Draw | "Draw!" | "Draw" |
 | 2 player | Player's turn (place) | "Player 1: place a piece" / "Player 2: place a piece" | |
 | 2 player | Player's turn (pick) | "Player 1: pick a piece" / "Player 2: pick a piece" | |
 | 2 player | Player's turn (dest) | "Player 1: pick a destination" / "Player 2: pick a destination" | |
 | 2 player | Win | "P1 wins!" / "P2 wins!" | "Player 1 wins!" / "Player 2 wins!" |
-| 2 player | Draw | "Draw!" | |
+| 2 player | Draw | "Draw!" | "Draw" |
 | menu | Mode toggle | "vs Computer" / "2 Player" | |
 | menu | Go first toggle | "Go first" / "Go second" | "Go First" / "Go Second" |
 | menu | Start button | "New Game" / "Resume Game" | |
@@ -408,10 +408,10 @@ Skip
 | vs computer | No moves | "No moves — turn skipped" | |
 | vs computer | Win | "You Win!" | "You win!" |
 | vs computer | Lose | "Computer Wins" | "Computer wins" |
-| vs computer | Draw | "Draw" | "Draw!" |
+| vs computer | Draw | "Draw" | |
 | 2 player | Player's turn | "Player 1's turn" / "Player 2's turn" | |
 | 2 player | Win | "Player 1 Wins" / "Player 2 Wins" | "Player 1 wins!" / "Player 2 wins!" |
-| 2 player | Draw | "Draw" | "Draw!" |
+| 2 player | Draw | "Draw" | |
 | menu | Mode toggle | "vs Computer" / "2 Player" | |
 | menu | Go first toggle | "Go First" / "Go Second" | |
 | menu | Start button | "New Game" / "Resume Game" | |

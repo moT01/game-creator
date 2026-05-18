@@ -788,7 +788,7 @@ function renderPlay() {
 
     let resultText = '';
     if (state.status === 'draw') {
-      resultText = 'Draw!';
+      resultText = 'Draw';
     } else if (state.mode === 'hvc') {
       resultText = state.winner === state.humanPlayer ? 'You win!' : 'Computer wins';
     } else {

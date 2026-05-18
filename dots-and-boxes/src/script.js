@@ -776,11 +776,11 @@ function pulseScore(side) {
 function showGameOver() {
   let resultText, resultClass;
   if (state.mode === 'vs-computer') {
-    if (state.winner === 'draw') { resultText = 'Draw!'; resultClass = 'result-draw'; }
+    if (state.winner === 'draw') { resultText = 'Draw'; resultClass = 'result-draw'; }
     else if (state.winner === state.playerColor) { resultText = 'You win!'; resultClass = 'result-win'; }
     else { resultText = 'Computer wins'; resultClass = 'result-lose'; }
   } else {
-    if (state.winner === 'draw') { resultText = 'Draw!'; resultClass = 'result-draw'; }
+    if (state.winner === 'draw') { resultText = 'Draw'; resultClass = 'result-draw'; }
     else { resultText = state.winner === 'dark' ? 'Player 1 wins!' : 'Player 2 wins!'; resultClass = 'result-win'; }
   }
 
