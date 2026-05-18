@@ -51,13 +51,13 @@ Standardize status text shown in the game screen header across all games. Check 
 | menu | Round mode buttons | "1 Round" / "5 Rounds" / "Endless" | |
 | menu | Start button | "New Game" | |
 
-### [ ] gomoko
+### [x] gomoko
 | Mode | State | Current | New |
 |---|---|---|---|
 | vs computer | Player's turn | "Dark's turn" / "Light's turn" | "Your turn" |
 | vs computer | Computer's turn | "Thinking..." | |
 | vs computer | Win | "You win!" | |
-| vs computer | Lose | "You lose" | "You lose!" |
+| vs computer | Lose | "You lose" | "Computer wins" |
 | vs computer | Draw | "Draw!" | |
 | 2 player | Player 1's turn | "Dark's turn" | "Player 1's turn" |
 | 2 player | Player 2's turn | "Light's turn" | "Player 2's turn" |
@@ -142,7 +142,7 @@ Standardize status text shown in the game screen header across all games. Check 
 | vs computer | Opponent's turn | "Opponent's turn" | |
 | vs computer | Computer thinking | "Thinking..." | |
 | vs computer | Win | "You win!" | |
-| vs computer | Lose | "You lose." | "You lose!" |
+| vs computer | Lose | "You lose." | "Computer wins" |
 | vs computer | Draw | "Draw!" | |
 | vs computer | In-game score labels | "You" / "Opp" | |
 | vs computer | Game over score | "You" / "Opp" | |
@@ -160,7 +160,7 @@ Standardize status text shown in the game screen header across all games. Check 
 | vs computer | Opponent's turn | "Opponent's turn" | |
 | vs computer | Computer thinking | "Thinking..." | |
 | vs computer | Win | "You win!" | |
-| vs computer | Lose | "You lose." | "You lose!" |
+| vs computer | Lose | "You lose." | "Computer wins" |
 | vs computer | Draw | "Draw!" | |
 | vs computer | In-game labels | "You" / "Opponent" | |
 | 2 player | Opening (P1) | "Player 1: choose your opening house" | |

@@ -511,7 +511,6 @@ function buildHelpModal() {
       <p>Be the first to place exactly 5 of your stones in an unbroken row - horizontally, vertically, or diagonally. Six or more in a row does not win.</p>
       <h3>Rules</h3>
       <ul>
-        <li>Dark always goes first</li>
         <li>Players alternate placing one stone per turn</li>
         <li>A stone cannot be moved once placed</li>
         <li>Exactly 5 consecutive stones of the same color wins; 6 or more does not</li>
@@ -532,7 +531,7 @@ function buildHelpModal() {
       </ul>
       <h3>Tips for Beginners</h3>
       <ul>
-        <li>Start at the center every game as dark</li>
+        <li>Start at the center every game</li>
         <li>Think of your stones as creating two threats at once</li>
         <li>A sequence of 3 is urgent, 4 is critical</li>
         <li>A draw is rare - focus on attacking rather than defending</li>
@@ -662,7 +661,7 @@ function renderHome() {
       </div>
       <div class="mode-toggle" role="group" aria-label="Game mode">
         <button class="mode-btn${savedMode === 'hvc' ? ' mode-active' : ''}" data-mode="hvc" aria-pressed="${savedMode === 'hvc'}">vs Computer</button>
-        <button class="mode-btn${savedMode === 'hvh' ? ' mode-active' : ''}" data-mode="hvh" aria-pressed="${savedMode === 'hvh'}">2 Players</button>
+        <button class="mode-btn${savedMode === 'hvh' ? ' mode-active' : ''}" data-mode="hvh" aria-pressed="${savedMode === 'hvh'}">2 Player</button>
       </div>
       <div class="hvc-settings${savedMode === 'hvh' ? ' color-picker-hidden' : ''}">
         ${renderStats()}
@@ -671,7 +670,7 @@ function renderHome() {
           <button class="mode-btn${savedColor === 2 ? ' mode-active' : ''}" data-color="2" aria-pressed="${savedColor === 2}">Go Second</button>
         </div>
       </div>
-      <button class="btn btn-primary btn-lg" id="start-btn" aria-label="${hasSavedGame ? 'Start new game' : 'Start game'}">${hasSavedGame ? 'New Game' : 'Start Game'}</button>
+      <button class="btn btn-primary btn-lg" id="start-btn" aria-label="${hasSavedGame ? 'Start new game' : 'Start game'}">New Game</button>
       ${hasSavedGame ? `<button class="btn btn-secondary btn-lg" id="resume-btn" aria-label="Resume game">Resume Game</button>` : ''}
     </div>
   `;
@@ -744,7 +743,9 @@ function renderPlay() {
   // Top bar
   let statusText = '';
   if (state.status === 'playing') {
-    statusText = state.aiThinking ? 'Thinking...' : `${state.currentPlayer === 1 ? 'Dark' : 'Light'}'s turn`;
+    if (state.aiThinking) statusText = 'Thinking...';
+    else if (state.mode === 'hvc') statusText = 'Your turn';
+    else statusText = state.currentPlayer === 1 ? "Player 1's turn" : "Player 2's turn";
   }
 
   const topBar = document.createElement('div');
@@ -789,10 +790,9 @@ function renderPlay() {
     if (state.status === 'draw') {
       resultText = 'Draw!';
     } else if (state.mode === 'hvc') {
-      resultText = state.winner === state.humanPlayer ? 'You win!' : 'You lose';
+      resultText = state.winner === state.humanPlayer ? 'You win!' : 'Computer wins';
     } else {
-      const winner = state.winner === 1 ? 'Dark' : 'Light';
-      resultText = `${winner} wins!`;
+      resultText = state.winner === 1 ? "Player 1 wins!" : "Player 2 wins!";
     }
 
     panel.innerHTML = `
