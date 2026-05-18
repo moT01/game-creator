@@ -69,7 +69,7 @@ Standardize status text shown in the game screen header across all games. Check 
 | help modal | Rules text | "Dark always goes first" | remove |
 | help modal | Tips text | "Start at the center every game as dark" | "Start at the center every game" |
 
-### [ ] nim
+### [x] nim
 | Mode | State | Current | New |
 |---|---|---|---|
 | vs computer | Player's turn | "Your turn" | |

@@ -125,7 +125,7 @@ export default function GameScreen({
   function getStatusText() {
     if (gs.phase === 'game-over') return ''
     if (gs.mode === 'vs-computer') {
-      if (isAITurn) return 'Computer thinking'
+      if (isAITurn) return 'Thinking'
       return 'Your turn'
     }
     return `Player ${gs.currentPlayer + 1}'s turn`
@@ -139,9 +139,9 @@ export default function GameScreen({
   function getResultText() {
     if (gs.winner === null) return ''
     if (gs.mode === 'vs-computer') {
-      return gs.winner === gs.humanPlayer ? 'You Win!' : 'Computer Wins'
+      return gs.winner === gs.humanPlayer ? 'You win!' : 'Computer wins'
     }
-    return `Player ${gs.winner + 1} Wins!`
+    return `Player ${gs.winner + 1} wins!`
   }
 
   function resultClass() {
