@@ -810,6 +810,14 @@ function renderStatus() {
     if (isPlayerTurn) turnEl.classList.add('status-turn--player');
     else turnEl.classList.add('status-turn--computer');
   }
+
+  const boneEl = bar.querySelector('.status-boneyard');
+  if (boneEl) {
+    const parts = [];
+    if (leftEnd !== null) parts.push(`L:${leftEnd}  R:${rightEnd}`);
+    if (state.rules !== 'block') parts.push(`Boneyard: ${boneyard.length}`);
+    boneEl.textContent = parts.join('  ·  ');
+  }
 }
 
 function pulseBoneyard() {
@@ -1164,7 +1172,6 @@ function renderPlayScreen() {
   renderPlayerHand();
   renderStatus();
   updateActionButtons();
-  scrollChainToCenter();
 }
 
 function renderBoneyard() {
