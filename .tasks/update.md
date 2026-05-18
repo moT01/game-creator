@@ -200,7 +200,7 @@ Skip
 | menu | Start button | "New Game" | |
 | help modal | Color references | "Dark" / "Light" | "Player 1" / "Player 2" |
 
-### [ ] tower-of-hanoi
+### [x] tower-of-hanoi
 | Location | State | Current | New |
 |---|---|---|---|
 | gameplay | Move counter | "Moves: X" | |
@@ -417,5 +417,15 @@ Skip
 | menu | Start button | "New Game" / "Resume Game" | |
 
 ### [ ] fanorona
-| State | Current | Desired |
-|---|---|---|
+| Mode | State | Current | New |
+|---|---|---|---|
+| vs computer | Player's turn | "Your turn" | |
+| vs computer | Computer's turn | "Computer thinking..." | "Thinking..." |
+| vs computer | Win | "You Win!" | "You win!" |
+| vs computer | Lose | "Computer Wins!" | "Computer wins" |
+| vs computer | No moves note | "No legal moves remaining" | |
+| 2 player | Player 1's turn | "Dark's turn" | "Player 1's turn" |
+| 2 player | Player 2's turn | "Light's turn" | "Player 2's turn" |
+| 2 player | Win | "Dark Wins!" / "Light Wins!" | "Player 1 wins!" / "Player 2 wins!" |
+| menu | Mode toggle | "vs Computer" / "2 Player" | |
+| menu | Start button | "New Game" | |
