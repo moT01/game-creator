@@ -214,7 +214,7 @@ Skip
 
 ## React Games
 
-### [ ] chess
+### [x] chess
 | Mode | State | Current | New |
 |---|---|---|---|
 | vs computer | Player's turn | "White's turn" / "Black's turn" | "Your turn" |
@@ -231,7 +231,7 @@ Skip
 | menu | Color picker | "Light (goes first)" / "Dark" | "Go First" / "Go Second" |
 | menu | Start button | "New Game" / "Resume Game" | |
 
-### [ ] checkers
+### [x] checkers
 | Mode | State | Current | New |
 |---|---|---|---|
 | vs computer | Player's turn | "Your turn" | |
@@ -246,7 +246,7 @@ Skip
 | menu | Start button | "New Game" / "Resume Game" | |
 | help modal | Color reference | "Light moves first." | remove or rephrase |
 
-### [ ] backgammon
+### [x] backgammon
 | Mode | State | Current | New |
 |---|---|---|---|
 | vs computer | Player's turn | "White's turn" | "Your turn" |
@@ -261,7 +261,7 @@ Skip
 | menu | Start button | "New Game" / "Resume Game" | |
 | game over modal | Button | "Main Menu" | "Menu" |
 
-### [ ] hearts
+### [x] hearts
 | Mode | State | Current | New |
 |---|---|---|---|
 | single player | Passing phase | "Pass Left" / "Pass Right" / "Pass Across" / "Keep All" | |
@@ -272,7 +272,7 @@ Skip
 | single player | In-game button | "New" | "New Game" |
 | menu | Start button | "Start Game" | "New Game" |
 
-### [ ] cribbage
+### [x] cribbage
 | Mode | State | Current | New |
 |---|---|---|---|
 | single player | Dealing | "Dealing..." | |
@@ -284,7 +284,7 @@ Skip
 | single player | Lose | "Opponent Wins" | "Opponent wins" |
 | menu | Start button | "Play" | "New Game" |
 
-### [ ] five-dice
+### [x] five-dice
 | Mode | State | Current | New |
 |---|---|---|---|
 | single player | Start of turn | "Roll to start turn X / 13" | |
@@ -294,7 +294,7 @@ Skip
 | menu | Start button | "Play" | "New Game" |
 | menu | Resume button | "Resume Game" | |
 
-### [ ] solitaire
+### [x] solitaire
 | Mode | State | Current | New |
 |---|---|---|---|
 | single player | Win | "You Win!" | "You win!" |
@@ -307,7 +307,7 @@ Skip
 ### [ ] bomb-buster
 Skip
 
-### [ ] grid-connect
+### [x] grid-connect
 | Mode | State | Current | New |
 |---|---|---|---|
 | vs computer | Player's turn | "Red's turn" / "Yellow's turn" | "Your turn" |
@@ -322,7 +322,7 @@ Skip
 | menu | Play as toggle | "Play as Red" / "Play as Yellow" | |
 | menu | Start button | "Start Game" | "New Game" |
 
-### [ ] number-tiles
+### [x] number-tiles
 | Location | State | Current | New |
 |---|---|---|---|
 | gameplay | Move counter | "Moves" | |
@@ -344,7 +344,7 @@ Skip
 ### [ ] tic-tac-toe
 Skip
 
-### [ ] picaria
+### [x] picaria
 | Mode | State | Current | New |
 |---|---|---|---|
 | vs computer | Player's turn (place) | "Your turn: place a piece" | "Place a piece" |
@@ -362,7 +362,7 @@ Skip
 | menu | Go first toggle | "Go First" / "Go Second" | |
 | menu | Start button | "New Game" / "Resume Game" | |
 
-### [ ] achi
+### [x] achi
 | Mode | State | Current | New |
 |---|---|---|---|
 | vs computer | Player's turn (place) | "Your turn: place a piece" | "Place a piece" |
@@ -381,7 +381,7 @@ Skip
 | menu | Go first toggle | "Go first" / "Go second" | "Go First" / "Go Second" |
 | menu | Start button | "New Game" / "Resume Game" | |
 
-### [ ] dara
+### [x] dara
 | Mode | State | Current | New |
 |---|---|---|---|
 | vs computer | Player's turn (place) | "Place a piece" | |
@@ -400,7 +400,7 @@ Skip
 | menu | Go first toggle | "Go First" / "Go Second" | |
 | menu | Start button | "New Game" / "Resume Game" | |
 
-### [ ] shisima
+### [x] shisima
 | Mode | State | Current | New |
 |---|---|---|---|
 | vs computer | Player's turn | "Your turn" | |
@@ -416,7 +416,7 @@ Skip
 | menu | Go first toggle | "Go First" / "Go Second" | |
 | menu | Start button | "New Game" / "Resume Game" | |
 
-### [ ] fanorona
+### [x] fanorona
 | Mode | State | Current | New |
 |---|---|---|---|
 | vs computer | Player's turn | "Your turn" | |

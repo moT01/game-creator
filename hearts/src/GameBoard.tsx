@@ -78,7 +78,7 @@ export default function GameBoard({
             className="btn btn--secondary btn--sm"
             onClick={onNewGame}
             aria-label="New game"
-          >New</button>
+          >New Game
           <button
             className="btn btn--secondary btn--sm"
             onClick={onQuitHome}

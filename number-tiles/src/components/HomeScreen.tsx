@@ -109,7 +109,7 @@ export function HomeScreen({
 
       <div className="home-screen__actions">
         <button className="btn btn-primary home-screen__play-btn" onClick={() => onPlay(selectedMode)}>
-          Play
+          New Game
         </button>
         {hasSavedGame && (
           <button className="btn btn-secondary" onClick={onResume}>

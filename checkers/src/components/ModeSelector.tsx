@@ -26,7 +26,7 @@ export function ModeSelector({ onStart, onResume, hasSavedGame, wins }: Props) {
           className={`tab-btn${mode === 'vs-player' ? ' tab-btn--active' : ''}`}
           onClick={() => setMode('vs-player')}
         >
-          2 Players
+          2 Player
         </button>
       </div>
 

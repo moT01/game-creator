@@ -43,8 +43,8 @@ export default function HomeOptions({ value, onChange }: Props) {
           <SegmentedControl
             small
             options={[
-              { label: 'Go first', value: 'P1' },
-              { label: 'Go second', value: 'P2' },
+              { label: 'Go First', value: 'P1' },
+              { label: 'Go Second', value: 'P2' },
             ]}
             value={value.side}
             onChange={(side) => onChange({ ...value, side })}

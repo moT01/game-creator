@@ -56,13 +56,13 @@ export function ModeSelect({ onSelect, onResume, hasSavedGame, winsVsAi, theme, 
               className={`tab-btn${mode === 'vs-ai' ? ' tab-btn--active' : ''}`}
               onClick={() => setMode('vs-ai')}
             >
-              vs AI
+              vs Computer
             </button>
             <button
               className={`tab-btn${mode === 'two-player' ? ' tab-btn--active' : ''}`}
               onClick={() => setMode('two-player')}
             >
-              2 Players
+              2 Player
             </button>
           </div>
 

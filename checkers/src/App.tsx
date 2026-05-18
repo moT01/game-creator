@@ -54,7 +54,7 @@ function HelpModal({ onClose }: { onClose: () => void }) {
           <p>Capture all of your opponent's pieces, or leave them with no valid moves.</p>
           <h3>Rules</h3>
           <ul>
-            <li>Light moves first. Players alternate turns.</li>
+            <li>Players alternate turns.</li>
             <li>Pieces move diagonally forward one square at a time.</li>
             <li>Capture by jumping over an opponent's piece into the empty square behind it.</li>
             <li>If a jump is available you must take it. Chain jumps are required when possible.</li>
@@ -69,16 +69,23 @@ function HelpModal({ onClose }: { onClose: () => void }) {
   )
 }
 
-function GameOverModal({ winner, reason, onPlayAgain }: { winner: Player; reason: GameOverReason; onPlayAgain: () => void }) {
+function GameOverModal({ winner, reason, mode, playerSide, onPlayAgain }: { winner: Player; reason: GameOverReason; mode: Mode; playerSide: Player; onPlayAgain: () => void }) {
+  const isVsComputer = mode === 'vs-computer';
+  const winnerLabel = isVsComputer
+    ? (winner === playerSide ? 'You win!' : 'Computer wins')
+    : (winner === 'Light' ? 'Player 1 wins!' : 'Player 2 wins!');
+  const loserLabel = isVsComputer
+    ? (winner !== playerSide ? 'your' : "Computer's")
+    : (winner === 'Light' ? 'Player 2' : 'Player 1');
   return (
     <div className="modal-backdrop">
       <div className="modal-card" style={{ textAlign: 'center' }}>
-        <h2 className={`modal-title game-status__message--${winner.toLowerCase()}`}>{winner} wins!</h2>
+        <h2 className={`modal-title game-status__message--${winner.toLowerCase()}`}>{winnerLabel}</h2>
         {reason?.type === 'all-pieces-captured' && (
-          <p>All {reason.player} pieces captured</p>
+          <p>All {loserLabel} pieces captured</p>
         )}
         {reason?.type === 'no-valid-moves' && (
-          <p>No valid moves for {reason.player}</p>
+          <p>No valid moves for {loserLabel}</p>
         )}
         <div className="modal-actions" style={{ justifyContent: 'center' }}>
           <button className="primary-btn" onClick={onPlayAgain}>Play Again</button>
@@ -361,7 +368,7 @@ function App() {
       </div>
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
       {showQuitConfirm && <QuitModal onCancel={() => setShowQuitConfirm(false)} onQuit={handleQuit} />}
-      {phase === 'over' && winner && <GameOverModal winner={winner} reason={gameOverReason} onPlayAgain={handleBack} />}
+      {phase === 'over' && winner && <GameOverModal winner={winner} reason={gameOverReason} mode={mode} playerSide={playerSide} onPlayAgain={handleBack} />}
     </div>
   )
 }

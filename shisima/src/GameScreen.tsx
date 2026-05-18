@@ -33,7 +33,7 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
   function getStatusText(): string {
     if (state.phase === 'over') return getGameOverResult()
     if (hasNoMoves) return 'No moves — turn skipped'
-    if (isComputerTurn) return 'Computer thinking...'
+    if (isComputerTurn) return 'Thinking...'
     if (options.opponent === '2player') {
       return state.currentPlayer === 1 ? "Player 1's turn" : "Player 2's turn"
     }
@@ -44,9 +44,9 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
     if (state.winner === 'draw') return 'Draw'
     if (state.winner === null) return ''
     if (options.opponent === 'computer') {
-      return state.winner === humanPlayer ? 'You Win!' : 'Computer Wins'
+      return state.winner === humanPlayer ? 'You win!' : 'Computer wins'
     }
-    return state.winner === 1 ? 'Player 1 Wins' : 'Player 2 Wins'
+    return state.winner === 1 ? 'Player 1 wins!' : 'Player 2 wins!'
   }
 
   function getResultType(): 'win' | 'loss' | 'draw' {

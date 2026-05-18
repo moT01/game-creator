@@ -12,7 +12,7 @@ export default function HomeScreen({ onStart }: Props) {
         <p className="home-subtitle">vs Opponent</p>
 
         <button className="btn btn--primary home-start" onClick={onStart}>
-          Play
+          New Game
         </button>
       </div>
     </div>

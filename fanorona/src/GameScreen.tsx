@@ -38,17 +38,17 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
   function getStatusText(): string {
     if (isOver) return ''
     if (options.opponent === 'computer') {
-      return gameState.currentPlayer === 'dark' ? 'Your turn' : 'Computer thinking...'
+      return gameState.currentPlayer === 'dark' ? 'Your turn' : 'Thinking...'
     }
-    return gameState.currentPlayer === 'dark' ? "Dark's turn" : "Light's turn"
+    return gameState.currentPlayer === 'dark' ? "Player 1's turn" : "Player 2's turn"
   }
 
   function getResult(): string {
     if (gameState.winner === null) return 'No winner'
     if (options.opponent === 'computer') {
-      return gameState.winner === 'dark' ? 'You Win!' : 'Computer Wins!'
+      return gameState.winner === 'dark' ? 'You win!' : 'Computer wins'
     }
-    return gameState.winner === 'dark' ? 'Dark Wins!' : 'Light Wins!'
+    return gameState.winner === 'dark' ? 'Player 1 wins!' : 'Player 2 wins!'
   }
 
   function getResultType(): 'win' | 'loss' | undefined {

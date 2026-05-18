@@ -28,22 +28,26 @@ interface Props {
   onStatusChange?: (status: { text: string; cls: string }) => void;
 }
 
-function GameOverModal({ status, winner, onPlayAgain, onBackToMenu }: {
+function GameOverModal({ status, winner, config, onPlayAgain, onBackToMenu }: {
   status: 'checkmate' | 'stalemate' | 'draw';
   winner: 'white' | 'black' | null;
+  config: GameConfig;
   onPlayAgain: () => void;
   onBackToMenu: () => void;
 }) {
   let message = ''
   let cls = ''
   if (status === 'checkmate' && winner) {
-    const label = winner === 'white' ? 'Light' : 'Dark'
     cls = `game-header__status--${winner === 'white' ? 'light' : 'dark'}`
-    message = `${label} wins by checkmate!`
+    if (config.mode === 'vs-computer') {
+      message = winner === config.playerColor ? 'You win!' : 'Computer wins'
+    } else {
+      message = winner === 'white' ? 'Player 1 wins!' : 'Player 2 wins!'
+    }
   } else if (status === 'stalemate') {
-    message = 'Stalemate — Draw!'
+    message = 'Stalemate — Draw'
   } else {
-    message = 'Draw!'
+    message = 'Draw'
   }
   return (
     <div className="modal-backdrop">
@@ -58,20 +62,31 @@ function GameOverModal({ status, winner, onPlayAgain, onBackToMenu }: {
   )
 }
 
-function getStatusInfo(gameState: GameState, isThinking: boolean): { text: string; cls: string } {
+function getStatusInfo(gameState: GameState, isThinking: boolean, config: GameConfig): { text: string; cls: string } {
   const { status, turn, winner } = gameState;
-  const turnLabel = turn === 'white' ? 'Light' : 'Dark';
+  const isVsComputer = config.mode === 'vs-computer';
+  const { playerColor } = config;
   const turnCls = `game-header__status--${turn === 'white' ? 'light' : 'dark'}`;
 
   if (status === 'checkmate') {
-    const winLabel = winner === 'white' ? 'Light' : 'Dark';
-    return { text: `${winLabel} wins by checkmate`, cls: `game-header__status--${winner === 'white' ? 'light' : 'dark'}` };
+    if (isVsComputer) {
+      return winner === playerColor
+        ? { text: 'You win!', cls: '' }
+        : { text: 'Computer wins', cls: '' };
+    }
+    const winnerName = winner === 'white' ? 'Player 1' : 'Player 2';
+    return { text: `${winnerName} wins!`, cls: turnCls };
   }
   if (status === 'stalemate') return { text: 'Stalemate — Draw', cls: '' };
   if (status === 'draw') return { text: 'Draw', cls: '' };
   if (isThinking) return { text: 'Thinking...', cls: '' };
-  if (status === 'check') return { text: `${turnLabel} is in check`, cls: turnCls };
-  return { text: `${turnLabel}'s turn`, cls: turnCls };
+  if (status === 'check') {
+    if (isVsComputer) return { text: 'You are in check!', cls: turnCls };
+    const checkName = turn === 'white' ? 'Player 1' : 'Player 2';
+    return { text: `${checkName} is in check!`, cls: turnCls };
+  }
+  if (isVsComputer) return { text: 'Your turn', cls: '' };
+  return { text: turn === 'white' ? "Player 1's turn" : "Player 2's turn", cls: turnCls };
 }
 
 export function Game({ config, onBackToMenu, onWin, initialState, onSaveChange, onStatusChange }: Props) {
@@ -137,7 +152,7 @@ export function Game({ config, onBackToMenu, onWin, initialState, onSaveChange, 
   }, [gameState]);
 
   useEffect(() => {
-    onStatusChange?.(getStatusInfo(gameState, isThinking));
+    onStatusChange?.(getStatusInfo(gameState, isThinking, config));
   }, [gameState, isThinking]);
 
   function handleSquareClick(index: number) {
@@ -210,6 +225,7 @@ export function Game({ config, onBackToMenu, onWin, initialState, onSaveChange, 
         <GameOverModal
           status={status as 'checkmate' | 'stalemate' | 'draw'}
           winner={winner}
+          config={config}
           onPlayAgain={handlePlayAgain}
           onBackToMenu={onBackToMenu}
         />

@@ -18,7 +18,7 @@ export function ModeSelector({ onStart }: Props) {
           className={`mode-selector__btn ${mode === 'vs-player' ? 'mode-selector__btn--active' : ''}`}
           onClick={() => setMode('vs-player')}
         >
-          vs Player
+          2 Player
         </button>
         <button
           className={`mode-selector__btn ${mode === 'vs-computer' ? 'mode-selector__btn--active' : ''}`}
@@ -66,7 +66,7 @@ export function ModeSelector({ onStart }: Props) {
         className="mode-selector__start"
         onClick={() => onStart(mode, difficulty, playerSide)}
       >
-        Start Game
+        New Game
       </button>
     </div>
   )

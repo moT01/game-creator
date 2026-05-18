@@ -35,12 +35,24 @@ function advanceTurn(s: GameState): GameState {
 
 function getStatus(s: GameState): { text: string; cls: string } {
   if (s.phase === 'game-over' && s.winner) {
-    const label = s.winner === 'light' ? 'Light' : 'Dark'
-    return { text: `${label} wins!`, cls: `game-header__status--${s.winner}` }
+    if (s.mode === 'vs-ai') {
+      return s.winner === 'light'
+        ? { text: 'You win!', cls: 'game-header__status--light' }
+        : { text: 'Computer wins', cls: 'game-header__status--dark' }
+    }
+    const winnerName = s.winner === 'light' ? 'Player 1' : 'Player 2'
+    return { text: `${winnerName} wins!`, cls: `game-header__status--${s.winner}` }
   }
-  const label = s.currentPlayer === 'light' ? 'Light' : 'Dark'
-  const msg = s.forcedSkip ? ' — No legal moves' : "'s turn"
-  return { text: `${label}${msg}`, cls: `game-header__status--${s.currentPlayer}` }
+  if (s.mode === 'vs-ai') {
+    if (s.currentPlayer === 'dark') return { text: 'Thinking...', cls: '' }
+    return s.forcedSkip
+      ? { text: 'No legal moves', cls: 'game-header__status--light' }
+      : { text: 'Your turn', cls: 'game-header__status--light' }
+  }
+  const playerName = s.currentPlayer === 'light' ? 'Player 1' : 'Player 2'
+  return s.forcedSkip
+    ? { text: `${playerName} — No legal moves`, cls: `game-header__status--${s.currentPlayer}` }
+    : { text: `${playerName}'s turn`, cls: `game-header__status--${s.currentPlayer}` }
 }
 
 const MODE_SELECT_STATE: GameState = {
@@ -309,7 +321,7 @@ export default function App() {
       </main>
 
       {state.phase === 'game-over' && state.winner && (
-        <WinModal winner={state.winner} onPlayAgain={handlePlayAgain} onMainMenu={() => setState(MODE_SELECT_STATE)} />
+        <WinModal winner={state.winner} mode={state.mode} onPlayAgain={handlePlayAgain} onMainMenu={() => setState(MODE_SELECT_STATE)} />
       )}
 
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}

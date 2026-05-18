@@ -33,9 +33,13 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
   let statusText = ''
   if (!gameOver) {
     if (isComputerTurn) {
-      statusText = 'Computer is thinking...'
+      statusText = 'Thinking...'
+    } else if (options.opponent === 'computer') {
+      if (phase === 'placement') statusText = 'Place a piece'
+      else if (selected === null) statusText = 'Pick a piece'
+      else statusText = 'Pick a destination'
     } else {
-      const label = options.opponent === 'computer' ? 'Your turn' : `Player ${currentPlayer === 'P1' ? '1' : '2'}`
+      const label = `Player ${currentPlayer === 'P1' ? '1' : '2'}`
       if (phase === 'placement') statusText = `${label}: place a piece`
       else if (selected === null) statusText = `${label}: pick a piece`
       else statusText = `${label}: pick a destination`
@@ -47,7 +51,7 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
   let note = ''
   if (gameOver) {
     if (moveCount >= 50) {
-      result = 'Draw!'
+      result = 'Draw'
       resultType = 'draw'
       note = '50 moves: no winner'
     } else if (winner) {
@@ -57,7 +61,7 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
         resultType = humanWon ? 'win' : 'loss'
         note = '3 in a row'
       } else {
-        result = `P${winner === 'P1' ? '1' : '2'} wins!`
+        result = `Player ${winner === 'P1' ? '1' : '2'} wins!`
         resultType = 'win'
         note = '3 in a row'
       }
@@ -68,7 +72,7 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
         resultType = humanStuck ? 'loss' : 'win'
         note = humanStuck ? 'No moves left' : 'Computer is stuck'
       } else {
-        result = `P${noMovesPlayer === 'P1' ? '1' : '2'} is stuck!`
+        result = `Player ${noMovesPlayer === 'P1' ? '1' : '2'} is stuck!`
         resultType = 'win'
         note = 'No moves left'
       }

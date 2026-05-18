@@ -100,6 +100,8 @@ function App() {
             currentTurn={currentTurn}
             winner={winner}
             isDraw={isDraw}
+            mode={mode}
+            playerSide={playerSide}
             onPlayAgain={resetGame}
           />
           <GameBoard

@@ -37,7 +37,7 @@ export default function HomeScreen({
             </button>
           )}
           <button className="btn btn-primary" onClick={onStart}>
-            {onResume ? 'New Game' : 'Play'}
+            New Game
           </button>
         </div>
 

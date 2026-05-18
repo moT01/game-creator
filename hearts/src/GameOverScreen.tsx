@@ -16,7 +16,7 @@ export default function GameOverScreen({ data, record, onPlayAgain, onHome }: Pr
   const humanWon = winners.length === 1 && winners[0] === 0
   const isTie = winners.length > 1
 
-  const resultLabel = isTie ? 'Tie Game' : humanWon ? 'You Win!' : `${PLAYER_NAMES[winners[0] as PlayerId]} Wins`
+  const resultLabel = isTie ? 'Tie Game' : humanWon ? 'You win!' : `${PLAYER_NAMES[winners[0] as PlayerId]} wins`
 
   return (
     <div className="game-over" role="main">

@@ -30,7 +30,7 @@ export function ModeSelect({ onStart, onResume, hasSavedGame, winsNormal, winsHa
           className={`tab-btn${mode === 'local' ? ' tab-btn--active' : ''}`}
           onClick={() => setMode('local')}
         >
-          2 Players
+          2 Player
         </button>
       </div>
 
@@ -57,13 +57,13 @@ export function ModeSelect({ onStart, onResume, hasSavedGame, winsNormal, winsHa
               className={`pill-btn${playerColor === 'white' ? ' pill-btn--active' : ''}`}
               onClick={() => setPlayerColor('white')}
             >
-              Light <span className="goes-first">(goes first)</span>
+              Go First
             </button>
             <button
               className={`pill-btn${playerColor === 'black' ? ' pill-btn--active' : ''}`}
               onClick={() => setPlayerColor('black')}
             >
-              Dark
+              Go Second
             </button>
           </div>
           <label className="hard-mode-label">

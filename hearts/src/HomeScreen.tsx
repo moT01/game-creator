@@ -55,7 +55,7 @@ export default function HomeScreen({ record, hasResume, theme, onThemeToggle, on
             <button className="btn btn--secondary" onClick={onResume}>Resume Game</button>
           )}
           <button className="btn btn--primary" onClick={onStart} data-testid="start-button">
-            {hasResume ? 'New Game' : 'Start Game'}
+            New Game
           </button>
         </div>
 

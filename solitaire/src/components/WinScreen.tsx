@@ -14,7 +14,7 @@ export function WinScreen({ baseScore, timeBonus, sessionStats, onPlayAgain }: P
   return (
     <div className="win-overlay">
       <div className="win-panel">
-        <h2 className="win-title">You Win!</h2>
+        <h2 className="win-title">You win!</h2>
         <div className="win-scores">
           <div className="win-score-row">
             <span className="win-score-label">Base Score</span>

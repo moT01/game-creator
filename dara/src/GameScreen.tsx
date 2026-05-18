@@ -29,7 +29,7 @@ function getStatus(state: GameState, options: GameOptions): string {
     if (computerSide && state.currentPlayer === computerSide) return 'Computer placing...'
     return `${prefix}Place a piece`
   }
-  if (computerSide && state.currentPlayer === computerSide) return 'Computer thinking...'
+  if (computerSide && state.currentPlayer === computerSide) return 'Thinking...'
   if (state.moveSubPhase === 'select-piece') return `${prefix}Select a piece to move`
   if (state.moveSubPhase === 'select-destination') return `${prefix}Select where to move`
   return `${prefix}Select a piece to capture`
