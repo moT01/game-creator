@@ -9,44 +9,13 @@
 .game-status__turn {
   font-size: var(--text-lg);
   font-weight: var(--weight-bold);
-  color: var(--color-text-muted);
-}
-
-.game-status__turn--light {
-  color: var(--player-light);
-}
-
-.game-status__turn--dark {
-  color: var(--player-dark);
-}
-
-.light-palette .game-status__turn--light {
-  color: #d4960f;
-}
-
-.light-palette .game-status__turn--dark {
-  color: #3b3b6e;
+  color: var(--primary-color);
 }
 
 .game-status__message {
   font-size: var(--text-xl);
   font-weight: var(--weight-bold);
-}
-
-.game-status__message--light {
-  color: var(--player-light);
-}
-
-.game-status__message--dark {
-  color: var(--player-dark);
-}
-
-.light-palette .game-status__message--light {
-  color: #d4960f;
-}
-
-.light-palette .game-status__message--dark {
-  color: #3b3b6e;
+  color: var(--primray-color);
 }
 
 .game-status__play-again {

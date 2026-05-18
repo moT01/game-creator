@@ -19,10 +19,6 @@
   --board-selected: rgba(255, 191, 0, 0.22);
 }
 
-.light-palette .game-card__body {
-  background: var(--color-bg);
-}
-
 /* ── Background pieces ───────────────────────────────────────────────────────── */
 
 .bg-pieces {
@@ -53,12 +49,12 @@
 }
 
 .light-palette .bg-piece {
-  background: rgba(0, 0, 0, 0.025);
-  border: 2px solid rgba(0, 0, 0, 0.04);
+  background: rgba(0, 0, 0, 0.05);
+  border: 2px solid rgba(0, 0, 0, 0.08);
 }
 
 .light-palette .bg-piece__star {
-  color: rgba(0, 0, 0, 0.055);
+  color: rgba(0, 0, 0, 0.1);
 }
 
 /* ── Layout ──────────────────────────────────────────────────────────────────── */

@@ -6,10 +6,6 @@
   border-bottom: var(--border-default);
 }
 
-.light-palette .game-header {
-  background: var(--color-bg);
-}
-
 .game-header__center {
   flex: 1;
   text-align: center;

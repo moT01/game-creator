@@ -80,7 +80,7 @@ function GameOverModal({ winner, reason, mode, playerSide, onPlayAgain }: { winn
   return (
     <div className="modal-backdrop">
       <div className="modal-card" style={{ textAlign: 'center' }}>
-        <h2 className={`modal-title game-status__message--${winner.toLowerCase()}`}>{winnerLabel}</h2>
+        <h2 className={"modal-title"}>{winnerLabel}</h2>
         {reason?.type === 'all-pieces-captured' && (
           <p>All {loserLabel} pieces captured</p>
         )}
