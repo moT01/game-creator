@@ -589,7 +589,7 @@ function renderStatus() {
     el.textContent = 'Your turn';
     el.className = 'top-bar-center status-text accent';
   } else {
-    el.textContent = state.currentSide === 'dark' ? "Dark's turn" : "Light's turn";
+    el.textContent = state.currentSide === 'dark' ? "Player 1's turn" : "Player 2's turn";
     el.className = 'top-bar-center status-text accent';
   }
 }
@@ -755,7 +755,7 @@ function renderBoard() {
 function flashGoAgain(cb) {
   const el = document.getElementById('status-text');
   if (el) {
-    el.textContent = 'Go again!';
+    el.textContent = state.mode === 'vs-computer' ? 'Go again!' : (state.currentSide === 'dark' ? 'Player 1: Go again' : 'Player 2: Go again');
     el.className = 'status-text accent';
   }
   setTimeout(cb, 600);
@@ -778,11 +778,15 @@ function showGameOver() {
   if (state.mode === 'vs-computer') {
     if (state.winner === 'draw') { resultText = 'Draw!'; resultClass = 'result-draw'; }
     else if (state.winner === state.playerColor) { resultText = 'You win!'; resultClass = 'result-win'; }
-    else { resultText = 'You lose!'; resultClass = 'result-lose'; }
+    else { resultText = 'Computer wins'; resultClass = 'result-lose'; }
   } else {
     if (state.winner === 'draw') { resultText = 'Draw!'; resultClass = 'result-draw'; }
-    else { resultText = state.winner === 'dark' ? 'Dark wins!' : 'Light wins!'; resultClass = 'result-win'; }
+    else { resultText = state.winner === 'dark' ? 'Player 1 wins!' : 'Player 2 wins!'; resultClass = 'result-win'; }
   }
+
+  const scoreText = state.mode === 'vs-computer'
+    ? `You: ${state.score[state.playerColor]} | Computer: ${state.score[state.playerColor === 'dark' ? 'light' : 'dark']}`
+    : `Player 1: ${state.score.dark} | Player 2: ${state.score.light}`;
 
   const overlay = document.createElement('div');
   overlay.className = 'overlay gameover-overlay';
@@ -792,7 +796,7 @@ function showGameOver() {
   overlay.innerHTML = `
     <div class="overlay-panel gameover-panel">
       <div class="result-text ${resultClass}">${resultText}</div>
-      <div class="gameover-score mono">Dark: ${state.score.dark} | Light: ${state.score.light}</div>
+      <div class="gameover-score mono">${scoreText}</div>
       <div class="overlay-actions">
         <button class="btn-primary" id="btn-play-again">Play Again</button>
         <button class="btn-secondary" id="btn-menu">Menu</button>

@@ -12,7 +12,7 @@ Standardize status text shown in the game screen header across all games. Check 
 
 ## Vanilla JS Games
 
-### [ ] dots-and-boxes
+### [x] dots-and-boxes
 | Mode | State | Current | New |
 |---|---|---|---|
 | vs computer | Player's turn | "Your turn" | |
