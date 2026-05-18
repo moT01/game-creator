@@ -320,7 +320,7 @@ function renderHome() {
         <h1 class="game-title">Congkak</h1>
         <div class="mode-tabs" id="mode-tabs">
           <button class="tab-btn ${prefs.mode === 'vs-computer' ? 'active' : ''}" data-mode="vs-computer">vs Computer</button>
-          <button class="tab-btn ${prefs.mode === '2-player' ? 'active' : ''}" data-mode="2-player">2 Players</button>
+          <button class="tab-btn ${prefs.mode === '2-player' ? 'active' : ''}" data-mode="2-player">2 Player</button>
         </div>
         <div class="diff-row ${showDiff ? '' : 'hidden'}" id="diff-row">
           <span class="diff-label">Difficulty</span>
@@ -430,11 +430,11 @@ function renderPlay() {
 
 function buildStatusText(s, isThinking) {
   if (s.phase === 'game-over') {
-    if (s.winner === 'draw') return `<span class="status-neutral">Draw!</span>`;
+    if (s.winner === 'draw') return `<span class="status-neutral">Draw</span>`;
     if (s.mode === 'vs-computer') {
       return s.winner === 1
         ? `<span class="status-win">You win!</span>`
-        : `<span class="status-loss">You lose.</span>`;
+        : `<span class="status-loss">Computer wins</span>`;
     }
     return `<span class="status-win">Player ${s.winner} wins!</span>`;
   }
@@ -538,10 +538,10 @@ function renderGameOver() {
   const s = state;
   let headline, headlineCls;
   if (s.winner === 'draw') {
-    headline = 'Draw!';
+    headline = 'Draw';
     headlineCls = 'status-neutral';
   } else if (s.mode === 'vs-computer') {
-    headline = s.winner === 1 ? 'You win!' : 'You lose.';
+    headline = s.winner === 1 ? 'You win!' : 'Computer wins';
     headlineCls = s.winner === 1 ? 'status-win' : 'status-loss';
   } else {
     headline = `Player ${s.winner} wins!`;

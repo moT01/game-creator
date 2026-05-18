@@ -114,7 +114,7 @@ Standardize status text shown in the game screen header across all games. Check 
 | menu | Play as toggle | "Fox" / "Geese" | |
 | menu | Start button | "New Game" | |
 
-### [ ] nine-mens-morris
+### [x] nine-mens-morris
 | Mode | State | Current | New |
 |---|---|---|---|
 | vs computer | Player's turn (place) | "Your turn: Place a piece" | "Place a piece" |
@@ -135,7 +135,7 @@ Standardize status text shown in the game screen header across all games. Check 
 | menu | Start button | "New Game" | |
 | help modal | Color references | "Blue" / "Gold" | "Player 1" / "Player 2" |
 
-### [ ] oware
+### [x] oware
 | Mode | State | Current | New |
 |---|---|---|---|
 | vs computer | Player's turn | "Your turn" | |
@@ -153,7 +153,7 @@ Standardize status text shown in the game screen header across all games. Check 
 | menu | Mode toggle | "vs Computer" / "vs Player" | "2 Player" |
 | menu | Start button | "New Game" | |
 
-### [ ] congkak
+### [x] congkak
 | Mode | State | Current | New |
 |---|---|---|---|
 | vs computer | Player's turn | "Your turn" | |
@@ -180,7 +180,7 @@ Skip
 ### [ ] pool
 Skip
 
-### [ ] reversi
+### [x] reversi
 | Mode | State | Current | New |
 |---|---|---|---|
 | vs computer | Player's turn | "Dark's turn" / "Light's turn" | "Your turn" |

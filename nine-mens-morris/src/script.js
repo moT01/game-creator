@@ -705,29 +705,28 @@ function getStatusText(state) {
   if (state.gameOver) {
     const w = state.gameOver.winner;
     if (w === 'draw') return { text: 'Draw by repetition', cls: 'status-neutral' };
-    const playerColor = state.playerColor;
     if (state.mode === 'pvc') {
-      if (w === playerColor) return { text: 'You win!', cls: 'status-win' };
+      if (w === state.playerColor) return { text: 'You win!', cls: 'status-win' };
       return { text: 'Computer wins', cls: 'status-lose' };
     }
-    const name = w === 'black' ? 'Blue' : 'Gold';
+    const name = w === 'black' ? 'Player 1' : 'Player 2';
     return { text: `${name} wins!`, cls: 'status-win' };
   }
 
-  if (isThinking) return { text: 'Computer is thinking...', cls: 'status-neutral' };
+  if (isThinking) return { text: 'Thinking...', cls: 'status-neutral' };
 
   const cp = state.currentPlayer;
-  const cpName = state.mode === 'pvc'
-    ? (cp === state.playerColor ? 'Your' : "Computer's")
-    : (cp === 'black' ? "Player 1's" : "Player 2's");
 
-  if (state.mustRemove) {
-    return { text: `${cpName} turn: Remove an opponent piece`, cls: 'status-neutral' };
+  if (state.mode === 'pvc') {
+    if (state.mustRemove) return { text: 'Remove an opponent piece', cls: 'status-neutral' };
+    if (state.phase === 'placement') return { text: 'Place a piece', cls: 'status-neutral' };
+    return { text: 'Move a piece', cls: 'status-neutral' };
   }
-  if (state.phase === 'placement') {
-    return { text: `${cpName} turn: Place a piece`, cls: 'status-neutral' };
-  }
-  return { text: `${cpName} turn: Move a piece`, cls: 'status-neutral' };
+
+  const pName = cp === 'black' ? 'Player 1' : 'Player 2';
+  if (state.mustRemove) return { text: `${pName}: Remove an opponent piece`, cls: 'status-neutral' };
+  if (state.phase === 'placement') return { text: `${pName}: Place a piece`, cls: 'status-neutral' };
+  return { text: `${pName}: Move a piece`, cls: 'status-neutral' };
 }
 
 function renderPiecesInHand(state) {
@@ -772,14 +771,14 @@ function renderGameOverOverlay(state) {
     resultCls = 'status-neutral';
   } else if (state.mode === 'pvc') {
     if (w === state.playerColor) {
-      resultText = 'You Win!';
+      resultText = 'You win!';
       resultCls = 'status-win';
     } else {
-      resultText = 'Computer Wins';
+      resultText = 'Computer wins';
       resultCls = 'status-lose';
     }
   } else {
-    resultText = `${w === 'black' ? 'Blue' : 'Gold'} Wins!`;
+    resultText = `${w === 'black' ? 'Player 1' : 'Player 2'} wins!`;
     resultCls = 'status-win';
   }
   const rec = getRecords();
