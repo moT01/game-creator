@@ -69,7 +69,7 @@ function HelpModal({ onClose }: { onClose: () => void }) {
   )
 }
 
-function GameOverModal({ winner, reason, mode, playerSide, onPlayAgain }: { winner: Player; reason: GameOverReason; mode: Mode; playerSide: Player; onPlayAgain: () => void }) {
+function GameOverModal({ winner, reason, mode, playerSide, onPlayAgain, onHome }: { winner: Player; reason: GameOverReason; mode: Mode; playerSide: Player; onPlayAgain: () => void; onHome: () => void }) {
   const isVsComputer = mode === 'vs-computer';
   const winnerLabel = isVsComputer
     ? (winner === playerSide ? 'You win!' : 'Computer wins')
@@ -80,7 +80,7 @@ function GameOverModal({ winner, reason, mode, playerSide, onPlayAgain }: { winn
   return (
     <div className="modal-backdrop">
       <div className="modal-card" style={{ textAlign: 'center' }}>
-        <h2 className={"modal-title"}>{winnerLabel}</h2>
+        <h2 className="modal-title">{winnerLabel}</h2>
         {reason?.type === 'all-pieces-captured' && (
           <p>All {loserLabel} pieces captured</p>
         )}
@@ -88,7 +88,8 @@ function GameOverModal({ winner, reason, mode, playerSide, onPlayAgain }: { winn
           <p>No valid moves for {loserLabel}</p>
         )}
         <div className="modal-actions" style={{ justifyContent: 'center' }}>
-          <button className="primary-btn" onClick={onPlayAgain}>Play Again</button>
+          <button className="secondary-btn" style={{ flex: 1 }} onClick={onHome}>Home</button>
+          <button className="primary-btn" style={{ flex: 1 }} onClick={onPlayAgain}>Play Again</button>
         </div>
       </div>
     </div>
@@ -154,6 +155,10 @@ function App() {
     localStorage.removeItem(SAVE_KEY)
     setHasSavedGame(false)
   }, [])
+
+  function handlePlayAgain() {
+    startGame(mode, playerSide)
+  }
 
   function startGame(selectedMode: Mode, selectedSide: Player) {
     clearSavedGame()
@@ -368,7 +373,7 @@ function App() {
       </div>
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
       {showQuitConfirm && <QuitModal onCancel={() => setShowQuitConfirm(false)} onQuit={handleQuit} />}
-      {phase === 'over' && winner && <GameOverModal winner={winner} reason={gameOverReason} mode={mode} playerSide={playerSide} onPlayAgain={handleBack} />}
+      {phase === 'over' && winner && <GameOverModal winner={winner} reason={gameOverReason} mode={mode} playerSide={playerSide} onPlayAgain={handlePlayAgain} onHome={() => setPhase('setup')} />}
     </div>
   )
 }

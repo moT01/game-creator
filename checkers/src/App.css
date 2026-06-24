@@ -131,7 +131,7 @@
   border: var(--border-default);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  padding: var(--space-6);
+  padding: var(--space-5);
   width: 100%;
   max-width: 480px;
   max-height: 85vh;
