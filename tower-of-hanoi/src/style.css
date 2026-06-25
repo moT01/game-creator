@@ -435,6 +435,9 @@
   padding: var(--space-2) var(--space-2) 0;
   cursor: pointer;
   outline: none;
+  background: transparent;
+  border: none;
+  font: inherit;
 }
 
 .peg-col:focus-visible {
@@ -654,18 +657,20 @@
 
 /* ── Modals ───────────────────────────────────────────────────────────────── */
 
-.modal-backdrop {
+dialog.modal-card {
   position: fixed;
   inset: 0;
+  margin: auto;
+  height: fit-content;
+  width: calc(100% - var(--space-5) * 2);
+}
+
+dialog.modal-card::backdrop {
   background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-  padding: var(--space-5);
 }
 
 .modal-card {
+  color: inherit;
   background: var(--color-surface);
   border: var(--border-default);
   border-radius: var(--radius-lg);
