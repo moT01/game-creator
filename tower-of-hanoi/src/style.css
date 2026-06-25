@@ -609,6 +609,10 @@
   color: var(--color-accent);
 }
 
+.light-palette .game-over-result {
+  color: var(--color-text-primary);
+}
+
 .game-over-new-best {
   font-size: var(--text-md);
   font-weight: var(--weight-bold);
@@ -743,6 +747,25 @@ dialog.modal-card::backdrop {
 .modal-actions .secondary-btn {
   width: auto;
   padding: var(--space-3) var(--space-5);
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .disk,
+  .disk.disk-top-selected,
+  .disk.disk-placed,
+  .disk.disk-win-glow,
+  .game-over-overlay,
+  .game-over-card,
+  #hud-moves.pulse,
+  .primary-btn,
+  .secondary-btn,
+  .icon-btn {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
 }
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */

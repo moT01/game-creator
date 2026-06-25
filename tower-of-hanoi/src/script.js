@@ -381,7 +381,7 @@ function renderPlay() {
 
         <div class="hud">
           <div class="hud-left">
-            <span class="hud-item" id="hud-moves" aria-live="polite">Moves: ${state.moveCount}</span>
+            <span class="hud-item" id="hud-moves" aria-live="polite" aria-atomic="true">Moves: ${state.moveCount}</span>
             <span class="hud-sep">|</span>
             <span class="hud-item hud-optimal">Optimal: ${getOptimalMoves(state.diskCount)}</span>
           </div>
@@ -522,7 +522,10 @@ function formatTime(seconds) {
 
 function buildHudLiveRegions() {
   const movesEl = document.getElementById('hud-moves');
-  if (movesEl) movesEl.setAttribute('aria-live', 'polite');
+  if (movesEl) {
+    movesEl.setAttribute('aria-live', 'polite');
+    movesEl.setAttribute('aria-atomic', 'true');
+  }
 }
 
 function animateMoveCounter() {
@@ -579,6 +582,12 @@ function renderHelpModal() {
           <li>Focus on where the largest unmoved disk needs to go - everything else follows from that.</li>
           <li>Don't move the second-largest disk until everything above the largest is out of the way.</li>
           <li>The optimal move count is shown as a reference - try to match it.</li>
+        </ul>
+
+        <h3>Controls</h3>
+        <ul>
+          <li>Click a peg, or press 1, 2, or 3 to select the top disk on that peg.</li>
+          <li>Click another peg, or press its number key to move the selected disk there.</li>
         </ul>
       </div>
     </dialog>
@@ -705,11 +714,22 @@ function attachEvents() {
 
 // ── Init ───────────────────────────────────────────────────────────────────
 
+function initPegShortcuts() {
+  document.addEventListener('keydown', e => {
+    if (!state._inGame || state.gameStatus === 'won') return;
+    if (document.querySelector('dialog[open]')) return;
+    if (e.key === '1') selectPeg(0);
+    else if (e.key === '2') selectPeg(1);
+    else if (e.key === '3') selectPeg(2);
+  });
+}
+
 function init() {
   applyTheme(localStorage.getItem('toh_theme') || 'dark');
   const savedDisk = parseInt(localStorage.getItem('toh_disk_count') || '5', 10);
   if ([3, 5, 7].includes(savedDisk)) state.diskCount = savedDisk;
   state._inGame = false;
+  initPegShortcuts();
   const announcer = document.createElement('div');
   announcer.id = 'sr-announcer';
   announcer.className = 'sr-only';
