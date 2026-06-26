@@ -35,7 +35,7 @@ export default function Header(props: Props) {
       <button className="icon-btn" onClick={onHelp} aria-label="Help">
         {ICONS.help}
       </button>
-      <button className="icon-btn" onClick={onThemeToggle} aria-label="Toggle theme">
+      <button className="icon-btn" onClick={onThemeToggle} aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}>
         {theme === 'dark' ? ICONS.sun : ICONS.moon}
       </button>
       <a
@@ -43,7 +43,7 @@ export default function Header(props: Props) {
         href="https://www.freecodecamp.org/donate"
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Donate"
+        aria-label="Donate (opens in new tab)"
       >
         {ICONS.heart}
       </a>

@@ -13,13 +13,13 @@ export default function StatsRow({ stats }: Props) {
   if (!stats.length) return null
 
   return (
-    <div className="stats-row">
+    <dl className="stats-row">
       {stats.map((stat, i) => (
         <div key={i} className="stats-row-stat">
-          <span className="stats-row-label">{stat.label}</span>
-          <span className="stats-row-value">{stat.value}</span>
+          <dt className="stats-row-label">{stat.label}</dt>
+          <dd className="stats-row-value">{stat.value}</dd>
         </div>
       ))}
-    </div>
+    </dl>
   )
 }

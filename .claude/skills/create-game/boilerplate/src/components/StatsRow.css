@@ -21,6 +21,7 @@
 }
 
 .stats-row-value {
+  margin: 0;
   font-family: var(--font-mono);
   font-size: var(--text-lg);
   font-weight: var(--weight-bold);
