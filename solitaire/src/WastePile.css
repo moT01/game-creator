@@ -1,0 +1,10 @@
+.waste-fan {
+  position: relative;
+  height: var(--card-h);
+  flex-shrink: 0;
+}
+
+.waste-fan-card {
+  position: absolute;
+  top: 0;
+}

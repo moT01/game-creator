@@ -1,0 +1,27 @@
+.tableau-col {
+  display: flex;
+  flex-direction: column;
+  min-height: var(--card-h);
+  flex-shrink: 0;
+}
+
+.tableau-card {
+  flex-shrink: 0;
+}
+
+.tableau-overlap-down {
+  margin-top: calc(-1 * (var(--card-h) - 20px));
+}
+
+.tableau-face-up.tableau-overlap-up {
+  margin-top: calc(-1 * (var(--card-h) - 28px));
+}
+
+.tableau-card.card-selected {
+  position: relative;
+  z-index: 1;
+}
+
+.tableau-empty {
+  min-height: var(--card-h);
+}

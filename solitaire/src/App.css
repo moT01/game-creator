@@ -14,7 +14,8 @@
   border-radius: var(--radius-lg);
   border: var(--border-default);
   box-shadow: var(--shadow-lg);
-  min-width: 450px;
+  min-width: 320px;
+  max-width: 640px;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -24,7 +25,6 @@
 
 @media (max-width: 460px) {
   .card {
-    min-width: 0;
     border-radius: var(--radius-md);
     padding: 0 0 var(--space-4);
   }

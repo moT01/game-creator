@@ -1,0 +1,185 @@
+/* ── Layout ────────────────────────────────────────────────────────────────── */
+
+.game-board {
+  --card-w: 68px;
+  --card-h: 96px;
+  --card-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+  padding: var(--space-4);
+  box-sizing: border-box;
+}
+
+.board-top {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.board-top-gap {
+  flex: 1;
+  min-width: var(--space-2);
+}
+
+.board-tableau {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+/* ── Shared card base ───────────────────────────────────────────────────────── */
+
+.playing-card {
+  width: var(--card-w);
+  height: var(--card-h);
+  border-radius: var(--card-radius);
+  flex-shrink: 0;
+  position: relative;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  transition: box-shadow var(--transition-fast);
+  user-select: none;
+}
+
+/* ── Card face ─────────────────────────────────────────────────────────────── */
+
+.card-face {
+  background: #f8f8f8;
+  border: 1px solid var(--gray-15);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--space-1);
+  overflow: hidden;
+}
+
+.card-red {
+  color: #b22222;
+}
+
+.card-black {
+  color: var(--gray-90);
+}
+
+.card-corner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+}
+
+.card-rank {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  line-height: 1;
+}
+
+.card-suit-small {
+  font-size: 0.55rem;
+  line-height: 1;
+}
+
+.card-corner-br {
+  transform: rotate(180deg);
+  align-self: flex-end;
+}
+
+.card-center-suit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.75rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* ── Card back ─────────────────────────────────────────────────────────────── */
+
+.card-back {
+  background-color: #1a3a6b;
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.06) 0,
+      rgba(255, 255, 255, 0.06) 1px,
+      transparent 1px,
+      transparent 7px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.06) 0,
+      rgba(255, 255, 255, 0.06) 1px,
+      transparent 1px,
+      transparent 7px
+    );
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ── Selected highlight ────────────────────────────────────────────────────── */
+
+.card-selected {
+  box-shadow: 0 0 0 2px var(--color-accent), var(--shadow-accent);
+  z-index: 1;
+}
+
+/* ── Pile placeholder ───────────────────────────────────────────────────────── */
+
+.pile-placeholder {
+  width: var(--card-w);
+  height: var(--card-h);
+  border-radius: var(--card-radius);
+  border: 1px dashed var(--color-border);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xl);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+  padding: 0;
+}
+
+.pile-placeholder:hover {
+  border-color: var(--color-text-muted);
+}
+
+.foundation-red {
+  color: #b22222;
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  .game-board {
+    --card-w: 48px;
+    --card-h: 68px;
+    gap: var(--space-3);
+    padding: var(--space-1);
+  }
+
+  .board-top,
+  .board-tableau {
+    gap: var(--space-1);
+  }
+
+  .card-center-suit {
+    font-size: 1.2rem;
+  }
+
+  .card-rank {
+    font-size: var(--text-xs);
+  }
+
+  .card-suit-small {
+    font-size: 0.45rem;
+  }
+}
