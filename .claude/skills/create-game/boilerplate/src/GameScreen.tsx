@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Header from './components/Header'
 import GameBoard from './GameBoard'
 import ConfirmModal from './components/ConfirmModal'
@@ -22,6 +22,9 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
   void useGame(options)
   const [showConfirm, setShowConfirm] = useState(false)
   const [gameOverDismissed, setGameOverDismissed] = useState(false)
+  const mainRef = useRef<HTMLElement>(null)
+
+  useEffect(() => { mainRef.current?.focus() }, [])
   // REPLACE: const isGameOver = state.phase === 'over'
   const isGameOver = false
   const showGameOver = isGameOver && !gameOverDismissed
@@ -36,9 +39,9 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
         onClose={() => isGameOver ? setGameOverDismissed(false) : setShowConfirm(true)}
         center="Your turn"
       />
-      <div className="game-content">
+      <main className="game-content" ref={mainRef} tabIndex={-1}>
         <GameBoard />
-      </div>
+      </main>
       {showConfirm && (
         <ConfirmModal
           message="Return to the main menu? You can resume your game from there."

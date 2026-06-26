@@ -9,8 +9,10 @@ interface Props {
 
 export default function Modal({ title, onClose, children }: Props) {
   const panelRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
+    triggerRef.current = document.activeElement as HTMLElement
     const panel = panelRef.current
     if (!panel) return
 
@@ -32,7 +34,10 @@ export default function Modal({ title, onClose, children }: Props) {
     }
 
     document.addEventListener('keydown', onKeyDown)
-    return () => document.removeEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      triggerRef.current?.focus()
+    }
   }, [onClose])
 
   return (

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Header from './components/Header'
 import HomeOptions, { DEFAULT_OPTIONS, type GameOptions } from './HomeOptions'
 import './HomeScreen.css'
@@ -14,6 +14,9 @@ interface Props {
 
 export default function HomeScreen({ theme, onThemeToggle, onHelp, onStart, onResume, hasGame }: Props) {
   const [options, setOptions] = useState<GameOptions>(DEFAULT_OPTIONS)
+  const mainRef = useRef<HTMLElement>(null)
+
+  useEffect(() => { mainRef.current?.focus() }, [])
 
   return (
     <div className="card">
@@ -23,7 +26,7 @@ export default function HomeScreen({ theme, onThemeToggle, onHelp, onStart, onRe
         onThemeToggle={onThemeToggle}
         onHelp={onHelp}
       />
-      <div className="home-content">
+      <main className="home-content" ref={mainRef} tabIndex={-1}>
         <HomeOptions value={options} onChange={setOptions} />
         <div className="home-actions">
           <button className="btn btn-primary" onClick={() => onStart(options)}>New Game</button>
@@ -31,7 +34,7 @@ export default function HomeScreen({ theme, onThemeToggle, onHelp, onStart, onRe
             <button className="btn btn-secondary" onClick={onResume}>Resume Game</button>
           )}
         </div>
-      </div>
+      </main>
     </div>
   )
 }
