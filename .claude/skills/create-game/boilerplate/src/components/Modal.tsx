@@ -8,56 +8,48 @@ interface Props {
 }
 
 export default function Modal({ title, onClose, children }: Props) {
-  const panelRef = useRef<HTMLDivElement>(null)
+  const dialogRef = useRef<HTMLDialogElement>(null)
   const triggerRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     triggerRef.current = document.activeElement as HTMLElement
-    const panel = panelRef.current
-    if (!panel) return
+    const dialog = dialogRef.current
+    if (!dialog) return
 
-    const focusable = panel.querySelectorAll<HTMLElement>(
+    dialog.showModal()
+
+    const focusable = dialog.querySelectorAll<HTMLElement>(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     )
-    const first = focusable[0]
-    const last = focusable[focusable.length - 1]
-    first?.focus()
+    focusable[0]?.focus()
 
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') { onClose(); return }
-      if (e.key !== 'Tab') return
-      if (e.shiftKey) {
-        if (document.activeElement === first) { e.preventDefault(); last?.focus() }
-      } else {
-        if (document.activeElement === last) { e.preventDefault(); first?.focus() }
-      }
+    function onCancel(e: Event) {
+      e.preventDefault()
+      onClose()
     }
 
-    document.addEventListener('keydown', onKeyDown)
+    dialog.addEventListener('cancel', onCancel)
     return () => {
-      document.removeEventListener('keydown', onKeyDown)
+      dialog.removeEventListener('cancel', onCancel)
       triggerRef.current?.focus()
     }
   }, [onClose])
 
   return (
-    <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
-      <div
-        className="modal-panel"
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-      >
-        {title && (
-          <div className="modal-header">
-            <h2 className="modal-title">{title}</h2>
-          </div>
-        )}
-        <div className="modal-body">
-          {children}
+    <dialog
+      ref={dialogRef}
+      className="modal-panel"
+      aria-label={title}
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+    >
+      {title && (
+        <div className="modal-header">
+          <h2 className="modal-title">{title}</h2>
         </div>
+      )}
+      <div className="modal-body">
+        {children}
       </div>
-    </div>
+    </dialog>
   )
 }
