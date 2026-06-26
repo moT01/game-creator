@@ -377,12 +377,12 @@ function renderPlay() {
           </div>
         </header>
 
-        <hr class="header-rule" />
+        <hr class="header-rule" aria-hidden="true" />
 
         <div class="hud">
           <div class="hud-left">
             <span class="hud-item" id="hud-moves" aria-live="polite" aria-atomic="true">Moves: ${state.moveCount}</span>
-            <span class="hud-sep">|</span>
+            <span class="hud-sep" aria-hidden="true">|</span>
             <span class="hud-item hud-optimal">Optimal: ${getOptimalMoves(state.diskCount)}</span>
           </div>
           <span class="hud-item hud-timer" id="hud-timer">${formatTime(state.elapsedSeconds)}</span>
@@ -464,8 +464,8 @@ function renderPegs() {
 function renderGameOverHTML() {
   return `
     <div class="game-over-overlay" id="game-over-overlay">
-      <div class="game-over-card">
-        <div class="game-over-result">Puzzle Solved!</div>
+      <div class="game-over-card" role="dialog" aria-modal="true" aria-labelledby="game-over-title">
+        <div class="game-over-result" id="game-over-title">Puzzle Solved!</div>
         ${state.isNewBest ? `<div class="game-over-new-best">New Best</div>` : ''}
         <div class="game-over-stats">
           <div class="stat-row">
@@ -495,14 +495,26 @@ function showGameOver() {
   const existing = document.getElementById('game-over-overlay');
   if (existing) return;
   container.insertAdjacentHTML('beforeend', renderGameOverHTML());
+  Array.from(container.children).forEach(child => {
+    if (!child.classList.contains('game-over-overlay')) child.setAttribute('inert', '');
+  });
+  const announcer = document.getElementById('sr-announcer');
+  if (announcer) {
+    announcer.textContent = '';
+    setTimeout(() => { announcer.textContent = 'Puzzle solved!'; }, 50);
+  }
   trapFocus(document.querySelector('.game-over-card'));
   // Wire up play-again and menu buttons
   document.getElementById('play-again-btn')?.addEventListener('click', () => {
     initGame(state.diskCount);
     state._inGame = true;
     render();
+    document.querySelector('.peg-col')?.focus();
   });
-  document.getElementById('menu-btn')?.addEventListener('click', showHome);
+  document.getElementById('menu-btn')?.addEventListener('click', () => {
+    showHome();
+    document.getElementById('new-game-btn')?.focus();
+  });
 }
 
 // ── HUD ────────────────────────────────────────────────────────────────────
@@ -707,9 +719,13 @@ function attachEvents() {
     initGame(state.diskCount);
     state._inGame = true;
     render();
+    document.querySelector('.peg-col')?.focus();
   });
 
-  document.getElementById('menu-btn')?.addEventListener('click', showHome);
+  document.getElementById('menu-btn')?.addEventListener('click', () => {
+    showHome();
+    document.getElementById('new-game-btn')?.focus();
+  });
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────
