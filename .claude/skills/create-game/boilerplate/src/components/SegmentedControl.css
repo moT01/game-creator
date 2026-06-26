@@ -34,8 +34,8 @@
 }
 
 .segmented-control-option:focus-visible {
-  outline: none;
-  box-shadow: inset 0 0 0 2px var(--blue-mid);
+  outline: 2px solid var(--blue-mid);
+  outline-offset: -2px;
 }
 
 .segmented-control-sm .segmented-control-option {
