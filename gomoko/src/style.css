@@ -641,6 +641,16 @@
   --color-text-muted: var(--gray-45);
 }
 
+/* ── Reduced motion ─────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .stone,
+  .stone-win {
+    animation: none;
+    opacity: 1;
+  }
+}
+
 /* ── Responsive ─────────────────────────────────────────────────────────────── */
 
 @media (max-width: 480px) {
