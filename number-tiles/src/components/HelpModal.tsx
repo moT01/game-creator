@@ -7,10 +7,33 @@ interface HelpModalProps {
 
 export function HelpModal({ onClose }: HelpModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<Element | null>(null);
+
+  useEffect(() => {
+    triggerRef.current = document.activeElement;
+    const focusable = modalRef.current?.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    if (focusable?.length) focusable[0].focus();
+    return () => { (triggerRef.current as HTMLElement)?.focus(); };
+  }, []);
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key !== 'Tab' || !modalRef.current) return;
+      const focusable = Array.from(modalRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )).filter(el => !el.hasAttribute('disabled'));
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
     }
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
@@ -29,7 +52,7 @@ export function HelpModal({ onClose }: HelpModalProps) {
       aria-modal="true"
       aria-label="Help"
     >
-      <div className="modal-card help-modal">
+      <div className="modal-card help-modal" ref={modalRef}>
         <div className="help-modal__header">
           <h2 className="help-modal__title">How to Play</h2>
           <button className="help-modal__close btn btn-secondary" onClick={onClose} aria-label="Close help">

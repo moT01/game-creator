@@ -152,10 +152,22 @@ h1, h2, h3, .title {
   line-height: var(--line-height-tight);
 }
 
+/* Screen-reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* Focus */
 :focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(153, 201, 255, 0.5);
+  outline: 2px solid var(--blue-mid);
+  outline-offset: 2px;
 }
 
 /* Icon buttons */

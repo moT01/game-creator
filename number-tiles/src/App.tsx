@@ -176,7 +176,7 @@ export default function App() {
   }, []);
 
   return (
-    <div className="app">
+    <main className="app">
       {screen === 'home' ? (
         <HomeScreen
           bestScores={bestScores}
@@ -200,6 +200,6 @@ export default function App() {
           onToggleTheme={toggleTheme}
         />
       ) : null}
-    </div>
+    </main>
   );
 }

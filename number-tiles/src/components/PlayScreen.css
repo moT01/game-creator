@@ -81,6 +81,12 @@
   animation: pulse-scale 200ms ease;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .play-screen__stat-value--pulse {
+    animation: none;
+  }
+}
+
 .play-screen__new-btn {
   width: 100%;
   padding: var(--space-3) var(--space-6);

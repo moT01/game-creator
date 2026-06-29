@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import './WinModal.css';
 import type { BestScore } from '../App';
 
@@ -21,9 +22,40 @@ export function WinModal({ moves, seconds, previousBest, onPlayAgain, onHome }: 
     moves < previousBest.moves ||
     (moves === previousBest.moves && seconds < previousBest.seconds);
 
+  const modalRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<Element | null>(null);
+
+  useEffect(() => {
+    triggerRef.current = document.activeElement;
+    const focusable = modalRef.current?.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    if (focusable?.length) focusable[0].focus();
+    return () => { (triggerRef.current as HTMLElement)?.focus(); };
+  }, []);
+
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.key !== 'Tab' || !modalRef.current) return;
+      const focusable = Array.from(modalRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )).filter(el => !el.hasAttribute('disabled'));
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    }
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, []);
+
   return (
     <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Puzzle solved">
-      <div className="modal-card win-modal">
+      <div className="modal-card win-modal" ref={modalRef}>
         <h2 className="win-modal__title">Puzzle Solved!</h2>
         {isNewBest && <p className="win-modal__new-best">New best!</p>}
         <div className="win-modal__stats">

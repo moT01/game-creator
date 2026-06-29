@@ -15,8 +15,8 @@ export function Tile({ value, isBlank, isMovable, onClick }: TileProps) {
   return (
     <button
       className={`tile tile--numbered${isMovable ? ' tile--movable' : ''}`}
-      onClick={onClick}
-      disabled={!isMovable}
+      onClick={isMovable ? onClick : undefined}
+      aria-disabled={!isMovable || undefined}
       aria-label={`Tile ${value}`}
     >
       {value}
