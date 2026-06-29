@@ -352,6 +352,7 @@ function announceStatus(text) {
 // ── Rendering ────────────────────────────────────────────────────────────────
 
 let boardFocus = [7, 7];
+let keyboardMode = false;
 
 const CELL = 32; // px per grid cell
 const BOARD_PX = CELL * 14; // 14 gaps between 15 lines
@@ -444,10 +445,16 @@ function buildBoard() {
       });
 
       if (canClick) {
-        hitArea.addEventListener('click', () => handleCellClick(r, c));
+        hitArea.addEventListener('click', () => {
+          keyboardMode = false;
+          document.body.classList.remove('keyboard-nav');
+          handleCellClick(r, c);
+        });
         hitArea.addEventListener('keydown', e => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
+            keyboardMode = true;
+            document.body.classList.add('keyboard-nav');
             handleCellClick(r, c);
           }
         });
@@ -501,6 +508,8 @@ function buildBoard() {
   svg.addEventListener('keydown', e => {
     if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
     e.preventDefault();
+    keyboardMode = true;
+    document.body.classList.add('keyboard-nav');
     const [r, c] = boardFocus;
     let nr = r, nc = c;
     if (e.key === 'ArrowUp') nr = Math.max(0, r - 1);
@@ -872,6 +881,11 @@ function renderPlay() {
   screen.appendChild(content);
   app.appendChild(screen);
 
+  if (keyboardMode && state.status === 'playing' && !state.aiThinking) {
+    const target = document.querySelector(`[data-row="${boardFocus[0]}"][data-col="${boardFocus[1]}"]`);
+    if (target) target.focus();
+  }
+
   // Animate overlay in
   if (state.status === 'won' || state.status === 'draw') {
     const overlay = screen.querySelector('.game-over-overlay');
@@ -886,6 +900,8 @@ function renderPlay() {
         resultText = state.winner === 1 ? 'Player 1 wins!' : 'Player 2 wins!';
       }
       announceStatus(resultText);
+      const playAgain = overlay.querySelector('#play-again-btn');
+      if (playAgain) playAgain.focus();
     }, 2000);
   }
 }
@@ -933,5 +949,17 @@ function updateThemeBtn(btn) {
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 applyTheme(getTheme());
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Tab') {
+    keyboardMode = true;
+    document.body.classList.add('keyboard-nav');
+  }
+});
+
+document.addEventListener('pointerdown', () => {
+  keyboardMode = false;
+  document.body.classList.remove('keyboard-nav');
+});
 
 render();
