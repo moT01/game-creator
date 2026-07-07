@@ -7,7 +7,7 @@
   --board-frame: #0d0c22;
   --board-border: #020212;
   --board-selected: rgba(255, 191, 0, 0.18);
-  --cell-size: min(72px, calc((100vw - 72px) / 8));
+  --cell-size: min(88px, calc((100vw - 72px) / 8));
 }
 
 .light-palette {
@@ -31,8 +31,8 @@
 
 .bg-piece {
   position: absolute;
-  width: 62px;
-  height: 62px;
+  width: 76px;
+  height: 76px;
   border-radius: var(--radius-full);
   background: rgba(255, 255, 255, 0.03);
   border: 2px solid rgba(255, 255, 255, 0.05);
@@ -126,6 +126,17 @@
   padding: var(--space-5);
 }
 
+dialog.modal-card {
+  color: inherit;
+  position: fixed;
+  inset: 0;
+  margin: auto;
+}
+
+dialog.modal-card::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+
 .modal-card {
   background: var(--color-surface);
   border: var(--border-default);
@@ -209,6 +220,11 @@
   transform: scale(0.97);
 }
 
+.primary-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--blue-mid);
+}
+
 .secondary-btn {
   display: inline-flex;
   align-items: center;
@@ -228,4 +244,9 @@
 .secondary-btn:hover {
   background: var(--color-surface-raised);
   color: var(--color-text-primary);
+}
+
+.secondary-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--blue-mid);
 }

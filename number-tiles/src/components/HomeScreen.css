@@ -125,14 +125,12 @@
 .home-screen__actions {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: var(--space-3);
   width: 100%;
 }
 
 .home-screen__play-btn {
   width: 100%;
-  max-width: 200px;
   font-size: var(--text-lg);
   padding: var(--space-4) var(--space-6);
 }

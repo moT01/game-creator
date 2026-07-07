@@ -1,4 +1,4 @@
-import type { Piece as PieceType } from '../gameLogic'
+import type { Piece as PieceType, Player } from '../gameLogic'
 import { Piece } from './Piece'
 import './Square.css'
 
@@ -9,12 +9,15 @@ interface Props {
   isValidDestination: boolean
   isJumpDestination: boolean
   onClick: () => void
-  disabled: boolean
+  row: number
+  col: number
+  getPlayerLabel: (player: Player) => string
+  boardIndex: number
+  tabIndex: number
+  onFocus: () => void
 }
 
-export function Square({ piece, isDark, isSelected, isValidDestination, isJumpDestination, onClick, disabled }: Props) {
-  const isInteractable = isDark && !disabled
-
+export function Square({ piece, isDark, isSelected, isValidDestination, isJumpDestination, onClick, row, col, getPlayerLabel, boardIndex, tabIndex, onFocus }: Props) {
   const classes = [
     'square',
     isDark ? 'square--dark' : 'square--light',
@@ -22,14 +25,31 @@ export function Square({ piece, isDark, isSelected, isValidDestination, isJumpDe
     isValidDestination ? 'square--valid-destination' : '',
   ].filter(Boolean).join(' ')
 
+  if (!isDark) {
+    return <div className={classes} />
+  }
+
+  const pieceDesc = piece
+    ? `${getPlayerLabel(piece.player)} ${piece.type === 'king' ? 'King' : 'piece'}`
+    : ''
+  const selectedHint = isSelected ? ', selected' : ''
+  const moveHint = isValidDestination ? ', valid move' : ''
+  const label = pieceDesc
+    ? `Row ${row}, Column ${col}, ${pieceDesc}${selectedHint}${moveHint}`
+    : `Row ${row}, Column ${col}${moveHint}`
+
   return (
-    <div
+    <button
       className={classes}
-      onClick={isInteractable ? onClick : undefined}
+      onClick={onClick}
+      aria-label={label}
+      data-board-index={boardIndex}
+      tabIndex={tabIndex}
+      onFocus={onFocus}
     >
       {piece && <Piece piece={piece} />}
       {isValidDestination && <div className="square__highlight" />}
       {isJumpDestination && <div className="square__capture-ring" />}
-    </div>
+    </button>
   )
 }

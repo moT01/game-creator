@@ -1,8 +1,9 @@
 /* ── Layout ────────────────────────────────────────────────────────────────── */
 
 .game-board {
-  --card-w: 68px;
-  --card-h: 96px;
+  /* 120px: 32px app padding + 32px board padding + 48px gaps + 8px buffer */
+  --card-w: clamp(40px, calc((100vw - 120px) / 7), 90px);
+  --card-h: calc(var(--card-w) * 1.45);
   --card-radius: var(--radius-sm);
   display: flex;
   flex-direction: column;
@@ -75,13 +76,13 @@
 
 .card-rank {
   font-family: var(--font-body);
-  font-size: var(--text-sm);
+  font-size: clamp(8px, calc(var(--card-w) * 0.18), 15px);
   font-weight: var(--weight-bold);
   line-height: 1;
 }
 
 .card-suit-small {
-  font-size: 0.55rem;
+  font-size: clamp(5px, calc(var(--card-w) * 0.12), 10px);
   line-height: 1;
 }
 
@@ -95,7 +96,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 1.75rem;
+  font-size: clamp(16px, calc(var(--card-w) * 0.46), 44px);
   line-height: 1;
   pointer-events: none;
 }
@@ -140,7 +141,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--text-xl);
+  font-size: clamp(14px, calc(var(--card-w) * 0.35), 28px);
   color: var(--color-text-muted);
   cursor: pointer;
   flex-shrink: 0;
@@ -156,30 +157,16 @@
   color: #b22222;
 }
 
-/* ── Responsive ────────────────────────────────────────────────────────────── */
+/* ── Small screens: tighten padding and gaps ────────────────────────────────── */
 
-@media (max-width: 600px) {
+@media (max-width: 450px) {
   .game-board {
-    --card-w: 48px;
-    --card-h: 68px;
+    padding: var(--space-2);
     gap: var(--space-3);
-    padding: var(--space-1);
   }
 
   .board-top,
   .board-tableau {
     gap: var(--space-1);
-  }
-
-  .card-center-suit {
-    font-size: 1.2rem;
-  }
-
-  .card-rank {
-    font-size: var(--text-xs);
-  }
-
-  .card-suit-small {
-    font-size: 0.45rem;
   }
 }

@@ -1,3 +1,7 @@
+.card-game {
+  max-width: 900px;
+}
+
 .game-content {
   display: flex;
   flex-direction: column;

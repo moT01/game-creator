@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   createInitialBoard,
   checkWinner,
@@ -45,71 +45,95 @@ function loadSavedGame(): SavedState | null {
 }
 
 function HelpModal({ onClose }: { onClose: () => void }) {
+  const ref = useRef<HTMLDialogElement>(null)
+
+  useEffect(() => { ref.current?.showModal() }, [])
+
+  function handleCancel(e: React.SyntheticEvent) {
+    e.preventDefault()
+    onClose()
+  }
+
+  function handleBackdropClick(e: React.MouseEvent<HTMLDialogElement>) {
+    if (e.target === ref.current) onClose()
+  }
+
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-card" onClick={e => e.stopPropagation()}>
-        <h2 className="modal-title">How to Play</h2>
-        <div className="modal-content">
-          <h3>Objective</h3>
-          <p>Capture all of your opponent's pieces, or leave them with no valid moves.</p>
-          <h3>Rules</h3>
-          <ul>
-            <li>Players alternate turns.</li>
-            <li>Pieces move diagonally forward one square at a time.</li>
-            <li>Capture by jumping over an opponent's piece into the empty square behind it.</li>
-            <li>If a jump is available you must take it. Chain jumps are required when possible.</li>
-            <li>Reach your opponent's back row to become a King. Kings can move and capture in any diagonal direction.</li>
-          </ul>
-        </div>
-        <div className="modal-actions">
-          <button className="primary-btn" onClick={onClose}>Got it</button>
-        </div>
+    <dialog ref={ref} className="modal-card" aria-labelledby="help-title" onCancel={handleCancel} onClick={handleBackdropClick}>
+      <h2 id="help-title" className="modal-title">How to Play</h2>
+      <div className="modal-content">
+        <h3>Objective</h3>
+        <p>Capture all of your opponent's pieces, or leave them with no valid moves.</p>
+        <h3>Rules</h3>
+        <ul>
+          <li>Players alternate turns.</li>
+          <li>Pieces move diagonally forward one square at a time.</li>
+          <li>Capture by jumping over an opponent's piece into the empty square behind it.</li>
+          <li>If a jump is available you must take it. Chain jumps are required when possible.</li>
+          <li>Reach your opponent's back row to become a King. Kings can move and capture in any diagonal direction.</li>
+        </ul>
       </div>
-    </div>
+      <div className="modal-actions">
+        <button className="primary-btn" onClick={onClose}>Got it</button>
+      </div>
+    </dialog>
   )
 }
 
 function GameOverModal({ winner, reason, mode, playerSide, onPlayAgain, onHome }: { winner: Player; reason: GameOverReason; mode: Mode; playerSide: Player; onPlayAgain: () => void; onHome: () => void }) {
-  const isVsComputer = mode === 'vs-computer';
+  const ref = useRef<HTMLDialogElement>(null)
+  const isVsComputer = mode === 'vs-computer'
   const winnerLabel = isVsComputer
     ? (winner === playerSide ? 'You win!' : 'Computer wins')
-    : (winner === 'Light' ? 'Player 1 wins!' : 'Player 2 wins!');
+    : (winner === 'Light' ? 'Player 1 wins!' : 'Player 2 wins!')
   const loserLabel = isVsComputer
     ? (winner !== playerSide ? 'your' : "Computer's")
-    : (winner === 'Light' ? 'Player 2' : 'Player 1');
+    : (winner === 'Light' ? 'Player 2' : 'Player 1')
+
+  useEffect(() => { ref.current?.showModal() }, [])
+
   return (
-    <div className="modal-backdrop">
-      <div className="modal-card" style={{ textAlign: 'center' }}>
-        <h2 className="modal-title">{winnerLabel}</h2>
-        {reason?.type === 'all-pieces-captured' && (
-          <p>All {loserLabel} pieces captured</p>
-        )}
-        {reason?.type === 'no-valid-moves' && (
-          <p>No valid moves for {loserLabel}</p>
-        )}
-        <div className="modal-actions" style={{ justifyContent: 'center' }}>
-          <button className="secondary-btn" style={{ flex: 1 }} onClick={onHome}>Home</button>
-          <button className="primary-btn" style={{ flex: 1 }} onClick={onPlayAgain}>Play Again</button>
-        </div>
+    <dialog ref={ref} className="modal-card" aria-labelledby="game-over-title" onCancel={e => e.preventDefault()} style={{ textAlign: 'center' }}>
+      <h2 id="game-over-title" className="modal-title">{winnerLabel}</h2>
+      {reason?.type === 'all-pieces-captured' && (
+        <p>All {loserLabel} pieces captured</p>
+      )}
+      {reason?.type === 'no-valid-moves' && (
+        <p>No valid moves for {loserLabel}</p>
+      )}
+      <div className="modal-actions" style={{ justifyContent: 'center' }}>
+        <button className="secondary-btn" style={{ flex: 1 }} onClick={onHome}>Home</button>
+        <button className="primary-btn" style={{ flex: 1 }} onClick={onPlayAgain}>Play Again</button>
       </div>
-    </div>
+    </dialog>
   )
 }
 
 function QuitModal({ onCancel, onQuit }: { onCancel: () => void; onQuit: () => void }) {
+  const ref = useRef<HTMLDialogElement>(null)
+
+  useEffect(() => { ref.current?.showModal() }, [])
+
+  function handleCancel(e: React.SyntheticEvent) {
+    e.preventDefault()
+    onCancel()
+  }
+
+  function handleBackdropClick(e: React.MouseEvent<HTMLDialogElement>) {
+    if (e.target === ref.current) onCancel()
+  }
+
   return (
-    <div className="modal-backdrop" onClick={onCancel}>
-      <div className="modal-card" onClick={e => e.stopPropagation()}>
-        <h2 className="modal-title">Quit Game</h2>
-        <div className="modal-content">
-          <p>Return to the main menu? You can resume your game from there.</p>
-        </div>
-        <div className="modal-actions">
-          <button className="secondary-btn" onClick={onCancel}>Cancel</button>
-          <button className="primary-btn" onClick={onQuit}>Quit</button>
-        </div>
+    <dialog ref={ref} className="modal-card" aria-labelledby="quit-title" onCancel={handleCancel} onClick={handleBackdropClick}>
+      <h2 id="quit-title" className="modal-title">Quit Game</h2>
+      <div className="modal-content">
+        <p>Return to the main menu? You can resume your game from there.</p>
       </div>
-    </div>
+      <div className="modal-actions">
+        <button className="secondary-btn" onClick={onCancel}>Cancel</button>
+        <button className="primary-btn" onClick={onQuit}>Quit</button>
+      </div>
+    </dialog>
   )
 }
 
@@ -339,7 +363,7 @@ function App() {
             : undefined}
           statusClass={phase === 'playing' ? `game-status__turn--${currentTurn.toLowerCase()}` : undefined}
         />
-        <div className="game-card__body">
+        <main className="game-card__body">
           {phase === 'setup' && (
             <>
               <div className="game-card__title-section">
@@ -365,11 +389,13 @@ function App() {
                 onSquareClick={handleSquareClick}
                 disabled={isDisabled}
                 flipped={mode === 'vs-computer' && playerSide === 'Dark'}
+                mode={mode}
+                playerSide={playerSide}
               />
             </>
           )}
 
-        </div>
+        </main>
       </div>
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
       {showQuitConfirm && <QuitModal onCancel={() => setShowQuitConfirm(false)} onQuit={handleQuit} />}

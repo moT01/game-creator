@@ -315,11 +315,11 @@
 }
 
 .light-palette .play-card {
-  background: var(--gray-10);
+  background: var(--gray-00);
 }
 
 .light-palette .play-card .btn-icon {
-  background: linear-gradient(135deg, var(--gray-10) 0%, var(--gray-15) 100%);
+  background: linear-gradient(135deg, var(--gray-05) 0%, var(--gray-10) 100%);
 }
 
 /* ── Status Bar ─────────────────────────────────────────────────────────────── */
@@ -351,7 +351,7 @@
 }
 
 .light-palette .board-bg {
-  fill: var(--gray-10);
+  fill: var(--gray-00);
 }
 
 .grid-line {
@@ -638,9 +638,9 @@
 /* ── Light palette overrides ────────────────────────────────────────────────── */
 
 .light-palette {
-  --color-bg: var(--gray-00);
-  --color-surface: var(--gray-05);
-  --color-surface-raised: var(--gray-10);
+  --color-bg: var(--gray-05);
+  --color-surface: var(--gray-00);
+  --color-surface-raised: var(--gray-05);
   --color-border: var(--gray-15);
   --color-text-primary: var(--gray-90);
   --color-text-secondary: var(--gray-75);

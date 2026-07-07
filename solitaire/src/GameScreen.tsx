@@ -51,7 +51,7 @@ export default function GameScreen({ theme, onThemeToggle, onHelp, onClose, opti
   ] : undefined
 
   return (
-    <div className="card">
+    <div className="card card-game">
       <Header
         variant="game"
         theme={theme}

@@ -18,6 +18,7 @@ export function Tile({ value, isBlank, isMovable, onClick }: TileProps) {
       onClick={isMovable ? onClick : undefined}
       aria-disabled={!isMovable || undefined}
       aria-label={`Tile ${value}`}
+      tabIndex={-1}
     >
       {value}
     </button>

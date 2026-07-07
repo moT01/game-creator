@@ -15,12 +15,12 @@
   border: var(--border-default);
   box-shadow: var(--shadow-lg);
   min-width: 320px;
-  max-width: 640px;
   width: 100%;
   display: flex;
   flex-direction: column;
   padding: 0;
-  overflow: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 @media (max-width: 460px) {
