@@ -1,8 +1,0 @@
-site: dots-and-boxes
-build:
-  output: .
-deploy:
-  preview: true
-  ignore:
-    - "README.md"
-    - ".git/**"

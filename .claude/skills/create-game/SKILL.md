@@ -48,7 +48,7 @@ Before touching any files, introduce what you're about to build and ask focused 
 
 **Ask if the game has a complex or non-obvious UI** (multiple panels, multiple player areas, non-grid layouts):
 
-- "This game has a complex UI — want an HTML mockup to review before coding starts?"
+- Ask the user to describe the layout and proportions of the game board, panels, and elements. Ask for any special styling or animations."
 
 Format it like:
 
@@ -67,10 +67,10 @@ Wait for the user's response before doing anything else.
 
 ## Step 3 — Bootstrap the project
 
-1. Run `cp -R .claude/skills/create-game/boilerplate <game-name>` from the repo root to copy the boilerplate
-2. In `<game-name>/index.html`, replace the placeholder title with a capitalized human-friendly version of the game name
-3. In `<game-name>/platform.yaml`, replace the placeholder site name with the game name (lowercase, hyphenated if multiple words) — this is used for deployment and preview links
-4. Run `npm install` inside `<game-name>/`.
+1. Run `cp -R .claude/skills/create-game/boilerplate games/<game-name>` from the repo root to copy the boilerplate
+2. In `games/<game-name>/index.html`, replace the placeholder title with a capitalized human-friendly version of the game name
+3. In `games/<game-name>/platform.yaml`, replace the placeholder site name with the game name (lowercase, hyphenated if multiple words) — this is used for deployment and preview links
+4. Run `npm install` inside `games/<game-name>/`.
 
 The boilerplate includes pre-built components and hooks — use them, do not reimplement:
 
@@ -105,8 +105,8 @@ The following files are pre-wired but must be modified for each game:
 
 ## Step 4a — Create the plan file
 
-1. Create a `context` directory in <game-name> - so you have `<game-name>/context/`.
-2. Copy `.claude/skills/create-game/templates/PLAN_TEMPLATE.md` to `<game-name>/context/PLAN.md`. In the new file...
+1. Create a `context` directory in `games/<game-name>` - so you have `games/<game-name>/context/`.
+2. Copy `.claude/skills/create-game/templates/PLAN_TEMPLATE.md` to `games/<game-name>/context/PLAN.md`. In the new file...
 3. Replace all `<game-name>` placeholders with the actual game name
 4. Replace all `<known-game>` placeholders with the known game name
 
@@ -130,7 +130,7 @@ Be explicit and concise — no vague items like `- [ ] handle moves`. Break them
 
 Only include the AI / Computer Player section if the game has a computer opponent.
 
-Write the completed plan to `<game-name>/context/PLAN.md`.
+Write the completed plan to `games/<game-name>/context/PLAN.md`.
 
 ---
 
@@ -165,7 +165,7 @@ Read the completed plan and check:
 - Help & Strategy Guide content feels generic rather than game-specific
 - Styling items don't call out specific variables, states, or transitions
 
-Fix any gaps using the rules from step 4, then write the final plan to `<game-name>/context/PLAN.md`.
+Fix any gaps using the rules from step 4, then write the final plan to `games/<game-name>/context/PLAN.md`.
 
 ---
 
@@ -178,20 +178,6 @@ Show the user:
 Wait for explicit approval before proceeding. If the user requests changes, update the plan and ask again.
 
 Only proceed if the user replies with "plan approved". Any other response is treated as a change request — update the plan and ask again.
-
----
-
-## Step 6b — HTML mockup (opt-in only)
-
-Skip this step unless the user requested mockups in step 2.
-
-Read `.claude/skills/create-game/examples/` for visual reference — the mockup should match the established layout and style. Generate `<game-name>/context/mockup.html` — a single static HTML file showing each screen (home, play, game over, etc) as a rough visual layout. Use inline CSS. Show the right panels, elements, and proportions. No interactivity or game logic needed — layout only.
-
-Tell the user:
-
-> "Mockup saved to `<game-name>/context/mockup.html`. Open it in a browser and let me know if the layout looks right, or provide feedback. Respond with 'mockup approved' to start coding."
-
-Wait for explicit approval. If the user requests changes, update the mockup and ask again. Only proceed on "mockup approved".
 
 ---
 

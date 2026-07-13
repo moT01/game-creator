@@ -1,8 +1,0 @@
-site: fox-and-geese
-build:
-  output: .
-deploy:
-  preview: true
-  ignore:
-    - "README.md"
-    - ".git/**"

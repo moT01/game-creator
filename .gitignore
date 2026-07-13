@@ -2,10 +2,13 @@
 .DS_Store
 
 node_modules/
-# dist/
+dist/
 
 .vscode/*
 !.vscode/extensions.json
 .DS_Store
 
 .vite/
+
+games/*
+!games/.gitkeep

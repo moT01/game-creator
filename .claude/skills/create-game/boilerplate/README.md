@@ -1,7 +1,7 @@
-## Commit Builds
+## Development
 
-- Run `npm run build` after making any changes to build the site (`dist/` folder) - and commit/push those changes with any PR.
+- Install dependencies with `npm i` and run `npm run dev`
 
 ## Deployment
 
-- Serve the `dist/` folder as static files
+- Run `npm run build`. Serve the `dist/` folder as static files

@@ -20,8 +20,8 @@ Called by `create-game` as part of the pipeline.
 - `<game-name>` — passed in via Task call
 - `<known-game>` — passed in via Task call (may be same as game name)
 
-Plan files are in: `<game-name>/context/`
-Game code is in: `<game-name>/`
+Plan files are in: `games/<game-name>/context/`
+Game code is in: `games/<game-name>/`
 
 ## Important
 
@@ -35,13 +35,13 @@ Do not read boilerplate component or hook files (Header, Modal, ConfirmModal, Ga
 
 ## Step 1 — Read the plan
 
-Read `<game-name>/context/PLAN.md` fully before writing any code.
+Read `games/<game-name>/context/PLAN.md` fully before writing any code.
 
 ---
 
 ## Step 2 — Implement the next incomplete section
 
-Identify the first section in `<game-name>/context/PLAN.md` with unchecked items and implement all of the items in that section. Before writing any CSS or UI, read `.claude/skills/create-game/UI.md` first.
+Identify the first section in `games/<game-name>/context/PLAN.md` with unchecked items and implement all of the items in that section. Before writing any CSS or UI, read `.claude/skills/create-game/UI.md` first.
 
 The boilerplate includes pre-built components and hooks — use them, do not reimplement:
 
@@ -70,7 +70,7 @@ Only implement the next section - do not implement more than one section at a ti
 
 ## Step 3 — Check off completed items
 
-Mark every implemented item as done in `<game-name>/context/PLAN.md`.
+Mark every implemented item as done in `games/<game-name>/context/PLAN.md`.
 
 ---
 

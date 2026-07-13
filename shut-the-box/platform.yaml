@@ -1,8 +1,0 @@
-site: shut-the-box
-build:
-  output: .
-deploy:
-  preview: true
-  ignore:
-    - "README.md"
-    - ".git/**"

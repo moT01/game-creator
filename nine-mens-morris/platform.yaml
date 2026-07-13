@@ -1,8 +1,0 @@
-site: nine-mens-morris
-build:
-  output: .
-deploy:
-  preview: true
-  ignore:
-    - "README.md"
-    - ".git/**"
