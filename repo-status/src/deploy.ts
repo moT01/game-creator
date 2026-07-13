@@ -1,7 +1,10 @@
-import { execSync } from 'child_process';
+import { exec } from 'child_process';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { promisify } from 'util';
 import type { DeployInfo } from './types.js';
+
+const execAsync = promisify(exec);
 
 function relativeTime(iso: string): string {
   const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
@@ -22,15 +25,10 @@ function getSiteUrl(dir: string): string | null {
   }
 }
 
-export function getDeployedInfo(dir: string): DeployInfo | null {
+export async function getDeployedInfo(dir: string): Promise<DeployInfo | null> {
   try {
-    const raw = execSync('universe static ls --json', {
-      cwd: dir,
-      encoding: 'utf8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-    });
-
-    const data = JSON.parse(raw);
+    const { stdout } = await execAsync('universe static ls --json', { cwd: dir });
+    const data = JSON.parse(stdout);
     if (!data.success) return null;
 
     const productionId = data.aliases?.production;

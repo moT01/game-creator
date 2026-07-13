@@ -1,14 +1,15 @@
-import { execSync } from 'child_process';
+import { exec } from 'child_process';
 import { existsSync } from 'fs';
 import { join } from 'path';
+import { promisify } from 'util';
 import type { RemoteInfo } from './types.js';
 
-function run(dir: string, args: string): string | null {
+const execAsync = promisify(exec);
+
+async function run(dir: string, args: string): Promise<string | null> {
   try {
-    return execSync(`git -C "${dir}" ${args}`, {
-      encoding: 'utf8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-    }).trim();
+    const { stdout } = await execAsync(`git -C "${dir}" ${args}`);
+    return stdout.trim();
   } catch {
     return null;
   }
@@ -19,10 +20,10 @@ function shortUrl(url: string): string {
   return match ? match[1] : url;
 }
 
-function trackingRef(dir: string, remote: string): string | null {
+async function trackingRef(dir: string, remote: string): Promise<string | null> {
   for (const branch of ['main', 'master']) {
     const ref = `refs/remotes/${remote}/${branch}`;
-    if (run(dir, `rev-parse --verify ${ref}`) !== null) return ref;
+    if (await run(dir, `rev-parse --verify ${ref}`) !== null) return ref;
   }
   return null;
 }
@@ -31,16 +32,16 @@ export function isOwnRepo(dir: string): boolean {
   return existsSync(join(dir, '.git'));
 }
 
-export function getLocalHash(dir: string): string | null {
+export async function getLocalHash(dir: string): Promise<string | null> {
   return run(dir, 'rev-parse --short=7 HEAD');
 }
 
-export function getLocalDate(dir: string): string | null {
+export async function getLocalDate(dir: string): Promise<string | null> {
   return run(dir, 'log -1 --format=%cr HEAD');
 }
 
-export function getRemoteNames(dir: string): string[] {
-  const raw = run(dir, 'remote');
+export async function getRemoteNames(dir: string): Promise<string[]> {
+  const raw = await run(dir, 'remote');
   if (!raw) return [];
   const names = raw.split('\n').filter(Boolean);
   return names.sort((a, b) => {
@@ -54,32 +55,24 @@ export function getRemoteNames(dir: string): string[] {
   });
 }
 
-function hasRemote(dir: string, remote: string): boolean {
-  return run(dir, 'remote')?.split('\n').includes(remote) ?? false;
-}
+export async function getRemoteInfo(dir: string, remote: string): Promise<RemoteInfo | null> {
+  const fetched = await run(dir, `fetch ${remote}`) !== null;
+  const ref = await trackingRef(dir, remote);
+  const url = await run(dir, `remote get-url ${remote}`);
 
-function fetchRemote(dir: string, remote: string): boolean {
-  return run(dir, `fetch ${remote}`) !== null;
-}
-
-export function getRemoteInfo(dir: string, remote: string): RemoteInfo | null {
-  if (!hasRemote(dir, remote)) return null;
-
-  const fetched = fetchRemote(dir, remote);
-  const ref = trackingRef(dir, remote);
-  const url = run(dir, `remote get-url ${remote}`);
-
-  const hash = ref ? run(dir, `rev-parse --short=7 ${ref}`) : null;
-  const date = ref ? run(dir, `log -1 --format=%cr ${ref}`) : null;
-  const ahead = ref ? parseInt(run(dir, `rev-list --count ${ref}..HEAD`) ?? '0') : 0;
-  const behind = ref ? parseInt(run(dir, `rev-list --count HEAD..${ref}`) ?? '0') : 0;
+  const [hash, date, aheadRaw, behindRaw] = await Promise.all([
+    ref ? run(dir, `rev-parse --short=7 ${ref}`) : null,
+    ref ? run(dir, `log -1 --format=%cr ${ref}`) : null,
+    ref ? run(dir, `rev-list --count ${ref}..HEAD`) : null,
+    ref ? run(dir, `rev-list --count HEAD..${ref}`) : null,
+  ]);
 
   return {
     hash,
     shortUrl: url ? shortUrl(url) : null,
     stale: !fetched,
     date,
-    ahead,
-    behind,
+    ahead: parseInt(aheadRaw ?? '0'),
+    behind: parseInt(behindRaw ?? '0'),
   };
 }

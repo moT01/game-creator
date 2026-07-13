@@ -13,29 +13,26 @@ const games = readdirSync(GAMES_DIR)
   .filter(name => !filter || name === filter)
   .sort();
 
-const rows: RepoRow[] = games.map(name => {
+const rows: RepoRow[] = await Promise.all(games.map(async name => {
   const dir = join(GAMES_DIR, name);
 
-  if (!isOwnRepo(dir)) {
-    return { name, isRepo: false };
-  }
+  if (!isOwnRepo(dir)) return { name, isRepo: false };
 
-  const remoteNames = getRemoteNames(dir);
-  const remotes = remoteNames
-    .map(remoteName => {
-      const info = getRemoteInfo(dir, remoteName);
+  const [localHash, localDate, remoteNames, deployed] = await Promise.all([
+    getLocalHash(dir),
+    getLocalDate(dir),
+    getRemoteNames(dir),
+    getDeployedInfo(dir),
+  ]);
+
+  const remotes = (await Promise.all(
+    remoteNames.map(async remoteName => {
+      const info = await getRemoteInfo(dir, remoteName);
       return info ? { name: remoteName, info } : null;
     })
-    .filter(r => r !== null);
+  )).filter(r => r !== null);
 
-  return {
-    name,
-    isRepo: true,
-    localHash: getLocalHash(dir),
-    localDate: getLocalDate(dir),
-    remotes,
-    deployed: getDeployedInfo(dir),
-  };
-});
+  return { name, isRepo: true, localHash, localDate, remotes, deployed };
+}));
 
 printTable(rows);
