@@ -7,6 +7,8 @@ const COL_AB = 10;
 const COL_DATE = 16;
 const COL_URL = 60;
 const RED = '\x1b[31m';
+const GREEN = '\x1b[32m';
+const YELLOW = '\x1b[33m';
 const BLUE = '\x1b[34m';
 const RESET = '\x1b[0m';
 
@@ -17,8 +19,16 @@ function abStr(ahead: number, behind: number): string {
   return `${a} ${b}`;
 }
 
-function ind(hash: string | null | undefined, localHash: string | null | undefined): string {
-  if (!hash || hash === localHash) return ' '.repeat(COL_IND);
+function remoteInd(info: RemoteInfo, localHash: string | null): string {
+  if (!info.hash) return ' '.repeat(COL_IND);
+  if (info.hash === localHash) return `${GREEN}✓${RESET} `;
+  if (info.behind > 0) return `${YELLOW}⚠${RESET} `;
+  return `${RED}✗${RESET} `;
+}
+
+function deployedInd(deployedHash: string | null, localHash: string | null): string {
+  if (!deployedHash) return ' '.repeat(COL_IND);
+  if (deployedHash === localHash) return `${GREEN}✓${RESET} `;
   return `${RED}✗${RESET} `;
 }
 
@@ -26,8 +36,8 @@ function blueUrl(url: string, width: number): string {
   return `${BLUE}${url}${RESET}${' '.repeat(Math.max(0, width - url.length))}`;
 }
 
-function remoteRow(label: string, info: RemoteInfo, localHash: string | null | undefined): string {
-  const indicator = ind(info.hash, localHash);
+function remoteRow(label: string, info: RemoteInfo, localHash: string | null): string {
+  const indicator = remoteInd(info, localHash);
   const hash = ((info.hash ?? '-') + (info.stale ? '?' : '')).padEnd(COL_HASH);
   const ab = (info.hash ? abStr(info.ahead, info.behind) : '-').padEnd(COL_AB);
   const date = (info.date ?? '-').padEnd(COL_DATE);
@@ -66,16 +76,25 @@ export function printTable(rows: RepoRow[]): void {
     gitCount++;
     const localHash = row.localHash ?? null;
     const deployedHash = row.deployed?.hash ?? null;
+    const remotes = row.remotes ?? [];
+
+    const anyRemoteAhead = remotes.some(r => r.info.behind > 0);
+    const localInd = !localHash
+      ? ' '.repeat(COL_IND)
+      : anyRemoteAhead
+        ? `${YELLOW}⚠${RESET} `
+        : `${GREEN}✓${RESET} `;
+
     const deployedUrl = row.deployed?.siteUrl
       ? blueUrl(row.deployed.siteUrl, COL_URL)
       : '-';
 
     console.log(row.name);
-    console.log(`  ${'local'.padEnd(COL_LABEL)}${' '.repeat(COL_IND)}${(localHash ?? '-').padEnd(COL_HASH)}${' '.repeat(COL_AB)}${(row.localDate ?? '-').padEnd(COL_DATE)}`);
-    for (const remote of row.remotes ?? []) {
+    console.log(`  ${'local'.padEnd(COL_LABEL)}${localInd}${(localHash ?? '-').padEnd(COL_HASH)}${' '.repeat(COL_AB)}${(row.localDate ?? '-').padEnd(COL_DATE)}`);
+    for (const remote of remotes) {
       console.log(remoteRow(remote.name, remote.info, localHash));
     }
-    console.log(`  ${'deployed'.padEnd(COL_LABEL)}${ind(deployedHash, localHash)}${(deployedHash ?? '-').padEnd(COL_HASH)}${' '.repeat(COL_AB)}${(row.deployed?.date ?? '-').padEnd(COL_DATE)}${deployedUrl}`);
+    console.log(`  ${'deployed'.padEnd(COL_LABEL)}${deployedInd(deployedHash, localHash)}${(deployedHash ?? '-').padEnd(COL_HASH)}${' '.repeat(COL_AB)}${(row.deployed?.date ?? '-').padEnd(COL_DATE)}${deployedUrl}`);
   }
 
   console.log();

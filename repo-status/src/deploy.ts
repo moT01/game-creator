@@ -33,7 +33,10 @@ export function getDeployedInfo(dir: string): DeployInfo | null {
     const data = JSON.parse(raw);
     if (!data.success) return null;
 
-    const production = data.deploys?.find((d: { state: string }) => d.state === 'production');
+    const productionId = data.aliases?.production;
+    const production = productionId
+      ? data.deploys?.find((d: { deployId: string }) => d.deployId === productionId)
+      : data.deploys?.find((d: { state: string }) => d.state?.includes('production'));
     if (!production) return null;
 
     return {

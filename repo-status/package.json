@@ -2,7 +2,7 @@
   "name": "repo-status",
   "type": "module",
   "scripts": {
-    "start": "tsx src/index.ts"
+    "status": "tsx src/index.ts"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
